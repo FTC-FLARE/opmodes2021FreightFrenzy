@@ -1,4 +1,4 @@
-ComponentClassTemplateComponentClassTemplatepackage org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
+package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 // Any additional import statements will go here
