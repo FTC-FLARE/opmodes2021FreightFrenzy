@@ -13,17 +13,17 @@ public class MM_Drivetrain {
     private DcMotor backRightDrive = null;
     private DcMotor frontLeftDrive = null;
     private DcMotor frontRightDrive = null;
-    //odometry is 1440
-    final double TICKSPERINCH= (1120 / 12.3684);
-    private double ticks = 0;
-    private double DRIVESPEED = 0.3;
 
+    static final double WHEEL_DIAMETER = 0;   // set this & use for calculating circumference
+    static final double WHEEL_CIRCUMFERENCE = 0;   // use this to calculate ticks/inch
+    static final double TICKS_PER_INCH = (1120 / 12.3684);   //odometry wheel ticks = 1440
+    static final double DRIVE_SPEED = 0.3;
+
+    private double ticks = 0;
 
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
-    }
 
-    public void init() {
         frontLeftDrive = opMode.hardwareMap.get(DcMotor.class, "FLMotor");
         frontRightDrive = opMode.hardwareMap.get(DcMotor.class, "FRMotor");
         backLeftDrive = opMode.hardwareMap.get(DcMotor.class, "BLMotor");
@@ -42,7 +42,6 @@ public class MM_Drivetrain {
         opMode.telemetry.addData("Status:", "Initialized Progbot");
         opMode.telemetry.update();
     }
-
 
     public void setMotorPowers(double flPower, double frPower, double blPower, double brPower) {
         frontLeftDrive.setPower(flPower);
@@ -64,7 +63,7 @@ public class MM_Drivetrain {
     }
 
     public int calculateTicks(double inches){
-        ticks = inches * TICKSPERINCH;
+        ticks = inches * TICKS_PER_INCH;
         return (int) ticks;
     }
 
@@ -73,8 +72,8 @@ public class MM_Drivetrain {
         int leftTargetInches;
         int rightTargetInches;
 
-        leftTargetInches = frontLeftDrive.getCurrentPosition() + (int)(leftInches * TICKSPERINCH);
-        rightTargetInches = frontRightDrive.getCurrentPosition() + (int)(rightInches * TICKSPERINCH);
+        leftTargetInches = frontLeftDrive.getCurrentPosition() + (int)(leftInches * TICKS_PER_INCH);
+        rightTargetInches = frontRightDrive.getCurrentPosition() + (int)(rightInches * TICKS_PER_INCH);
         frontLeftDrive.setTargetPosition(leftTargetInches);
         frontRightDrive.setTargetPosition(rightTargetInches);
 
@@ -82,8 +81,8 @@ public class MM_Drivetrain {
         frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         runtime.reset();
-        frontLeftDrive.setPower(Math.abs(DRIVESPEED));
-        frontRightDrive.setPower(Math.abs(DRIVESPEED));
+        frontLeftDrive.setPower(Math.abs(DRIVE_SPEED));
+        frontRightDrive.setPower(Math.abs(DRIVE_SPEED));
 
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutTime) && (frontLeftDrive.isBusy() && frontRightDrive.isBusy())) {
 

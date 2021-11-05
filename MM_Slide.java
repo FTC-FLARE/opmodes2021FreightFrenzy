@@ -30,14 +30,13 @@ public class MM_Slide {
         topRange = opMode.hardwareMap.get(DistanceSensor.class,"topRange");
 
         bottomStop.setMode(DigitalChannel.Mode.INPUT);
-
     }
 
     public void runSlide() {
 
         double potVoltage = potentiometer.getVoltage();
         double motorPower = potVoltage / MAX_VOLTAGE;
-        motorPower = motorPower / 2; // temp
+        motorPower = motorPower; // temp
 
         if (potVoltage <= 0.5) {
             arm.setPower(0);
@@ -53,6 +52,5 @@ public class MM_Slide {
         opMode.telemetry.addData("top range sensor", topRange.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("Voltage:", "%.2f", potVoltage);
         opMode.telemetry.addData("Motor power", "%.2f", motorPower);
-        opMode.telemetry.update();
     }
 }

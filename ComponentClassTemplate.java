@@ -4,15 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 // Any additional import statements will go here
 
 public class ComponentClassTemplate {
+    // this gives us access to all opMode information
+    private LinearOpMode opMode;
 
 /*
     declare private class variables for all hardware and states the object “has” - Ex:
         private DcMotor leftDrive = null;
         private DcMotor rightDrive = null;
 */
-
-    // this gives us access to all opMode information
-    private LinearOpMode opMode;
 
 /*
     Declare any other class variables & constants – Ex:
