@@ -28,9 +28,9 @@ public class MM_Collector {
         motorPower = motorPower / 2; // temp
 
 
-        if (opMode.gamepad1.a) {
+        if (opMode.gamepad2.left_trigger > .1) {
             collector.setPower(1);
-        } else if (opMode.gamepad1.b) {
+        } else if (opMode.gamepad2.right_trigger > .1) {
             collector.setPower(-1);
         } else {
             collector.setPower(0);
