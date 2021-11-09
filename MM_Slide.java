@@ -20,9 +20,7 @@ public class MM_Slide {
         OTHER
     }
 
-
     private LinearOpMode opMode;
-
 
     private AnalogInput potentiometer = null;
     private DigitalChannel bottomStop = null;
@@ -42,7 +40,6 @@ public class MM_Slide {
 
     private transportPosition selectedPosition = transportPosition.COLLECT;
 
-
     public MM_Slide(LinearOpMode opMode) {
         this.opMode = opMode;
 
@@ -61,15 +58,11 @@ public class MM_Slide {
 
         transportDown = opMode.hardwareMap.get(DistanceSensor.class,"transportDown");
         transportUp = opMode.hardwareMap.get(DistanceSensor.class,"transportUp");
-
-
     }
 
     public void runSlide() {
-
         double potVoltage = potentiometer.getVoltage();
         double motorPower = potVoltage / MAX_VOLTAGE;
-
 
 //        if (potVoltage <= 0.5) {
 //            arm.setPower(0);
@@ -92,7 +85,6 @@ public class MM_Slide {
             transport.setPosition(1);
         }
 
-
         if(opMode.gamepad2.a){
             arm.setTargetPosition(SCORE_LEVEL_1);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -111,15 +103,13 @@ public class MM_Slide {
         }else if (!bottomStop.getState()){
 //            arm.setPower(0);
             arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         }else if (opMode.gamepad2.x){
             arm.setTargetPosition(COLLECT);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             arm.setPower(.5);
-
         }
-
 
         opMode.telemetry.addData("arm encoder", arm.getCurrentPosition());
         opMode.telemetry.addData("transport up",transportUp.getDistance(DistanceUnit.CM));
