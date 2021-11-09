@@ -31,9 +31,9 @@ public class MM_Slide {
     private DcMotor arm = null;
 
     private final double MAX_VOLTAGE = 3.3;
-    private final int SCORE_LEVEL_1 = 1521;
-    private final int SCORE_LEVEL_2 = 2021;
-    private final int SCORE_LEVEL_3 = 2521;
+    private final int SCORE_LEVEL_1 = 1000;
+    private final int SCORE_LEVEL_2 = 1800;
+    private final int SCORE_LEVEL_3 = 2600;
     private final int COLLECT = 0;
 
     private transportPosition selectedPosition = transportPosition.COLLECT;
@@ -48,12 +48,12 @@ public class MM_Slide {
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         potentiometer = opMode.hardwareMap.get(AnalogInput.class, "potentiometer");
-        bottomStop = opMode.hardwareMap.get(DigitalChannel.class,"bottomStop");//bottom limit switch on the slide
-        topRange = opMode.hardwareMap.get(DistanceSensor.class,"topRange");//top limit switch on the slide
+        bottomStop = opMode.hardwareMap.get(DigitalChannel.class, "bottomStop");//bottom limit switch on the slide
+        topRange = opMode.hardwareMap.get(DistanceSensor.class, "topRange");//top limit switch on the slide
         bottomStop.setMode(DigitalChannel.Mode.INPUT);
 
-        transportDown = opMode.hardwareMap.get(DistanceSensor.class,"transportDown");
-        transportUp = opMode.hardwareMap.get(DistanceSensor.class,"transportUp");
+        transportDown = opMode.hardwareMap.get(DistanceSensor.class, "transportDown");
+        transportUp = opMode.hardwareMap.get(DistanceSensor.class, "transportUp");
     }
 
     public void runSlide() {
@@ -75,42 +75,61 @@ public class MM_Slide {
 //            arm.setPower(0);
 //        }
 
-        if(opMode.gamepad2.a){
+        if (opMode.gamepad2.left_stick_button) {
+            goHome();
+        } else if (opMode.gamepad2.a) {
             arm.setTargetPosition(SCORE_LEVEL_1);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             arm.setPower(.5);
 
-        }else if (opMode.gamepad2.b){
+        } else if (opMode.gamepad2.b) {
             arm.setTargetPosition(SCORE_LEVEL_2);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             arm.setPower(.5);
 
-        }else if (opMode.gamepad2.y){
+        } else if (opMode.gamepad2.y) {
             arm.setTargetPosition(SCORE_LEVEL_3);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             arm.setPower(.5);
 
-        }else if (!bottomStop.getState()){
+        } else if (bottomMagnetTriggered()) {
 //            arm.setPower(0);
             arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        }else if (opMode.gamepad2.x){
+        } else if (opMode.gamepad2.x) {
             arm.setTargetPosition(COLLECT);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             arm.setPower(.5);
         }
 
         opMode.telemetry.addData("arm encoder", arm.getCurrentPosition());
-        opMode.telemetry.addData("transport up",transportUp.getDistance(DistanceUnit.CM));
-        opMode.telemetry.addData("transport down",transportDown.getDistance(DistanceUnit.CM));
+        opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
+        opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("bottom touch sensor", bottomStop.getState());
         opMode.telemetry.addData("top range sensor", topRange.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("Voltage:", "%.2f", potVoltage);
         opMode.telemetry.addData("Motor power", "%.2f", motorPower);
     }
 
-    public int getSlidePosition(){
+    public void goHome() {
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // ****** This needs to become state logic *****
+        while (opMode.opModeIsActive() && !bottomMagnetTriggered()) {
+            // ******************** MUST hold dpad_down *************************************
+            ((MM_TeleOp) opMode).robot.transporter.controlFlip();
+        }
+        arm.setPower(.5);
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm.setTargetPosition(COLLECT);
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public int getSlidePosition() {
         return arm.getCurrentPosition();
+    }
+
+    public boolean bottomMagnetTriggered() {
+        return !(bottomStop.getState());
     }
 }
