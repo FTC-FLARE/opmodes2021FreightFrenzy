@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name="TeleOp", group="MM")
 //@Disabled
 public class MM_TeleOp extends LinearOpMode {
-    private MM_Robot robot = new MM_Robot(this);
+    public MM_Robot robot = new MM_Robot(this);
 
     ElapsedTime runtime = new ElapsedTime();
 
@@ -26,6 +26,7 @@ public class MM_TeleOp extends LinearOpMode {
 
             robot.drivetrain.driveWithSticks();
             robot.slide.runSlide();
+            robot.transporter.controlFlip();
 
             /*if (gamepad1.y & !isHandled) {
 

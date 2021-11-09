@@ -27,12 +27,10 @@ public class MM_Slide {
     private DistanceSensor topRange = null;
     private DistanceSensor transportDown = null;
     private DistanceSensor transportUp = null;
-    private Servo transport = null;
 
     private DcMotor arm = null;
 
     private final double MAX_VOLTAGE = 3.3;
-    private final double TRANSPORT_FLIP = 1000;
     private final int SCORE_LEVEL_1 = 1521;
     private final int SCORE_LEVEL_2 = 2021;
     private final int SCORE_LEVEL_3 = 2521;
@@ -48,8 +46,6 @@ public class MM_Slide {
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        transport = opMode.hardwareMap.get(Servo.class,"transport");
 
         potentiometer = opMode.hardwareMap.get(AnalogInput.class, "potentiometer");
         bottomStop = opMode.hardwareMap.get(DigitalChannel.class,"bottomStop");//bottom limit switch on the slide
@@ -78,12 +74,6 @@ public class MM_Slide {
 //        else {
 //            arm.setPower(0);
 //        }
-
-        if(arm.getCurrentPosition() > TRANSPORT_FLIP){//going up
-            transport.setPosition(.5);
-        }else if (arm.getCurrentPosition() < TRANSPORT_FLIP){//going down
-            transport.setPosition(1);
-        }
 
         if(opMode.gamepad2.a){
             arm.setTargetPosition(SCORE_LEVEL_1);
@@ -118,5 +108,9 @@ public class MM_Slide {
         opMode.telemetry.addData("top range sensor", topRange.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("Voltage:", "%.2f", potVoltage);
         opMode.telemetry.addData("Motor power", "%.2f", motorPower);
+    }
+
+    public int getSlidePosition(){
+        return arm.getCurrentPosition();
     }
 }
