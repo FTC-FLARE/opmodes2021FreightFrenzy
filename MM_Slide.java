@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -10,6 +11,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class MM_Slide {
+
+    enum transportPosition {
+        COLLECT,
+        lEVEL1,
+        LEVEL2,
+        LEVEL3,
+        OTHER
+    }
+
 
     private LinearOpMode opMode;
 
@@ -25,14 +35,19 @@ public class MM_Slide {
 
     private final double MAX_VOLTAGE = 3.3;
     private final double TRANSPORT_FLIP = 1000;
-    private final double SCORE_LEVEL_1 = 2021;
-    private final double SCORE_LEVEL_2 = 2021;
-    private final double SCORE_LEVEL_3 = 2021;
+    private final int SCORE_LEVEL_1 = 1521;
+    private final int SCORE_LEVEL_2 = 2021;
+    private final int SCORE_LEVEL_3 = 2521;
+    private final int COLLECT = 0;
+
+    private transportPosition selectedPosition = transportPosition.COLLECT;
+
 
     public MM_Slide(LinearOpMode opMode) {
         this.opMode = opMode;
 
         arm = opMode.hardwareMap.get(DcMotor.class, "arm");
+        arm.setDirection(DcMotorSimple.Direction.FORWARD);
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -56,26 +71,56 @@ public class MM_Slide {
         double motorPower = potVoltage / MAX_VOLTAGE;
 
 
-        if (potVoltage <= 0.5) {
-            arm.setPower(0);
-        } else if (opMode.gamepad2.right_bumper && arm.getCurrentPosition() < 3170) { //slide going up
-            arm.setPower(motorPower);
-        } else if (opMode.gamepad2.left_bumper && bottomStop.getState()) { //slide going down
-            arm.setPower(-motorPower);
-        }else if (!bottomStop.getState()){
-            arm.setPower(0);
-            arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-        else {
-            arm.setPower(0);
-        }
+//        if (potVoltage <= 0.5) {
+//            arm.setPower(0);
+//        } else if (opMode.gamepad2.right_bumper && arm.getCurrentPosition() < 3170) { //slide going up
+//            arm.setPower(motorPower);
+//        } else if (opMode.gamepad2.left_bumper && bottomStop.getState()) { //slide going down
+//            arm.setPower(-motorPower);
+//        }else if (!bottomStop.getState()){
+//            arm.setPower(0);
+//            arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        }
+//        else {
+//            arm.setPower(0);
+//        }
 
         if(arm.getCurrentPosition() > TRANSPORT_FLIP){//going up
-            transport.setPosition(0);
+            transport.setPosition(.5);
         }else if (arm.getCurrentPosition() < TRANSPORT_FLIP){//going down
             transport.setPosition(1);
         }
+
+
+        if(opMode.gamepad2.a){
+            arm.setTargetPosition(SCORE_LEVEL_1);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm.setPower(.5);
+
+        }else if (opMode.gamepad2.b){
+            arm.setTargetPosition(SCORE_LEVEL_2);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm.setPower(.5);
+
+        }else if (opMode.gamepad2.y){
+            arm.setTargetPosition(SCORE_LEVEL_3);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm.setPower(.5);
+
+        }else if (!bottomStop.getState()){
+//            arm.setPower(0);
+            arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        }else if (opMode.gamepad2.x){
+            arm.setTargetPosition(COLLECT);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm.setPower(.5);
+
+        }
+
+
         opMode.telemetry.addData("arm encoder", arm.getCurrentPosition());
         opMode.telemetry.addData("transport up",transportUp.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("transport down",transportDown.getDistance(DistanceUnit.CM));
