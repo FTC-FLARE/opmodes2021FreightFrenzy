@@ -2,11 +2,14 @@ package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="TeleOp", group="MM")
 //@Disabled
 public class MM_TeleOp extends LinearOpMode {
     private MM_Robot robot = new MM_Robot(this);
+
+    ElapsedTime runtime = new ElapsedTime();
 
     @Override
     public void runOpMode() {
@@ -22,6 +25,7 @@ public class MM_TeleOp extends LinearOpMode {
         while (opModeIsActive()) {
 
             robot.drivetrain.driveWithSticks();
+            robot.slide.runSlide();
 
             /*if (gamepad1.y & !isHandled) {
 
