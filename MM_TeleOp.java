@@ -27,6 +27,7 @@ public class MM_TeleOp extends LinearOpMode {
             robot.drivetrain.driveWithSticks();
             robot.slide.runSlide();
             robot.transporter.controlFlip();
+            robot.collector.runCollector();
 
             /*if (gamepad1.y & !isHandled) {
 
