@@ -42,9 +42,11 @@ public class MM_Vuforia {
 
     public MM_Vuforia(OpMode opMode) {
         this.opMode = opMode;
+        vuforiaInit();
+
     }
 
-    public void vuforiaInit() {
+    private void vuforiaInit() {
         // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
         webcamName = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
 
