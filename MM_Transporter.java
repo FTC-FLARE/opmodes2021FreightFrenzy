@@ -21,8 +21,11 @@ public class MM_Transporter {
     }
 
     public void controlFlip() {
-        if (opMode.gamepad2.dpad_down){
+        if (opMode.gamepad2.dpad_up){ // deposit freight
             transport.setPosition(0);
+        }
+        else if (opMode.gamepad2.dpad_down){
+            transport.setPosition(1); // over-ride for collect position
         }
         else if (((MM_TeleOp) opMode).robot.slide.getSlidePosition() > TRANSPORT_FLIP) {//going up
             transport.setPosition(.5);
