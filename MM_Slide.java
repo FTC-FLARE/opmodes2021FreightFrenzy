@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -24,19 +23,23 @@ public class MM_Slide {
 
     private AnalogInput potentiometer = null;
     private DigitalChannel bottomStop = null;
-    private DistanceSensor topRange = null;
+    private DigitalChannel topStop = null;
     private DistanceSensor transportDown = null;
     private DistanceSensor transportUp = null;
 
     private DcMotor arm = null;
 
     private final double MAX_VOLTAGE = 3.3;
-    private final int SCORE_LEVEL_1 = 1000;
+    private final int SCORE_LEVEL_1_PART_1 = 1100;
+    private final int SCORE_LEVEL_1_PART_2 = 900;
     private final int SCORE_LEVEL_2 = 1800;
     private final int SCORE_LEVEL_3 = 2600;
+    private final int CARRY_POSITION = 900;
     private final int COLLECT = 0;
 
     private transportPosition selectedPosition = transportPosition.COLLECT;
+
+    private int levelOne = 0;
 
     public MM_Slide(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -49,7 +52,7 @@ public class MM_Slide {
 
         potentiometer = opMode.hardwareMap.get(AnalogInput.class, "potentiometer");
         bottomStop = opMode.hardwareMap.get(DigitalChannel.class, "bottomStop");//bottom limit switch on the slide
-        topRange = opMode.hardwareMap.get(DistanceSensor.class, "topRange");//top limit switch on the slide
+        topStop = opMode.hardwareMap.get(DigitalChannel.class, "topStop");//top limit switch on the slide
         bottomStop.setMode(DigitalChannel.Mode.INPUT);
 
         transportDown = opMode.hardwareMap.get(DistanceSensor.class, "transportDown");
@@ -77,45 +80,68 @@ public class MM_Slide {
 
         if (opMode.gamepad2.left_stick_button) {
             goHome();
-        } else if (opMode.gamepad2.a) {
-            arm.setTargetPosition(SCORE_LEVEL_1);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm.setPower(.5);
+
+        }else if(opMode.gamepad1.left_bumper){
+            goToPosition(CARRY_POSITION);
+        }
+        else if (opMode.gamepad2.a) {
+            levelOne = 1;
+            goToPosition(SCORE_LEVEL_1_PART_1);
 
         } else if (opMode.gamepad2.b) {
-            arm.setTargetPosition(SCORE_LEVEL_2);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm.setPower(.5);
+            goToPosition(SCORE_LEVEL_2);
 
         } else if (opMode.gamepad2.y) {
-            arm.setTargetPosition(SCORE_LEVEL_3);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm.setPower(.5);
+            goToPosition(SCORE_LEVEL_3);
 
-        } else if (bottomMagnetTriggered()) {
+        } else if (isTriggered(bottomStop)) {
 //            arm.setPower(0);
             arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         } else if (opMode.gamepad2.x) {
-            arm.setTargetPosition(COLLECT);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm.setPower(.5);
+            goToPosition(COLLECT);
+
+        }else if (levelOne == 1 && !arm.isBusy()){
+            levelOne = 2;
+            goToPosition(SCORE_LEVEL_1_PART_2);
+
+        }else if(levelOne == 2 && !arm.isBusy()){
+            levelOne = 3;
         }
 
         opMode.telemetry.addData("arm encoder", arm.getCurrentPosition());
         opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("bottom touch sensor", bottomStop.getState());
-        opMode.telemetry.addData("top range sensor", topRange.getDistance(DistanceUnit.CM));
+        opMode.telemetry.addData("top magnet sensor", topStop.getState());
         opMode.telemetry.addData("Voltage:", "%.2f", potVoltage);
         opMode.telemetry.addData("Motor power", "%.2f", motorPower);
     }
 
+    private void goToPosition(int position) {
+        if(isTriggered(topStop)){
+            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            arm.setPower(0);
+
+        }else{
+            if(levelOne == 3){
+                levelOne = 0;
+            }
+            arm.setTargetPosition(position);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm.setPower(.5);
+        }
+
+    }
+
+
     public void goHome() {
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // ****** This needs to become state logic *****
-        while (opMode.opModeIsActive() && !bottomMagnetTriggered()) {
+
+
+        while (opMode.opModeIsActive() && !isTriggered(bottomStop)) {
             // ******************** MUST hold dpad_down *************************************
             ((MM_TeleOp) opMode).robot.transporter.controlFlip();
         }
@@ -129,7 +155,11 @@ public class MM_Slide {
         return arm.getCurrentPosition();
     }
 
-    public boolean bottomMagnetTriggered() {
-        return !(bottomStop.getState());
+    public boolean isTriggered(DigitalChannel sensor) {
+        return !(sensor.getState());
+    }
+
+    public int getLevelOne() {
+        return levelOne;
     }
 }

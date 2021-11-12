@@ -26,10 +26,14 @@ public class MM_Transporter {
         }
         else if (opMode.gamepad2.dpad_down){
             transport.setPosition(1); // over-ride for collect position
-        }
-        else if (((MM_TeleOp) opMode).robot.slide.getSlidePosition() > TRANSPORT_FLIP) {//going up
+
+        }else if (((MM_TeleOp) opMode).robot.slide.getSlidePosition() > TRANSPORT_FLIP) {//going up
             transport.setPosition(.5);
-        } else if (((MM_TeleOp) opMode).robot.slide.getSlidePosition() < TRANSPORT_FLIP) {//going down
+
+        }else if(((MM_TeleOp) opMode).robot.slide.getLevelOne() > 1){
+            transport.setPosition(.5);
+
+        }else if (((MM_TeleOp) opMode).robot.slide.getSlidePosition() < TRANSPORT_FLIP) {//going down
             transport.setPosition(1);
         }
     }
