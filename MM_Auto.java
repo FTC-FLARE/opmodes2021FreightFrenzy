@@ -18,13 +18,15 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="AutoVuforia OpMode", group="Test")
+@Autonomous(name="MM_Auto", group="Test")
 //@Disabled
 public class MM_Auto extends LinearOpMode {
     private MM_Robot robot = new MM_Robot(this);
     private ElapsedTime runtime = new ElapsedTime();
     @Override
     public void runOpMode() {
+        telemetry.addData("Status", "Wait for initialization");
+        telemetry.update();
         robot.init();
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -34,10 +36,11 @@ public class MM_Auto extends LinearOpMode {
         runtime.reset();
 
 
-        robot.drivetrain.driveForwardInches( 24, 5);
-        robot.drivetrain.strafeRightInches(12, 6);
-        robot.drivetrain.strafeRightInches(-12, 6);
-        robot.drivetrain.driveForwardInches(-24, 5);
+        robot.drivetrain.diagonalDriveInches(12, 12, 7);
+        robot.drivetrain.diagonalDriveInches(-12, -12, 7);
+        robot.drivetrain.diagonalDriveInches(-12, 12, 7);
+        robot.drivetrain.diagonalDriveInches(12, -12, 7);
+
 
            if (robot.vuforia.targetFound()) {
                telemetry.addLine("Target is Found");
