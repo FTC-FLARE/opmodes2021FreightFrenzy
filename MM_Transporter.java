@@ -7,14 +7,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class MM_Transporter {
     // this gives us access to all opMode information
     private LinearOpMode opMode;
+    private MM_Slide slide;
 
     private Servo transport = null;
 
     private final double TRANSPORT_FLIP = 1000;
 
     // Constructor
-    public MM_Transporter(LinearOpMode opMode) {
+    public MM_Transporter(LinearOpMode opMode, MM_Slide slide) {
         this.opMode = opMode;
+        this.slide = slide;
 
         transport = opMode.hardwareMap.get(Servo.class, "transport");
         transport.setPosition(1);  // collect position

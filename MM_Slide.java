@@ -20,6 +20,7 @@ public class MM_Slide {
     }
 
     private LinearOpMode opMode;
+    private MM_Transporter transporter;
 
     private AnalogInput potentiometer = null;
     private DigitalChannel bottomStop = null;
@@ -43,6 +44,8 @@ public class MM_Slide {
 
     public MM_Slide(LinearOpMode opMode) {
         this.opMode = opMode;
+
+        transporter = new MM_Transporter(opMode, this);
 
         arm = opMode.hardwareMap.get(DcMotor.class, "arm");
         arm.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -110,6 +113,8 @@ public class MM_Slide {
             levelOne = 3;
         }
 
+        transporter.controlFlip();
+
         opMode.telemetry.addData("arm encoder", arm.getCurrentPosition());
         opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
@@ -143,7 +148,7 @@ public class MM_Slide {
 
         while (opMode.opModeIsActive() && !isTriggered(bottomStop)) {
             // ******************** MUST hold dpad_down *************************************
-            ((MM_TeleOp) opMode).robot.transporter.controlFlip();
+            transporter.controlFlip();
         }
         arm.setPower(.5);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

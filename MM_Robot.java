@@ -8,7 +8,6 @@ public class MM_Robot {
     public MM_Drivetrain drivetrain;
     public MM_Collector collector;
     public MM_Slide slide;
-    public MM_Transporter transporter;
     public MM_Ducker ducker;
     public MM_Vuforia vuforia;
 
@@ -21,7 +20,6 @@ public class MM_Robot {
         drivetrain = new MM_Drivetrain(opMode);
         collector = new MM_Collector(opMode);
         slide = new MM_Slide(opMode);
-        transporter = new MM_Transporter(opMode);
         ducker = new MM_Ducker(opMode);
         vuforia = new MM_Vuforia(opMode);
     }
