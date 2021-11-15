@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -29,6 +30,7 @@ public class MM_Slide {
     private DistanceSensor transportUp = null;
 
     private DcMotor arm = null;
+    private Servo shockAbsorber = null;
 
     private final double MAX_VOLTAGE = 3.3;
     private final int SCORE_LEVEL_1_PART_1 = 1100;
@@ -52,6 +54,9 @@ public class MM_Slide {
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        shockAbsorber = opMode.hardwareMap.get(Servo.class, "shockAbsorber");
+        shockAbsorber.setPosition(1); // down
 
         potentiometer = opMode.hardwareMap.get(AnalogInput.class, "potentiometer");
         bottomStop = opMode.hardwareMap.get(DigitalChannel.class, "bottomStop");//bottom limit switch on the slide
