@@ -5,44 +5,46 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class MM_Slide {
 
-    enum transportPosition {
-        COLLECT,
-        lEVEL1,
-        LEVEL2,
-        LEVEL3,
-        OTHER
+    enum TransportPosition {
+        COLLECT(0),
+        LEVEL1_PART_1(1100),
+        LEVEL1_PART_2(800),
+        LEVEL2(1800),
+        LEVEL3(2600),
+        MAX(3150);
+
+        public final int ticks;
+
+        private TransportPosition(int ticks) {
+            this.ticks = ticks;
+        }
     }
 
     private LinearOpMode opMode;
-    private MM_Transporter transporter;
+    private MM_Transporter transporter = null;
 
     private AnalogInput potentiometer = null;
     private DigitalChannel bottomStop = null;
     private DigitalChannel topStop = null;
-    private DistanceSensor transportDown = null;
-    private DistanceSensor transportUp = null;
 
     private DcMotor arm = null;
     private Servo shockAbsorber = null;
 
-    private final double MAX_VOLTAGE = 3.3;
-    private final int SCORE_LEVEL_1_PART_1 = 1100;
-    private final int SCORE_LEVEL_1_PART_2 = 900;
-    private final int SCORE_LEVEL_2 = 1800;
-    private final int SCORE_LEVEL_3 = 2600;
-    private final int CARRY_POSITION = 900;
-    private final int COLLECT = 0;
+    private double UP_POWER = 1;
+    private double DOWN_POWER = .6;
+    private int SLEEP_TIME = 1500;
 
-    private transportPosition selectedPosition = transportPosition.COLLECT;
+    private TransportPosition selectedPosition = TransportPosition.COLLECT;
 
     private int levelOne = 0;
+    private boolean manualSlide = false;
+    private boolean isHandled = false;
+    private boolean headedUp = false;
+    private boolean shockAbsorberEngaged = true;
 
     public MM_Slide(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -56,110 +58,156 @@ public class MM_Slide {
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         shockAbsorber = opMode.hardwareMap.get(Servo.class, "shockAbsorber");
-        shockAbsorber.setPosition(1); // down
+        shockAbsorber.setPosition(0); // engage
 
         potentiometer = opMode.hardwareMap.get(AnalogInput.class, "potentiometer");
         bottomStop = opMode.hardwareMap.get(DigitalChannel.class, "bottomStop");//bottom limit switch on the slide
         topStop = opMode.hardwareMap.get(DigitalChannel.class, "topStop");//top limit switch on the slide
         bottomStop.setMode(DigitalChannel.Mode.INPUT);
-
-        transportDown = opMode.hardwareMap.get(DistanceSensor.class, "transportDown");
-        transportUp = opMode.hardwareMap.get(DistanceSensor.class, "transportUp");
     }
 
     public void runSlide() {
-        double potVoltage = potentiometer.getVoltage();
-        double motorPower = potVoltage / MAX_VOLTAGE;
+        if (opMode.gamepad2.right_trigger > .1) { // slide request up
+            if (shockAbsorberEngaged) { // lift shock absorber before starting up
+                shockAbsorber.setPosition(1);
+//                opMode.sleep(SLEEP_TIME);
+                shockAbsorberEngaged = false;
+            }
+            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-//        if (potVoltage <= 0.5) {
-//            arm.setPower(0);
-//        } else if (opMode.gamepad2.right_bumper && arm.getCurrentPosition() < 3170) { //slide going up
-//            arm.setPower(motorPower);
-//        } else if (opMode.gamepad2.left_bumper && bottomStop.getState()) { //slide going down
-//            arm.setPower(-motorPower);
-//        }else if (!bottomStop.getState()){
-//            arm.setPower(0);
-//            arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        }
-//        else {
-//            arm.setPower(0);
-//        }
+            if (arm.getCurrentPosition() < TransportPosition.MAX.ticks) {
+                arm.setPower(opMode.gamepad2.right_trigger);
+            }
+            headedUp = true;
+            manualSlide = true;
+            isHandled = false;
 
-        if (opMode.gamepad2.left_stick_button) {
-            goHome();
+        } else if (opMode.gamepad2.left_trigger > .1) { // slide request down
+            if (isTriggered(bottomStop)) {
+                arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                goToPosition(TransportPosition.COLLECT.ticks);
+            } else {
+                arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                arm.setPower(-opMode.gamepad2.left_trigger);
+            }
+            headedUp = false;
+            manualSlide = true;
+            isHandled = false;
 
-        }else if(opMode.gamepad1.left_bumper){
-            goToPosition(CARRY_POSITION);
+        } else {  // not manual control
+            if (manualSlide) {  // just finished manual control, so stay here
+                goToPosition(arm.getCurrentPosition());
+                manualSlide = false;
+            }
+
+            if (!arm.isBusy()){
+                headedUp = false;
+            }
+
+            if (opMode.gamepad2.a) {
+                headedUp = true;
+                if (levelOne == 0) {  // prevent flip-down if already at 'a'
+                    levelOne = 1;
+                    goToPosition(TransportPosition.LEVEL1_PART_1.ticks);
+                }
+
+            } else if (opMode.gamepad2.b && !isHandled) {
+                headedUp = true;
+                goToPosition(TransportPosition.LEVEL2.ticks);
+                isHandled = true;
+
+            } else if (opMode.gamepad2.y && !isHandled) {
+                headedUp = true;
+                goToPosition(TransportPosition.LEVEL3.ticks);
+                isHandled = true;
+
+            } else if (opMode.gamepad2.right_stick_button && !isHandled) {
+                headedUp = true;
+                goToPosition(TransportPosition.MAX.ticks);
+                isHandled = true;
+
+            } else if (isTriggered(bottomStop) && !headedUp) {
+                arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                goToPosition(TransportPosition.COLLECT.ticks);
+
+                if (!shockAbsorberEngaged) {
+                    shockAbsorber.setPosition(0);
+//                    opMode.sleep(SLEEP_TIME);
+                    shockAbsorberEngaged = true;
+                }
+                isHandled = false;
+
+            } else if (opMode.gamepad2.x && !isHandled) {
+                goToPosition(TransportPosition.COLLECT.ticks);
+                isHandled = true;
+
+            } else if (levelOne == 1 && !arm.isBusy()) {
+                levelOne = 2;
+                goToPosition(TransportPosition.LEVEL1_PART_2.ticks);
+
+            } else if (levelOne == 2 && !arm.isBusy()) {
+                levelOne = 3;
+            } else {
+                isHandled = false;
+            }
         }
-        else if (opMode.gamepad2.a) {
-            levelOne = 1;
-            goToPosition(SCORE_LEVEL_1_PART_1);
-
-        } else if (opMode.gamepad2.b) {
-            goToPosition(SCORE_LEVEL_2);
-
-        } else if (opMode.gamepad2.y) {
-            goToPosition(SCORE_LEVEL_3);
-
-        } else if (isTriggered(bottomStop)) {
-//            arm.setPower(0);
-            arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        } else if (opMode.gamepad2.x) {
-            goToPosition(COLLECT);
-
-        }else if (levelOne == 1 && !arm.isBusy()){
-            levelOne = 2;
-            goToPosition(SCORE_LEVEL_1_PART_2);
-
-        }else if(levelOne == 2 && !arm.isBusy()){
-            levelOne = 3;
-        }
-
-        transporter.controlFlip();
 
         opMode.telemetry.addData("arm encoder", arm.getCurrentPosition());
-        opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
-        opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
-        opMode.telemetry.addData("bottom touch sensor", bottomStop.getState());
-        opMode.telemetry.addData("top magnet sensor", topStop.getState());
-        opMode.telemetry.addData("Voltage:", "%.2f", potVoltage);
-        opMode.telemetry.addData("Motor power", "%.2f", motorPower);
+        opMode.telemetry.addData("is Handled", isHandled);
+        opMode.telemetry.addData("arm is busy", arm.isBusy());
+        opMode.telemetry.addData("headed Up", headedUp);
+        opMode.telemetry.addData("shock engaged", shockAbsorberEngaged);
+        opMode.telemetry.addData("levelOne", levelOne);
+        opMode.telemetry.addData("bottom magnet sensor", isTriggered(bottomStop));
+        opMode.telemetry.addData("top magnet sensor", isTriggered(topStop));
+
+        transporter.controlFlip();
     }
 
     private void goToPosition(int position) {
-        if(isTriggered(topStop)){
+        if (isTriggered(topStop)) {
             arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             arm.setPower(0);
 
-        }else{
-            if(levelOne == 3){
-                levelOne = 0;
-            }
+        } else if (levelOne == 3 && opMode.gamepad2.x) {  // decided not to dump at level 1
+            levelOne = 0;  // allow flip before doing down, but not going up
+        } else {
             arm.setTargetPosition(position);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm.setPower(.5);
-        }
 
+            if (headedUp) {
+                if (shockAbsorberEngaged) { // lift shock absorber before starting up
+                    shockAbsorber.setPosition(1);
+//                    opMode.sleep(SLEEP_TIME);
+                    shockAbsorberEngaged = false;
+                }
+                arm.setPower(UP_POWER);
+            } else {
+                arm.setPower(DOWN_POWER);
+            }
+        }
     }
 
-
-    public void goHome() {
-        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        // ****** This needs to become state logic *****
-
-
-        while (opMode.opModeIsActive() && !isTriggered(bottomStop)) {
-            // ******************** MUST hold dpad_down *************************************
-            transporter.controlFlip();
-        }
-        arm.setPower(.5);
-        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        arm.setTargetPosition(COLLECT);
-        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    }
+    //    public void goHome() {
+//        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        // ****** This needs to become state logic *****
+//
+//        while (opMode.opModeIsActive() && !isTriggered(bottomStop)) {
+//            // ******************** MUST hold dpad_down *************************************
+//            ((MM_TeleOp) opMode).robot.transporter.controlFlip();
+//        }
+//        arm.setPower(.5);
+//        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        arm.setTargetPosition(COLLECT);
+//        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//    }
+//
+//    public boolean headedUp() {
+//        if (arm.getTargetPosition() > arm.getCurrentPosition() || opMode.gamepad2.right_trigger > .1) {
+//            return true;
+//        }
+//        return false;
+//    }
 
     public int getSlidePosition() {
         return arm.getCurrentPosition();
@@ -171,5 +219,13 @@ public class MM_Slide {
 
     public int getLevelOne() {
         return levelOne;
+    }
+
+    public void setLevelOne(int level) {
+        levelOne = level;
+    }
+
+    public boolean isHeadedUp(){
+        return headedUp;
     }
 }
