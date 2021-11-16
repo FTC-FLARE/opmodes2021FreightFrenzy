@@ -35,6 +35,7 @@ public class MM_Auto extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        robot.ducker.DuckerAuto(2);
 
         robot.drivetrain.diagonalDriveInches(12, 12, 7);
         robot.drivetrain.diagonalDriveInches(-12, -12, 7);

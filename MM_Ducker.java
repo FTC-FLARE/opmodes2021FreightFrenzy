@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 // Any additional import statements will go here
 
 public class MM_Ducker {
@@ -14,34 +16,39 @@ public class MM_Ducker {
     // this gives us access to all opMode information
     private LinearOpMode opMode;
 
-/*
-    Declare any other class variables & constants – Ex:
-        static final double WHEEL_DIAMETER_INCHES = 4.0;
-*/
-
+    private ElapsedTime runtime = new ElapsedTime();
+    static final double WHEEL_DIAMETER_INCHES = 4.0;
+    static final double MOTOR_POWER = 0.69;
+    private DcMotor DuckerMotor= null;
 
     // Constructor
     public MM_Ducker(LinearOpMode opMode){
         this.opMode = opMode;
+        DuckerMotor = opMode.hardwareMap.get(DcMotor.class, "Ducker");
 
-/*
-        initialize hardware from the configuration data - Ex:
-            leftDrive = opMode.hardwareMap.get(DcMotor.class, "left_drive");
-            rightDrive  = opMode.hardwareMap.get(DcMotor.class, "right_drive");
-*/
-
-/*
-        do any other initialization that needs to happen - Ex:
-            leftDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightDrive.setDirection(DcMotor.Direction.FORWARD);
-*/
     }
 
-/*
-    write methods for what the object “does” – private or public - Ex:
-        public void setMotorPower(double leftPower, double rightPower) {
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
+    public void DuckerAuto(double timeoutTime) {
+
+        runtime.reset();
+        while (runtime.seconds() < timeoutTime) {
+            DuckerMotor.setPower(MOTOR_POWER);
         }
-*/
+        DuckerMotor.setPower(0);
+
+    }
+
+    public void DuckManual() {
+
+        //while right bumper is pressed, move ducker motor
+        while (opMode.gamepad1.right_bumper) {
+             DuckerMotor.setPower(MOTOR_POWER);
+        }
+
+        DuckerMotor.setPower(0);
+
+    }
+
+
+
 }

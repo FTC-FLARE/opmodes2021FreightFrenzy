@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -22,6 +23,9 @@ public class MM_Drivetrain {
 
     private BNO055IMU gyro;
     private double ticks = 0;
+
+    private boolean slowMode = false;
+    private boolean slowModeIH = false;
 
     static final double WHEEL_DIAMETER = 0;   // set this & use for calculating circumference
     static final double WHEEL_CIRCUMFERENCE = 0;   // use this to calculate ticks/inch
@@ -80,6 +84,24 @@ public class MM_Drivetrain {
         double frPower = Range.clip(drive + turn - strafe, -1.0, 1.0);
         double blPower = Range.clip(drive - turn - strafe, -1.0, 1.0);
         double brPower = Range.clip(drive - turn + strafe, -1.0, 1.0);
+
+        if (opMode.gamepad1.a & !slowModeIH) {
+            slowMode = !slowMode;
+            slowModeIH = true;
+        }
+
+        else if (!opMode.gamepad1.a & slowModeIH) {
+            slowModeIH = false;
+        }
+
+        if (slowMode) {
+            flPower = flPower/3;
+            frPower = frPower/3;
+            blPower = blPower/3;
+            brPower = brPower/3;
+        }
+        opMode.telemetry.addData("Slowmode", slowMode);
+        opMode.telemetry.addData("SlowmodeIH", slowModeIH);
         setMotorPowers(flPower, frPower, blPower, brPower);
     }
 
@@ -164,10 +186,12 @@ public class MM_Drivetrain {
 
         while (lookingForTarget) {
 
+            //get heading value from gyro
             robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
 
             headingError = targetHeading - robotHeading;
 
+            //find error
             if (headingError > 180) {
                 headingError -= 360;
             }
@@ -176,6 +200,7 @@ public class MM_Drivetrain {
                 headingError += 360;
             }
 
+            //determine whether the angle error is within threshold set
             if (headingError > ANGLE_THRESHOLD){
                 frontLeftDrive.setPower(-DRIVE_SPEED);
                 backLeftDrive.setPower(-DRIVE_SPEED);
@@ -255,5 +280,6 @@ public class MM_Drivetrain {
         }
 
     }
+
 }
 
