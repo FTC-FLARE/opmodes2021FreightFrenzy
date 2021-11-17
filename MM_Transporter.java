@@ -44,7 +44,7 @@ public class MM_Transporter {
 
         } else if (slide.getSlidePosition() > TRANSPORT_FLIP // cont'd
                 || slide.getLevelOne() > 1  // cont'd
-                || (transportUp.getDistance(DistanceUnit.CM) < 5 && (slide.isHeadedUp()))) {
+                || (transportUp.getDistance(DistanceUnit.CM) < 5 && (slide.getHeadedUp()))) {
             transport.setPosition(CARRY_POSITION);
 
         } else if (slide.getLevelOne() < 2   // cont'd

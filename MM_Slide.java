@@ -6,6 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.sun.tools.javac.comp.Todo;
+
+import java.util.function.ToDoubleBiFunction;
 
 public class MM_Slide {
 
@@ -77,6 +80,7 @@ public class MM_Slide {
 
             if (arm.getCurrentPosition() < TransportPosition.MAX.ticks) {
                 arm.setPower(opMode.gamepad2.right_trigger);
+                // add magnet logic
             }
             headedUp = true;
             manualSlide = true;
@@ -100,31 +104,32 @@ public class MM_Slide {
                 manualSlide = false;
             }
 
-            if (!arm.isBusy()){
-                headedUp = false;
-            }
+//            if (!arm.isBusy()){
+//                headedUp = false;
+//                //possible problem?
+//            }
 
             if (opMode.gamepad2.a) {
-                headedUp = true;
                 if (levelOne == 0) {  // prevent flip-down if already at 'a'
                     levelOne = 1;
                     goToPosition(TransportPosition.LEVEL1_PART_1.ticks);
+                    setHeadedUp();
                 }
 
             } else if (opMode.gamepad2.b && !isHandled) {
-                headedUp = true;
                 goToPosition(TransportPosition.LEVEL2.ticks);
                 isHandled = true;
+                setHeadedUp();
 
             } else if (opMode.gamepad2.y && !isHandled) {
-                headedUp = true;
                 goToPosition(TransportPosition.LEVEL3.ticks);
                 isHandled = true;
+                setHeadedUp();
 
             } else if (opMode.gamepad2.right_stick_button && !isHandled) {
-                headedUp = true;
                 goToPosition(TransportPosition.MAX.ticks);
                 isHandled = true;
+                setHeadedUp();
 
             } else if (isTriggered(bottomStop) && !headedUp) {
                 arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -140,14 +145,17 @@ public class MM_Slide {
             } else if (opMode.gamepad2.x && !isHandled) {
                 goToPosition(TransportPosition.COLLECT.ticks);
                 isHandled = true;
+                setHeadedUp();
 
             } else if (levelOne == 1 && !arm.isBusy()) {
                 levelOne = 2;
                 goToPosition(TransportPosition.LEVEL1_PART_2.ticks);
+                headedUp = false;
 
             } else if (levelOne == 2 && !arm.isBusy()) {
                 levelOne = 3;
-            } else {
+                headedUp = false;
+            } else if (!opMode.gamepad2.b && !opMode.gamepad2.y && !opMode.gamepad2.x && !opMode.gamepad2.right_stick_button) {
                 isHandled = false;
             }
         }
@@ -188,27 +196,6 @@ public class MM_Slide {
         }
     }
 
-    //    public void goHome() {
-//        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        // ****** This needs to become state logic *****
-//
-//        while (opMode.opModeIsActive() && !isTriggered(bottomStop)) {
-//            // ******************** MUST hold dpad_down *************************************
-//            ((MM_TeleOp) opMode).robot.transporter.controlFlip();
-//        }
-//        arm.setPower(.5);
-//        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        arm.setTargetPosition(COLLECT);
-//        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//    }
-//
-//    public boolean headedUp() {
-//        if (arm.getTargetPosition() > arm.getCurrentPosition() || opMode.gamepad2.right_trigger > .1) {
-//            return true;
-//        }
-//        return false;
-//    }
-
     public int getSlidePosition() {
         return arm.getCurrentPosition();
     }
@@ -225,7 +212,15 @@ public class MM_Slide {
         levelOne = level;
     }
 
-    public boolean isHeadedUp(){
+    public boolean getHeadedUp(){
         return headedUp;
+    }
+    public void setHeadedUp(){
+        if (arm.getTargetPosition() > arm.getCurrentPosition() || opMode.gamepad2.right_trigger > .1){
+            headedUp = true;
+        }else{
+            headedUp = false;
+        }
+
     }
 }
