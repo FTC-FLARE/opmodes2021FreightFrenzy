@@ -183,6 +183,8 @@ public class MM_Slide {
             arm.setTargetPosition(position);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+            setHeadedUp();
+
             if (headedUp) {
                 if (shockAbsorberEngaged) { // lift shock absorber before starting up
                     shockAbsorber.setPosition(1);
@@ -221,6 +223,5 @@ public class MM_Slide {
         }else{
             headedUp = false;
         }
-
     }
 }
