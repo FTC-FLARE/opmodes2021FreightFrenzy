@@ -14,11 +14,11 @@ public class MM_Slide {
 
     enum TransportPosition {
         COLLECT(0),
-        LEVEL1_PART_1(1100),
-        LEVEL1_PART_2(800),
-        LEVEL2(1800),
-        LEVEL3(2600),
-        MAX(3150);
+        LEVEL1_PART_1(1700),
+        LEVEL1_PART_2(1230),
+        LEVEL2(2780),
+        LEVEL3(4025),
+        MAX(4780);
 
         public final int ticks;
 
@@ -79,8 +79,10 @@ public class MM_Slide {
             arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             if (arm.getCurrentPosition() < TransportPosition.MAX.ticks) {
-                arm.setPower(opMode.gamepad2.right_trigger);
-                // add magnet logic
+                if (!isTriggered(topStop)){
+                    arm.setPower(opMode.gamepad2.right_trigger);
+                    // add magnet logic
+                }
             }
             headedUp = true;
             manualSlide = true;
