@@ -55,7 +55,7 @@ public class MM_Slide {
         transporter = new MM_Transporter(opMode, this);
 
         arm = opMode.hardwareMap.get(DcMotor.class, "arm");
-        arm.setDirection(DcMotorSimple.Direction.FORWARD);
+        arm.setDirection(DcMotorSimple.Direction.REVERSE);
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -73,7 +73,6 @@ public class MM_Slide {
         if (opMode.gamepad2.right_trigger > .1) { // slide request up
             if (shockAbsorberEngaged) { // lift shock absorber before starting up
                 shockAbsorber.setPosition(1);
-//                opMode.sleep(SLEEP_TIME);
                 shockAbsorberEngaged = false;
             }
             arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -190,7 +189,6 @@ public class MM_Slide {
             if (headedUp) {
                 if (shockAbsorberEngaged) { // lift shock absorber before starting up
                     shockAbsorber.setPosition(1);
-//                    opMode.sleep(SLEEP_TIME);
                     shockAbsorberEngaged = false;
                 }
                 arm.setPower(UP_POWER);
