@@ -6,6 +6,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -15,6 +16,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,8 @@ public class MM_Vuforia {
     private static final float halfTile         = 12 * mmPerInch;
     private static final float oneAndHalfTile   = 36 * mmPerInch;
 
+    private ElapsedTime runtime = new ElapsedTime();
+
     //define classes and webcam
     
     private OpenGLMatrix lastLocation   = null;
@@ -40,9 +45,14 @@ public class MM_Vuforia {
     private boolean targetVisible = false;
     private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
 
+    private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
+
+    private TFObjectDetector tfod;
+
     public MM_Vuforia(OpMode opMode) {
         this.opMode = opMode;
         vuforiaInit();
+        tfodInit();
 
     }
 
@@ -93,6 +103,55 @@ public class MM_Vuforia {
         targets.activate();
     }
 
+    private void tfodInit() {
+        int tfodMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.8f;
+        tfodParameters.isModelTensorFlow2 = true;
+        tfodParameters.inputSize = 320;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vLocalizer);
+
+        String[] labels = {"Duck"};
+
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, labels);
+        if (tfod != null) {
+            tfod.activate();
+            tfod.setZoom(1, 16.0 / 9.0);
+        }
+    }
+
+/*    public void seeDuck() {
+        if (tfod != null) {
+            List<Recognition> tfodRecognitions = tfod.getRecognitions();
+            if (!tfodRecognitions.isEmpty()) {
+                Recognition recognition = tfodRecognitions.get(0);
+                opMode.telemetry.addData("Duck Found left: %.03f", recognition.getLeft());
+                opMode.telemetry.update();
+            }
+
+        }
+
+    }*/
+
+    public void findDuck() {
+
+        runtime.reset();
+        boolean duckFound = false;
+        while ((runtime.seconds() < 3) && !duckFound)
+            if (tfod != null) {
+                List<Recognition> tfodRecognitions = tfod.getRecognitions();
+                if (!tfodRecognitions.isEmpty()) {
+                    Recognition recognition = tfodRecognitions.get(0);
+                    opMode.telemetry.addData("Duck Found left: %.03f", recognition.getLeft());
+                    opMode.telemetry.update();
+                    duckFound = true;
+                }
+
+            }
+
+    }
+
     private void assignTargetPosition(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
         VuforiaTrackable aTarget = targets.get(targetIndex);
         aTarget.setName(targetName);
@@ -102,6 +161,10 @@ public class MM_Vuforia {
 
     public void deactivateTargets() {
         targets.deactivate();
+    }
+
+    public void deactivateTfod() {
+        tfod.deactivate();
     }
 
     public boolean targetFound() {
@@ -129,3 +192,4 @@ public class MM_Vuforia {
         return Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES).thirdAngle;
     }
 }
+

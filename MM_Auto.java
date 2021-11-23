@@ -32,15 +32,20 @@ public class MM_Auto extends LinearOpMode {
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
+/*        while (!isStarted()) {
+            robot.vuforia.seeDuck();
+        }*/
         waitForStart();
         runtime.reset();
+        robot.vuforia.findDuck();
 
-        robot.ducker.DuckerAuto(2);
 
-        robot.drivetrain.diagonalDriveInches(12, 12, 7);
+        //robot.ducker.DuckerAuto(2);
+
+        /*robot.drivetrain.diagonalDriveInches(12, 12, 7);
         robot.drivetrain.diagonalDriveInches(-12, -12, 7);
         robot.drivetrain.diagonalDriveInches(-12, 12, 7);
-        robot.drivetrain.diagonalDriveInches(12, -12, 7);
+        robot.drivetrain.diagonalDriveInches(12, -12, 7);*/
 
 
            if (robot.vuforia.targetFound()) {
@@ -59,5 +64,6 @@ public class MM_Auto extends LinearOpMode {
             telemetry.update();
 
         robot.vuforia.deactivateTargets();
+        robot.vuforia.deactivateTfod();
     }
 }
