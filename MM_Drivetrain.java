@@ -18,7 +18,7 @@ public class MM_Drivetrain {
     private DcMotor frontLeftDrive = null;
     private DcMotor frontRightDrive = null;
 
-    private BNO055IMU gyro;
+    public BNO055IMU gyro;
     private double ticks = 0;
 
     private boolean slowMode = false;
@@ -142,10 +142,10 @@ public class MM_Drivetrain {
         boolean lookingForTarget = true;
 
 
-        while (lookingForTarget) {
+        while (opMode.opModeIsActive() && lookingForTarget) {
 
             //get heading value from gyro
-            robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+            robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
             headingError = targetHeading - robotHeading;
 
             //find error
@@ -165,7 +165,7 @@ public class MM_Drivetrain {
                 backRightDrive.setPower(DRIVE_SPEED);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle);
+                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
                 opMode.telemetry.update();
             }
 
@@ -176,7 +176,7 @@ public class MM_Drivetrain {
                 backRightDrive.setPower(-DRIVE_SPEED);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle);
+                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
                 opMode.telemetry.update();
             }
 
@@ -228,17 +228,13 @@ public class MM_Drivetrain {
         double headingError;
         boolean lookingForTarget = true;
 
-        robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
-
         hypDistance = (Math.hypot(forwardInches, leftInches));
-
         targetHeading = Math.toDegrees(Math.atan2(leftInches, forwardInches));
-
 
         while (lookingForTarget) {
 
             //get heading value from gyro
-            robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+            robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
 
             headingError = targetHeading - robotHeading;
 
@@ -259,7 +255,7 @@ public class MM_Drivetrain {
                 backRightDrive.setPower(DRIVE_SPEED);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle);
+                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
                 opMode.telemetry.addData("hypotenuse", hypDistance);
                 opMode.telemetry.update();
             }
@@ -271,7 +267,7 @@ public class MM_Drivetrain {
                 backRightDrive.setPower(-DRIVE_SPEED);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle);
+                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
                 opMode.telemetry.addData("hypotenuse", hypDistance);
                 opMode.telemetry.update();
             }
