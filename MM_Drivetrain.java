@@ -5,12 +5,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 public class MM_Drivetrain {
     private LinearOpMode opMode;
@@ -139,14 +136,16 @@ public class MM_Drivetrain {
 
     }
     public void rotate(double targetHeading, double timeoutTime) {
+
         double robotHeading;
         double headingError;
         boolean lookingForTarget = true;
 
+
         while (lookingForTarget) {
+
             //get heading value from gyro
             robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
-
             headingError = targetHeading - robotHeading;
 
             //find error
@@ -185,10 +184,15 @@ public class MM_Drivetrain {
                 lookingForTarget = false;
                 stop();
             }
+
         }
+
     }
     public void strafeRightInches(double Inches, double timeoutTime) {
+
         setTargetPosition(Inches);
+        setTargetPositionStrafe(Inches);
+
 
         switchEncoderMode(false);
 
@@ -213,6 +217,7 @@ public class MM_Drivetrain {
         stop();
 
         switchEncoderMode(true);
+
     }
 
     public void diagonalDriveInches (double forwardInches, double leftInches, double timeoutTime) {
@@ -322,6 +327,24 @@ public class MM_Drivetrain {
         backLeftDrive.setTargetPosition(backLeftTargetInches);
         backRightDrive.setTargetPosition(backRightTargetInches);
     }
+
+    public void setTargetPositionStrafe(double driveDistance) {
+        int frontLeftTargetInches;
+        int frontRightTargetInches;
+        int backLeftTargetInches;
+        int backRightTargetInches;
+
+        frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
+        frontRightTargetInches = frontRightDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
+        backLeftTargetInches = backLeftDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
+        backRightTargetInches = backRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
+
+        frontLeftDrive.setTargetPosition(frontLeftTargetInches);
+        frontRightDrive.setTargetPosition(frontRightTargetInches);
+        backLeftDrive.setTargetPosition(backLeftTargetInches);
+        backRightDrive.setTargetPosition(backRightTargetInches);
+    }
+
 
     public void switchEncoderMode(boolean runToPosition) {
 
