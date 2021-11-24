@@ -10,7 +10,6 @@ public class MM_Robot {
     public MM_Slide slide;
     public MM_Ducker ducker;
     public MM_Vuforia vuforia;
-    public MM_Transporter transporter;
 
     // Constructor
     public MM_Robot(LinearOpMode opMode){
