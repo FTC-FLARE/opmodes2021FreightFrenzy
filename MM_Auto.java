@@ -20,18 +20,11 @@ public class MM_Auto extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Wait for the game to start (driver presses PLAY)
-/*        while (!isStarted()) {
-            robot.vuforia.seeDuck();
-        }*/
         waitForStart();
         runtime.reset();
 
-        double duckLocation = robot.vuforia.findDuck();
-        while (opModeIsActive() && !gamepad1.x){   // ************* Temporary
-            telemetry.addData("Duck Location: ", "%.03f", duckLocation);
-            telemetry.update();
-        }
+        double duckLocation = robot.vuforia.findDeliveryPosition();
+
 
         //robot.ducker.DuckerAuto(2);
 

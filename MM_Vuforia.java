@@ -42,6 +42,7 @@ public class MM_Vuforia {
     private VuforiaTrackables targets   = null ;
     private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
 
+
     private TFObjectDetector tfod;
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
 
@@ -53,8 +54,10 @@ public class MM_Vuforia {
         tfodInit();
     }
 
-    public double findDuck() {
+    public double findDeliveryPosition() {
+        //possibly change to void statement to just drive
         double duckLeftPixel = -1;
+        double duckPosition = 0;
         runtime.reset();
 
         while ((runtime.seconds() < 3) && duckLeftPixel < 0) {
@@ -68,7 +71,43 @@ public class MM_Vuforia {
                 }
             }
         }
-        return duckLeftPixel;
+
+        if  (duckLeftPixel < 0) {
+            duckPosition = 3;
+        }
+
+        else if (duckLeftPixel > 220) {
+            duckPosition = 2;
+        }
+
+        else {
+            duckPosition = 1;
+        }
+        return calculateDriveInches(duckPosition);
+    }
+
+    private double calculateDriveInches(double duckPosition) {
+        //possibly change to void statement to just drive
+        //find a way to insert transport.setposition
+
+        double deliverPosition = 0;
+
+        if (duckPosition == 1) {
+            //Insert Measurements here
+            //find way to insert diagonal drive here
+        }
+
+        if (duckPosition == 2) {
+            //insert Measurements here
+            //find way to insert diagonal drive here
+        }
+
+        if (duckPosition == 3) {
+            //insert Measurements here
+            //find way to insert diagonal drive here
+        }
+
+        return deliverPosition;
     }
 
     public void deactivateTargets() {
