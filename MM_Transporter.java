@@ -23,6 +23,7 @@ public class MM_Transporter {
     private final double SCORE_POSITION = 0;
 
     // Constructor
+
     public MM_Transporter(LinearOpMode opMode, MM_Slide slide) {
         this.opMode = opMode;
         this.slide = slide;
@@ -55,4 +56,9 @@ public class MM_Transporter {
         opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
     }
+
+    public void scoreFreight() {
+        transport.setPosition(SCORE_POSITION);
+    }
 }
+

@@ -18,7 +18,7 @@ public class MM_Ducker {
 
     private ElapsedTime runtime = new ElapsedTime();
     static final double WHEEL_DIAMETER_INCHES = 4.0;
-    static final double MOTOR_POWER = 0.69;
+    static final double MOTOR_POWER = 1.00;
     private DcMotor DuckerMotor= null;
 
     // Constructor

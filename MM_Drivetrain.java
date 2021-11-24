@@ -29,9 +29,9 @@ public class MM_Drivetrain {
 
     static final double WHEEL_DIAMETER = 0;   // set this & use for calculating circumference
     static final double WHEEL_CIRCUMFERENCE = 0;   // use this to calculate ticks/inch
-    static final double TICKS_PER_INCH = (1120 / 12.3684);   //odometry wheel ticks = 1440
-    static final double DRIVE_SPEED = 0.4;
-    static final double ANGLE_THRESHOLD = 2;
+    static final double TICKS_PER_INCH = (537.7 / 12.3684);   //odometry wheel ticks = 1440
+    static final double DRIVE_SPEED = 0.2;
+    static final double ANGLE_THRESHOLD = 1;
 
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -95,10 +95,10 @@ public class MM_Drivetrain {
         }
 
         if (slowMode) {
-            flPower = flPower/3;
-            frPower = frPower/3;
-            blPower = blPower/3;
-            brPower = brPower/3;
+            flPower = flPower/2;
+            frPower = frPower/2;
+            blPower = blPower/2;
+            brPower = brPower/2;
         }
         opMode.telemetry.addData("Slowmode", slowMode);
         opMode.telemetry.addData("SlowmodeIH", slowModeIH);
@@ -138,7 +138,62 @@ public class MM_Drivetrain {
         switchEncoderMode(true);
 
     }
-/*
+    public void rotate(double targetHeading, double timeoutTime) {
+
+        double robotHeading;
+        double headingError;
+        boolean lookingForTarget = true;
+
+
+
+
+        while (lookingForTarget) {
+
+            //get heading value from gyro
+            robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+
+            headingError = targetHeading - robotHeading;
+
+            //find error
+            if (headingError > 180) {
+                headingError -= 360;
+            }
+
+            else if (headingError < -180) {
+                headingError += 360;
+            }
+
+            //determine whether the angle error is within threshold set
+            if (headingError > ANGLE_THRESHOLD){
+                frontLeftDrive.setPower(-DRIVE_SPEED);
+                backLeftDrive.setPower(-DRIVE_SPEED);
+                frontRightDrive.setPower(DRIVE_SPEED);
+                backRightDrive.setPower(DRIVE_SPEED);
+                opMode.telemetry.addData("Target Heading ", targetHeading);
+                opMode.telemetry.addData("Robot Heading Error", headingError);
+                opMode.telemetry.addData("Actual Robot Heading", gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle);
+                opMode.telemetry.update();
+            }
+
+            else if (headingError < -ANGLE_THRESHOLD){
+                frontLeftDrive.setPower(DRIVE_SPEED);
+                backLeftDrive.setPower(DRIVE_SPEED);
+                frontRightDrive.setPower(-DRIVE_SPEED);
+                backRightDrive.setPower(-DRIVE_SPEED);
+                opMode.telemetry.addData("Target Heading ", targetHeading);
+                opMode.telemetry.addData("Robot Heading Error", headingError);
+                opMode.telemetry.addData("Actual Robot Heading", gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle);
+                opMode.telemetry.update();
+            }
+
+            else {
+                lookingForTarget = false;
+                stop();
+            }
+
+        }
+
+    }
     public void strafeRightInches(double Inches, double timeoutTime) {
 
         setTargetPosition(Inches);
@@ -167,9 +222,9 @@ public class MM_Drivetrain {
 
         switchEncoderMode(true);
 
-    }*/
+    }
 
-    public void diagonalDriveInches (double forwardInches, double rightInches, double timeoutTime) {
+    public void diagonalDriveInches (double forwardInches, double leftInches, double timeoutTime) {
 
         double hypDistance;
         double targetHeading;
@@ -179,9 +234,9 @@ public class MM_Drivetrain {
 
         robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
 
-        hypDistance = (Math.hypot(forwardInches, rightInches));
+        hypDistance = (Math.hypot(forwardInches, leftInches));
 
-        targetHeading = Math.toDegrees(Math.atan2(rightInches, forwardInches));
+        targetHeading = Math.toDegrees(Math.atan2(leftInches, forwardInches));
 
 
         while (lookingForTarget) {
@@ -234,6 +289,22 @@ public class MM_Drivetrain {
 
         driveForwardInches(hypDistance, timeoutTime);
 
+    }
+
+    public void deliveryDrive(double duckPosition) {
+
+        double forwardInches = 0;
+
+        if (duckPosition == 1) {
+            forwardInches = 15.5;
+        }
+
+        if (duckPosition == 2 || duckPosition == 3) {
+            forwardInches = 15.25;
+        }
+
+        driveForwardInches(forwardInches, 5);
+        //diagonalDriveInches(0, -23, 7);
     }
 
 

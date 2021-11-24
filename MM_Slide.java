@@ -198,6 +198,31 @@ public class MM_Slide {
         }
     }
 
+    public void goToPositionAuto(int position) {
+        if (isTriggered(topStop)) {
+            arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            arm.setPower(0);
+
+        } else if (levelOne == 3 && opMode.gamepad2.x) {  // decided not to dump at level 1
+            levelOne = 0;  // allow flip before doing down, but not going up
+        } else {
+            arm.setTargetPosition(position);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            setHeadedUp();
+
+            if (headedUp) {
+                if (shockAbsorberEngaged) { // lift shock absorber before starting up
+                    shockAbsorber.setPosition(1);
+                    shockAbsorberEngaged = false;
+                }
+                arm.setPower(UP_POWER);
+            } else {
+                arm.setPower(DOWN_POWER);
+            }
+        }
+    }
+
     public int getSlidePosition() {
         return arm.getCurrentPosition();
     }

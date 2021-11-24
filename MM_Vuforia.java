@@ -54,10 +54,10 @@ public class MM_Vuforia {
         tfodInit();
     }
 
-    public double findDeliveryPosition() {
+    public int findDuckPosition() {
         //possibly change to void statement to just drive
         double duckLeftPixel = -1;
-        double duckPosition = 0;
+        int duckPosition = 0;
         runtime.reset();
 
         while ((runtime.seconds() < 3) && duckLeftPixel < 0) {
@@ -83,32 +83,10 @@ public class MM_Vuforia {
         else {
             duckPosition = 1;
         }
-        return calculateDriveInches(duckPosition);
+        return duckPosition;
     }
 
-    private double calculateDriveInches(double duckPosition) {
-        //possibly change to void statement to just drive
-        //find a way to insert transport.setposition
 
-        double deliverPosition = 0;
-
-        if (duckPosition == 1) {
-            //Insert Measurements here
-            //find way to insert diagonal drive here
-        }
-
-        if (duckPosition == 2) {
-            //insert Measurements here
-            //find way to insert diagonal drive here
-        }
-
-        if (duckPosition == 3) {
-            //insert Measurements here
-            //find way to insert diagonal drive here
-        }
-
-        return deliverPosition;
-    }
 
     public void deactivateTargets() {
         targets.deactivate();
