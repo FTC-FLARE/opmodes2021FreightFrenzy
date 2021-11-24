@@ -139,16 +139,11 @@ public class MM_Drivetrain {
 
     }
     public void rotate(double targetHeading, double timeoutTime) {
-
         double robotHeading;
         double headingError;
         boolean lookingForTarget = true;
 
-
-
-
         while (lookingForTarget) {
-
             //get heading value from gyro
             robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
 
@@ -190,12 +185,9 @@ public class MM_Drivetrain {
                 lookingForTarget = false;
                 stop();
             }
-
         }
-
     }
     public void strafeRightInches(double Inches, double timeoutTime) {
-
         setTargetPosition(Inches);
 
         switchEncoderMode(false);
@@ -209,8 +201,8 @@ public class MM_Drivetrain {
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutTime) && (frontLeftDrive.isBusy() && frontRightDrive.isBusy()) && (backLeftDrive.isBusy() && backRightDrive.isBusy())) {
 
             // Display it for the driver.
-            opMode.telemetry.addData("Path1", "Running to %7d ", Inches);
-            opMode.telemetry.addData("Path2", "Running at %7d :%7d %7d %7d",
+            opMode.telemetry.addData("Drive Inches", "Running to %7f ", Inches);
+            opMode.telemetry.addData("Current Encoders", "Running at %7d :%7d %7d %7d",
                     frontLeftDrive.getCurrentPosition(),
                     frontRightDrive.getCurrentPosition(),
                     backLeftDrive.getCurrentPosition(),
@@ -221,7 +213,6 @@ public class MM_Drivetrain {
         stop();
 
         switchEncoderMode(true);
-
     }
 
     public void diagonalDriveInches (double forwardInches, double leftInches, double timeoutTime) {
