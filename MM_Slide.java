@@ -39,7 +39,7 @@ public class MM_Slide {
 
     private double UP_POWER = 1;
     private double DOWN_POWER = .6;
-    private int SLEEP_TIME = 1500;
+//    private int SLEEP_TIME = 1500;
 
     private TransportPosition selectedPosition = TransportPosition.COLLECT;
 
@@ -81,6 +81,8 @@ public class MM_Slide {
                 if (!isTriggered(topStop)){
                     arm.setPower(opMode.gamepad2.right_trigger);
                     // add magnet logic
+                }else {
+                    arm.setPower(0);
                 }
             }
             headedUp = true;
@@ -153,11 +155,16 @@ public class MM_Slide {
                 goToPosition(TransportPosition.LEVEL1_PART_2.ticks);
                 headedUp = false;
 
-            } else if (levelOne == 2 && !arm.isBusy()) {
-                levelOne = 3;
-                headedUp = false;
-            } else if (!opMode.gamepad2.b && !opMode.gamepad2.y && !opMode.gamepad2.x && !opMode.gamepad2.right_stick_button) {
-                isHandled = false;
+            }else {
+                if(isTriggered(topStop)){
+                    arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    arm.setPower(0);
+                } else if (levelOne == 2 && !arm.isBusy()) {
+                    levelOne = 3;
+                    headedUp = false;
+                } else if (!opMode.gamepad2.b && !opMode.gamepad2.y && !opMode.gamepad2.x && !opMode.gamepad2.right_stick_button) {
+                    isHandled = false;
+                }
             }
         }
 
