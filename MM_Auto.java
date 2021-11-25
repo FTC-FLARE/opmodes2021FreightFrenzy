@@ -29,14 +29,13 @@ public class MM_Auto extends LinearOpMode {
 
         int duckLocation = robot.vuforia.findDuckPosition();
         robot.drivetrain.deliveryDrive(duckLocation);
-        robot.drivetrain.strafeRightInches(23, 4);
+        robot.drivetrain.strafeRightInches(27, 4);
 
         robot.drivetrain.rotate(178, 30);
 
-/*
+
         robot.slide.goToPositionAuto(duckLocation);
-        robot.transporter.scoreFreight();
-*/
+
 
 
         //robot.ducker.DuckerAuto(2);`

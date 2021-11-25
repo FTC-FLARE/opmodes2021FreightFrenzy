@@ -38,7 +38,7 @@ public class MM_Slide {
     private Servo shockAbsorber = null;
 
     private double UP_POWER = 1;
-    private double DOWN_POWER = .6;
+    private double DOWN_POWER = 1;
 //    private int SLEEP_TIME = 1500;
 
     private TransportPosition selectedPosition = TransportPosition.COLLECT;
@@ -204,18 +204,24 @@ public class MM_Slide {
             }
         }
     }
+    public void goToPositionAuto(int duckPosition) {
+        int position = TransportPosition.LEVEL3.ticks;
 
-    public void goToPositionAuto(int position) {
+        if(duckPosition == 1){
+            position = TransportPosition.LEVEL1_PART_1.ticks;
+        }else if(duckPosition == 2) {
+            position = TransportPosition.LEVEL2.ticks;
+        }
+
         if (isTriggered(topStop)) {
             arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             arm.setPower(0);
 
-        } else if (levelOne == 3 && opMode.gamepad2.x) {  // decided not to dump at level 1
-            levelOne = 0;  // allow flip before doing down, but not going up
+//        } else if (levelOne == 3 && opMode.gamepad2.x) {  // decided not to dump at level 1
+//            levelOne = 0;  // allow flip before doing down, but not going up
         } else {
             arm.setTargetPosition(position);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
             setHeadedUp();
 
             if (headedUp) {
@@ -227,6 +233,13 @@ public class MM_Slide {
             } else {
                 arm.setPower(DOWN_POWER);
             }
+            while (opMode.opModeIsActive() && arm.isBusy()){
+                transporter.controlFlip();
+                opMode.telemetry.addData("slide moving - encoder count", arm.getCurrentPosition());
+                opMode.telemetry.update();
+            }
+            transporter.scoreFreight();
+            opMode.sleep(2000);
         }
     }
 
