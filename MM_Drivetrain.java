@@ -283,20 +283,26 @@ public class MM_Drivetrain {
 
     }
 
-    public void deliveryDrive(double duckPosition) {
+    public void driveToHub(double duckPosition) {
 
-        double forwardInches = 0;
+        double forwardInches = -6;
 
+        driveForwardInches(12, 5);
+        strafeRightInches(27, 4);
+        rotate(178, 30);
+
+        //determine driving position
         if (duckPosition == 1) {
-            forwardInches = 15.5;
+            forwardInches = -9;
         }
 
-        if (duckPosition == 2 || duckPosition == 3) {
-            forwardInches = 15.25;
+        else if (duckPosition == 2) {
+            forwardInches = -6.75;
         }
 
-        driveForwardInches(forwardInches, 5);
-        //diagonalDriveInches(0, -23, 7);
+        driveForwardInches(forwardInches, 3);
+
+
     }
 
 

@@ -4,10 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-
 @Autonomous(name="MM_Auto", group="MM")
 //@Disabled
 public class MM_Auto extends LinearOpMode {
@@ -28,14 +24,15 @@ public class MM_Auto extends LinearOpMode {
         runtime.reset();
 
         int duckLocation = robot.vuforia.findDuckPosition();
-        robot.drivetrain.deliveryDrive(duckLocation);
-        robot.drivetrain.strafeRightInches(27, 4);
+        telemetry.addData("Duck Location", duckLocation);
+        sleep(2000);
+
+        robot.drivetrain.driveToHub(duckLocation);
 
         robot.drivetrain.rotate(178, 30);
 
 
         robot.slide.goToPositionAuto(duckLocation);
-
 
 
         //robot.ducker.DuckerAuto(2);`

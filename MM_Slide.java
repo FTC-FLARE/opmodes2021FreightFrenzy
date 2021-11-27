@@ -240,6 +240,7 @@ public class MM_Slide {
             }
             transporter.scoreFreight();
             opMode.sleep(2000);
+/*            goToPosition(TransportPosition.COLLECT.ticks);*/
         }
     }
 
