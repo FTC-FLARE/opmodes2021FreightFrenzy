@@ -29,18 +29,6 @@ public class MM_Auto_Blue_Warehouse extends LinearOpMode {
 
         robot.slide.goToPositionAuto(duckLocation);
 
-
-        if (robot.vuforia.targetFound()) {
-            telemetry.addLine("Target is Found");
-
-            telemetry.addData("X", "position (%.2f)", robot.vuforia.getX());
-            telemetry.addData("Y", "position (%.2f)", robot.vuforia.getY());
-            telemetry.addData("Heading", "(%.2f) degrees", robot.vuforia.getHeading());
-        }
-        else {
-            telemetry.addLine("No target found.");
-        }
-
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.update();
 

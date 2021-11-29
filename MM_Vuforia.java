@@ -184,3 +184,15 @@ public class MM_Vuforia {
     }
 }
 
+/*
+        if (robot.vuforia.targetFound()) {
+                telemetry.addLine("Target is Found");
+
+                telemetry.addData("X", "position (%.2f)", robot.vuforia.getX());
+                telemetry.addData("Y", "position (%.2f)", robot.vuforia.getY());
+                telemetry.addData("Heading", "(%.2f) degrees", robot.vuforia.getHeading());
+                }
+                else {
+                telemetry.addLine("No target found.");
+                }
+*/

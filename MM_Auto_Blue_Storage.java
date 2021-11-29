@@ -24,7 +24,7 @@ public class MM_Auto_Blue_Storage extends LinearOpMode {
         runtime.reset();
 
         int duckLocation = robot.vuforia.findDuckPosition();
-        //establish blue storage side gottohub drive
+
         robot.drivetrain.driveToHub("Blue Storage", duckLocation);
 
         robot.vuforia.deactivateTargets();
