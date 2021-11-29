@@ -283,25 +283,68 @@ public class MM_Drivetrain {
 
     }
 
-    public void driveToHub(double duckPosition) {
+    public void driveToHub(String startPosition, double duckPosition) {
 
-        double forwardInches = -6;
+        double forwardInches = 0;
+        double strafeInches = 0;
+
+
+        if (startPosition == "Blue Warehouse") {
+
+            forwardInches = -6;
+            strafeInches = 27;
+
+            //determine driving position
+            if (duckPosition == 1) {
+                forwardInches = -9;
+            } else if (duckPosition == 2) {
+                forwardInches = -6.75;
+            }
+        }
+
+        if (startPosition == "Blue Storage") {
+
+            forwardInches = 0;
+            strafeInches = 0;
+
+            //determine driving position (MEASURE)
+            if (duckPosition == 1) {
+                forwardInches = 0;
+            } else if (duckPosition == 2) {
+                forwardInches = 0;
+            }
+        }
+
+        if (startPosition == "Red Warehouse") {
+
+            forwardInches = 0;
+            strafeInches = 0;
+
+            //determine driving position (MEASURE)
+            if (duckPosition == 1) {
+                forwardInches = 0;
+            } else if (duckPosition == 2) {
+                forwardInches = 0;
+            }
+        }
+
+        if (startPosition == "Red Storage") {
+
+            forwardInches = 0;
+            strafeInches = 0;
+
+            //determine driving position (MEASURE)
+            if (duckPosition == 1) {
+                forwardInches = 0;
+            } else if (duckPosition == 2) {
+                forwardInches = 0;
+            }
+        }
 
         driveForwardInches(12, 5);
-        strafeRightInches(27, 4);
-        rotate(178, 30);
-
-        //determine driving position
-        if (duckPosition == 1) {
-            forwardInches = -9;
-        }
-
-        else if (duckPosition == 2) {
-            forwardInches = -6.75;
-        }
-
+        strafeRightInches(strafeInches, 5);
+        rotate(178.9, 7);
         driveForwardInches(forwardInches, 3);
-
 
     }
 
