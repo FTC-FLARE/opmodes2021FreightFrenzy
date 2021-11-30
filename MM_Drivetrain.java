@@ -28,7 +28,7 @@ public class MM_Drivetrain {
     static final double WHEEL_CIRCUMFERENCE = 0;   // use this to calculate ticks/inch
     static final double TICKS_PER_INCH = (537.7 / 12.3684);   //odometry wheel ticks = 1440
     static final double DRIVE_SPEED = 0.2;
-    static final double ANGLE_THRESHOLD = 1;
+    static final double ANGLE_THRESHOLD = 0.25;
 
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -188,6 +188,48 @@ public class MM_Drivetrain {
         }
 
     }
+
+    public void rotate180() {
+
+        double robotHeading;
+        double targetHeading;
+        boolean lookingForTarget = true;
+
+        robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+        targetHeading = 180 + robotHeading;
+
+        if (targetHeading > 180) {
+            targetHeading -= 360;
+        }
+
+        if (targetHeading > 179.75 || targetHeading < -179.75) {
+            while (opMode.opModeIsActive() && lookingForTarget) {
+                robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+
+                frontLeftDrive.setPower(-DRIVE_SPEED);
+                backLeftDrive.setPower(-DRIVE_SPEED);
+                frontRightDrive.setPower(DRIVE_SPEED);
+                backRightDrive.setPower(DRIVE_SPEED);
+                opMode.telemetry.addData("Target Heading ", targetHeading);
+                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
+                opMode.telemetry.update();
+
+                if (robotHeading < -179.75 || robotHeading > 179.75) {
+                    lookingForTarget = false;
+                }
+            }
+        }
+        else {
+            rotate(targetHeading, 7);
+        }
+
+
+
+
+
+
+
+    }
     public void strafeRightInches(double Inches, double timeoutTime) {
 
         setTargetPosition(Inches);
@@ -292,58 +334,33 @@ public class MM_Drivetrain {
         if (startPosition == "Blue Warehouse") {
 
             forwardInches = -6;
-            strafeInches = 27;
+            strafeInches = 29.5;
 
             //determine driving position
             if (duckPosition == 1) {
                 forwardInches = -7.75;
             } else if (duckPosition == 2) {
-                forwardInches = -6.75;
+                forwardInches = -6.5;
             }
         }
 
         if (startPosition == "Blue Storage") {
 
-            forwardInches = 0;
-            strafeInches = -20;
+            forwardInches = -3;
+            strafeInches = -29.5;
 
             //determine driving position (MEASURE)
             if (duckPosition == 1) {
                 forwardInches = 0;
             } else if (duckPosition == 2) {
-                forwardInches = 0;
+                forwardInches = -4;
             }
         }
 
-        if (startPosition == "Red Warehouse") {
-
-            forwardInches = 0;
-            strafeInches = 0;
-
-            //determine driving position (MEASURE)
-            if (duckPosition == 1) {
-                forwardInches = 0;
-            } else if (duckPosition == 2) {
-                forwardInches = 0;
-            }
-        }
-
-        if (startPosition == "Red Storage") {
-
-            forwardInches = 0;
-            strafeInches = 0;
-
-            //determine driving position (MEASURE)
-            if (duckPosition == 1) {
-                forwardInches = 0;
-            } else if (duckPosition == 2) {
-                forwardInches = 0;
-            }
-        }
 
         driveForwardInches(12, 5);
         strafeRightInches(strafeInches, 5);
-        rotate(178.9, 7);
+        rotate(179.74, 7);
         driveForwardInches(forwardInches, 3);
 
     }

@@ -17,6 +17,7 @@ public class MM_Ducker {
     public MM_Ducker(LinearOpMode opMode){
         this.opMode = opMode;
         DuckerMotor = opMode.hardwareMap.get(DcMotor.class, "Ducker");
+        DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void DuckerAuto(double timeoutTime) {
