@@ -213,13 +213,37 @@ public class MM_Slide {
             position = TransportPosition.LEVEL2.ticks;
         }
 
+
         if (isTriggered(topStop)) {
             arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             arm.setPower(0);
 
 //        } else if (levelOne == 3 && opMode.gamepad2.x) {  // decided not to dump at level 1
 //            levelOne = 0;  // allow flip before doing down, but not going up
-        } else {
+        } else if(duckPosition == 1){
+            arm.setTargetPosition(position);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            setHeadedUp();
+            if (headedUp){
+                if(shockAbsorberEngaged){
+                    shockAbsorber.setPosition(1);
+                    shockAbsorberEngaged = false;
+                }
+                arm.setPower(UP_POWER);
+            }else {
+                arm.setPower(DOWN_POWER);
+            }
+            while(opMode.opModeIsActive() && arm.isBusy()){
+                transporter.controlFlip();
+            }
+            arm.setTargetPosition(TransportPosition.LEVEL1_PART_2.ticks);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            while (opMode.opModeIsActive() && arm.isBusy()){
+            }
+            transporter.scoreFreight();
+            opMode.sleep(2000);
+
+        } else if(duckPosition == 2 || duckPosition == 3){
             arm.setTargetPosition(position);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             setHeadedUp();

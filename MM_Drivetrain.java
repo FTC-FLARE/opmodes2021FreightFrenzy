@@ -338,7 +338,7 @@ public class MM_Drivetrain {
 
             //determine driving position
             if (duckPosition == 1) {
-                forwardInches = -7.75;
+                forwardInches = -8;
             } else if (duckPosition == 2) {
                 forwardInches = -6.5;
             }
@@ -351,7 +351,7 @@ public class MM_Drivetrain {
 
             //determine driving position (MEASURE)
             if (duckPosition == 1) {
-                forwardInches = 0;
+                forwardInches = -7.75;
             } else if (duckPosition == 2) {
                 forwardInches = -4;
             }
