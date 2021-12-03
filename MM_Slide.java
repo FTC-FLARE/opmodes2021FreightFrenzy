@@ -204,6 +204,40 @@ public class MM_Slide {
             }
         }
     }
+
+    public void autoCollectPosition(double duckPosition) {
+
+        if (duckPosition == 1) {
+            arm.setTargetPosition(TransportPosition.LEVEL1_PART_1.ticks);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm.setPower(UP_POWER);
+            setHeadedUp();
+            while (arm.isBusy()) {
+
+            }
+        }
+        arm.setTargetPosition(TransportPosition.COLLECT.ticks);
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setHeadedUp();
+        if (headedUp){
+            if(shockAbsorberEngaged){
+                shockAbsorber.setPosition(1);
+                shockAbsorberEngaged = false;
+            }
+            arm.setPower(UP_POWER);
+        }else {
+            arm.setPower(DOWN_POWER);
+        }
+        while(opMode.opModeIsActive() && arm.isBusy()){
+            transporter.controlFlip();
+        }
+        if (isTriggered(bottomStop)) {
+            shockAbsorber.setPosition(0);
+//                    opMode.sleep(SLEEP_TIME);
+            shockAbsorberEngaged = true;
+        }
+    }
+
     public void goToPositionAuto(int duckPosition) {
         int position = TransportPosition.LEVEL3.ticks;
 
@@ -241,7 +275,7 @@ public class MM_Slide {
             while (opMode.opModeIsActive() && arm.isBusy()){
             }
             transporter.scoreFreight();
-            opMode.sleep(2000);
+            opMode.sleep(1500);
 
         } else if(duckPosition == 2 || duckPosition == 3){
             arm.setTargetPosition(position);
@@ -263,7 +297,7 @@ public class MM_Slide {
                 opMode.telemetry.update();
             }
             transporter.scoreFreight();
-            opMode.sleep(2000);
+            opMode.sleep(1500);
 /*            goToPosition(TransportPosition.COLLECT.ticks);*/
         }
     }

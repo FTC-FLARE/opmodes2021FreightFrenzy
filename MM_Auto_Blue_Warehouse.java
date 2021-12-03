@@ -31,7 +31,8 @@ public class MM_Auto_Blue_Warehouse extends LinearOpMode {
 
         sleep(2000);
 
-        robot.slide.goToPositionAuto(1);
+        robot.slide.autoCollectPosition(duckLocation);
+        robot.drivetrain.storagePark(true, duckLocation, false);
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.update();

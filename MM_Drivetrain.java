@@ -27,7 +27,7 @@ public class MM_Drivetrain {
     static final double WHEEL_DIAMETER = 0;   // set this & use for calculating circumference
     static final double WHEEL_CIRCUMFERENCE = 0;   // use this to calculate ticks/inch
     static final double TICKS_PER_INCH = (537.7 / 12.3684);   //odometry wheel ticks = 1440
-    static final double DRIVE_SPEED = 0.2;
+    static final double DRIVE_SPEED = 0.3;
     static final double ANGLE_THRESHOLD = 0.25;
 
     public MM_Drivetrain(LinearOpMode opMode) {
@@ -159,10 +159,10 @@ public class MM_Drivetrain {
 
             //determine whether the angle error is within threshold set
             if (headingError > ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(-DRIVE_SPEED);
-                backLeftDrive.setPower(-DRIVE_SPEED);
-                frontRightDrive.setPower(DRIVE_SPEED);
-                backRightDrive.setPower(DRIVE_SPEED);
+                frontLeftDrive.setPower(-0.2);
+                backLeftDrive.setPower(-0.2);
+                frontRightDrive.setPower(0.2);
+                backRightDrive.setPower(0.2);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
                 opMode.telemetry.addData("Actual Robot Heading", robotHeading);
@@ -170,16 +170,15 @@ public class MM_Drivetrain {
             }
 
             else if (headingError < -ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(DRIVE_SPEED);
-                backLeftDrive.setPower(DRIVE_SPEED);
-                frontRightDrive.setPower(-DRIVE_SPEED);
-                backRightDrive.setPower(-DRIVE_SPEED);
+                frontLeftDrive.setPower(0.2);
+                backLeftDrive.setPower(0.2);
+                frontRightDrive.setPower(-0.2);
+                backRightDrive.setPower(-0.2);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
                 opMode.telemetry.addData("Actual Robot Heading", robotHeading);
                 opMode.telemetry.update();
             }
-
             else {
                 lookingForTarget = false;
                 stop();
@@ -291,10 +290,10 @@ public class MM_Drivetrain {
 
             //determine whether the angle error is within threshold set
             if (headingError > ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(-DRIVE_SPEED);
-                backLeftDrive.setPower(-DRIVE_SPEED);
-                frontRightDrive.setPower(DRIVE_SPEED);
-                backRightDrive.setPower(DRIVE_SPEED);
+                frontLeftDrive.setPower(-0.2);
+                backLeftDrive.setPower(-0.2);
+                frontRightDrive.setPower(0.2);
+                backRightDrive.setPower(0.2);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
                 opMode.telemetry.addData("Actual Robot Heading", robotHeading);
@@ -303,10 +302,10 @@ public class MM_Drivetrain {
             }
 
             else if (headingError < -ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(DRIVE_SPEED);
-                backLeftDrive.setPower(DRIVE_SPEED);
-                frontRightDrive.setPower(-DRIVE_SPEED);
-                backRightDrive.setPower(-DRIVE_SPEED);
+                frontLeftDrive.setPower(0.2);
+                backLeftDrive.setPower(0.2);
+                frontRightDrive.setPower(-0.2);
+                backRightDrive.setPower(-0.2);
                 opMode.telemetry.addData("Target Heading ", targetHeading);
                 opMode.telemetry.addData("Robot Heading Error", headingError);
                 opMode.telemetry.addData("Actual Robot Heading", robotHeading);
@@ -390,20 +389,53 @@ public class MM_Drivetrain {
         backRightDrive.setTargetPosition(backRightTargetInches);
     }
 
-    public void storagePark(boolean blueSide) {
+    public void storagePark(boolean blueSide, double duckPosition, boolean storageStart) {
 
         double targetHeading;
+        double secondTargetHeading;
+        double forwardInches;
+
+        forwardInches = 50;
 
         if (blueSide) {
-            targetHeading = -90;
+
+            if (storageStart) {
+                forwardInches = 55;
+            }
+
+            targetHeading = -80;;
+
+            if (duckPosition == 1) {
+                targetHeading = -82.75;
+            }
+
+            else if (duckPosition == 3){
+                targetHeading = -78;
+            }
+            secondTargetHeading = -90;
         }
 
         else {
-            targetHeading = 90;
+
+            if (!storageStart) {
+                forwardInches = 55;
+            }
+
+            targetHeading = 100;
+            secondTargetHeading = 90;
+
+            if (duckPosition == 1) {
+                targetHeading = 97.5;
+            }
+
+            else if (duckPosition == 3) {
+                targetHeading = 102.5;
+            }
         }
 
         rotate(targetHeading, 5);
-        driveForwardInches(32, 7);
+        driveForwardInches(forwardInches, 7);
+        rotate(secondTargetHeading, 3);
 
     }
 
