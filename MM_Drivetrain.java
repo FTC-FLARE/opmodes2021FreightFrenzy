@@ -56,7 +56,9 @@ public class MM_Drivetrain {
         frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
 
+    public void initalizeGyro() {
         BNO055IMU.Parameters gyroParameters = new BNO055IMU.Parameters();
         gyroParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         gyroParameters.calibrationDataFile = "BNO055IMUCalibration.json";
@@ -410,7 +412,7 @@ public class MM_Drivetrain {
             }
 
             else if (duckPosition == 3){
-                targetHeading = -78;
+                targetHeading = -80;
             }
             secondTargetHeading = -90;
         }

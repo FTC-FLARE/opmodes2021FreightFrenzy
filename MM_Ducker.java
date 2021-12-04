@@ -33,8 +33,11 @@ public class MM_Ducker {
     public void DuckManual() {
         if (opMode.gamepad1.right_bumper) {
              DuckerMotor.setPower(MOTOR_POWER);
+        } else if (opMode.gamepad1.left_bumper) {
+            DuckerMotor.setPower(-MOTOR_POWER);
         } else {
             DuckerMotor.setPower(0);
         }
+
     }
 }

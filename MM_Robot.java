@@ -22,5 +22,13 @@ public class MM_Robot {
         slide = new MM_Slide(opMode);
         ducker = new MM_Ducker(opMode);
         vuforia = new MM_Vuforia(opMode);
+        drivetrain.initalizeGyro();
+    }
+
+    public void teleOpInit() {
+        drivetrain = new MM_Drivetrain(opMode);
+        collector = new MM_Collector(opMode);
+        slide = new MM_Slide(opMode);
+        ducker = new MM_Ducker(opMode);
     }
 }

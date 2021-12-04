@@ -29,6 +29,9 @@ public class MM_Auto_Red_Warehouse extends LinearOpMode {
 
         robot.slide.goToPositionAuto(duckLocation);
 
+        robot.slide.autoCollectPosition(duckLocation);
+        robot.drivetrain.storagePark(false, duckLocation, false);
+
         robot.vuforia.deactivateTargets();
         robot.vuforia.deactivateTfod();
     }

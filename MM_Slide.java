@@ -38,7 +38,7 @@ public class MM_Slide {
     private Servo shockAbsorber = null;
 
     private double UP_POWER = 1;
-    private double DOWN_POWER = 0.75;
+    private double DOWN_POWER = 0.65;
 //    private int SLEEP_TIME = 1500;
 
     private TransportPosition selectedPosition = TransportPosition.COLLECT;
