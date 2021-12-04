@@ -341,7 +341,7 @@ public class MM_Drivetrain {
             if (duckPosition == 1) {
                 forwardInches = -8;
             } else if (duckPosition == 2) {
-                forwardInches = -5.75;
+                forwardInches = -4.5;
             }
         }
 
@@ -352,9 +352,9 @@ public class MM_Drivetrain {
 
             //determine driving position (MEASURE)
             if (duckPosition == 1) {
-                forwardInches = -7.75;
+                forwardInches = -7.25;
             } else if (duckPosition == 2) {
-                forwardInches = -4.5;
+                forwardInches = -3.5;
             }
         }
 
@@ -420,24 +420,45 @@ public class MM_Drivetrain {
         else {
 
             if (!storageStart) {
-                forwardInches = 55;
+                forwardInches = 47;
             }
 
-            targetHeading = 100;
+            else {
+                forwardInches = 49;
+            }
+
+            targetHeading = 78;
             secondTargetHeading = 90;
 
             if (duckPosition == 1) {
-                targetHeading = 97.5;
+                targetHeading = 77;
             }
 
             else if (duckPosition == 3) {
-                targetHeading = 102.5;
+                targetHeading = 80;
             }
         }
 
         rotate(targetHeading, 5);
         driveForwardInches(forwardInches, 7);
         rotate(secondTargetHeading, 3);
+
+    }
+
+    public void outOfTheWay(boolean blueSide) {
+
+        double strafeInches;
+
+        if (blueSide) {rotate(-90, 5);
+        strafeInches = 16;
+        }
+
+        else { rotate(90, 5);
+        strafeInches = -16;
+        }
+
+        driveForwardInches(-24, 3);
+        strafeRightInches(strafeInches, 4);
 
     }
 

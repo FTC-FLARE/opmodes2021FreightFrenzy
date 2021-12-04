@@ -4,9 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name="MM_Auto_Partial_Storage", group="MM")
+@Autonomous(name="MM_Blue_Warehouse_OOTW", group="MM")
 //@Disabled
-public class MM_Auto_Partial_Storage extends LinearOpMode {
+public class MM_Auto_Blue_Warehouse_OOTW extends LinearOpMode {
     private MM_Robot robot = new MM_Robot(this);
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -23,7 +23,18 @@ public class MM_Auto_Partial_Storage extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        robot.drivetrain.driveForwardInches(24, 4);
+        int duckLocation = robot.vuforia.findDuckPosition();
+        robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
+
+
+        robot.slide.goToPositionAuto(duckLocation);
+
+        robot.slide.autoCollectPosition(duckLocation);
+        robot.drivetrain.outOfTheWay(true);
+
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.update();
+
         robot.vuforia.deactivateTargets();
         robot.vuforia.deactivateTfod();
     }

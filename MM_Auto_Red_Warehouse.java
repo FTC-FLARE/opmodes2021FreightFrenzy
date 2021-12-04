@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name="MM_Auto_Red_Warehouse", group="MM")
+@Autonomous(name="MM_Red_Warehouse_Park", group="MM")
 //@Disabled
 public class MM_Auto_Red_Warehouse extends LinearOpMode {
     private MM_Robot robot = new MM_Robot(this);
