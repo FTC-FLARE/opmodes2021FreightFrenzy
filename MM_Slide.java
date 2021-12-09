@@ -275,7 +275,7 @@ public class MM_Slide {
             while (opMode.opModeIsActive() && arm.isBusy()){
             }
             transporter.scoreFreight();
-            opMode.sleep(1000);
+            opMode.sleep(1500);
 
         } else if(duckPosition == 2 || duckPosition == 3){
             arm.setTargetPosition(position);
@@ -297,7 +297,7 @@ public class MM_Slide {
                 opMode.telemetry.update();
             }
             transporter.scoreFreight();
-            opMode.sleep(1000);
+            opMode.sleep(1500);
 /*            goToPosition(TransportPosition.COLLECT.ticks);*/
         }
     }
