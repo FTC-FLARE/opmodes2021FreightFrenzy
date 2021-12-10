@@ -318,7 +318,7 @@ public class MM_Slide {
         levelOne = level;
     }
 
-    public boolean getHeadedUp(){
+    public boolean isHeadedUp(){
         return headedUp;
     }
     public void setHeadedUp(){

@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-// Any additional import statements will go here
 
 public class MM_Transporter {
     // this gives us access to all opMode information
@@ -18,18 +17,15 @@ public class MM_Transporter {
 
     private final double TRANSPORT_FLIP = 1550;
     private final double COLLECT_POSITION = 1;  // .7 works, but > .7 goes to 1 - why?
-    private final double FINISH_COLLECT_POSITION = .7;
     private final double CARRY_POSITION = .4;
     private final double SCORE_POSITION = 0;
 
     // Constructor
-
     public MM_Transporter(LinearOpMode opMode, MM_Slide slide) {
         this.opMode = opMode;
         this.slide = slide;
 
         transport = opMode.hardwareMap.get(Servo.class, "transport");
-//        transport.scaleRange(0, .8);
         transport.setPosition(COLLECT_POSITION);
 
         transportDown = opMode.hardwareMap.get(DistanceSensor.class, "transportDown");
@@ -39,17 +35,17 @@ public class MM_Transporter {
     public void controlFlip() {
         if (opMode.gamepad2.dpad_up) { // deposit freight
             transport.setPosition(SCORE_POSITION);
-            ((MM_TeleOp) opMode).robot.slide.setLevelOne(0);
+            slide.setLevelOne(0);
         } else if (opMode.gamepad2.dpad_down) {
             transport.setPosition(COLLECT_POSITION); // over-ride to collect position
 
         } else if (slide.getSlidePosition() > TRANSPORT_FLIP // cont'd
                 || slide.getLevelOne() > 1  // cont'd
-                || (transportUp.getDistance(DistanceUnit.CM) < 5 && (slide.getHeadedUp()))) {
+                || (seesBox(transportUp) && (slide.isHeadedUp()))) {
             transport.setPosition(CARRY_POSITION);
 
         } else if (slide.getLevelOne() < 2   // cont'd
-                && (transportDown.getDistance(DistanceUnit.CM) < 7 || (slide.getSlidePosition() < TRANSPORT_FLIP))) {
+                && (seesBox(transportDown) || (slide.getSlidePosition() < TRANSPORT_FLIP))) {
             transport.setPosition(COLLECT_POSITION);
         }
 
@@ -59,6 +55,19 @@ public class MM_Transporter {
 
     public void scoreFreight() {
         transport.setPosition(SCORE_POSITION);
+    }
+
+    public boolean seesBox(DistanceSensor distanceSensor) {
+
+        double checkDistance = 5;
+        if (distanceSensor == transportDown) {
+            checkDistance = 7;
+        }
+
+        if (distanceSensor.getDistance(DistanceUnit.CM) < checkDistance) {
+            return true;
+        }
+        return false;
     }
 }
 
