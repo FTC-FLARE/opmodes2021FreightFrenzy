@@ -25,7 +25,7 @@ import java.util.List;
 public class MM_Vuforia {
     private OpMode opMode;  // Give us access to the calling OpMode
 
-    //define constants
+    //define constants for field navigation
     private static final String VUFORIA_KEY = "AZ5woGn/////AAABmSDumo9pA0BDovmvaV5gG7wLT6ES1QrKcI14JsHiEtQ7Gb6e+KM8ILBQGt8hjfHFNwKixlUDQ6vuz0AdKiYelGz5KcfJ9UV4xCMuDxDGvzOqYIS46QLHeFtsx4c4EP5o5a+H4ZM4crit1cva6avYORJXAH4EYCNluvawI+qm7qOru223kxOmNw83qfl17h9ASLtxxZuZ6OiAnQEq0OsSJf5n43QzVRFI55ZYdVAq+7bSeBEMptf1ZbrzvAZWnq8diTq+ojaADlkeZloub6tSLn4OqqbVtnjk65dNVejK2nTY1y7j7v0BQAkqc0w6oMkg30ynxOoyGid1xjSDDEaS1DvbVjQO0ODZZ4O9v6C30dtQ";
     private static final float MM_PER_INCH = 25.4f;
     private static final float MM_TARGET_HEIGHT = 6 * MM_PER_INCH;
@@ -34,14 +34,13 @@ public class MM_Vuforia {
     private static final float ONE_AND_HALF_TILE = 36 * MM_PER_INCH;
 
     //declare webcam & instance variables
-    private WebcamName webcamName       = null;
+    private WebcamName webcam = null;
     private ElapsedTime runtime = new ElapsedTime();
 
     private OpenGLMatrix lastLocation   = null;
     private VuforiaLocalizer vLocalizer = null;
     private VuforiaTrackables targets   = null ;
     private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-
 
     private TFObjectDetector tfod;
     private static final String TFOD_MODEL_ASSET = "FreightFrenzy_BCDM.tflite";
@@ -74,19 +73,13 @@ public class MM_Vuforia {
 
         if  (duckLeftPixel < 0) {
             duckPosition = 3;
-        }
-
-        else if (duckLeftPixel > 220) {
+        } else if (duckLeftPixel > 220) {
             duckPosition = 2;
-        }
-
-        else {
+        } else {
             duckPosition = 1;
         }
         return duckPosition;
     }
-
-
 
     public void deactivateTargets() {
         targets.deactivate();
@@ -123,14 +116,14 @@ public class MM_Vuforia {
 
     private void vuforiaInit() {
         // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
-        webcamName = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
+        webcam = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
         int cameraMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 //         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = webcamName;  // We also indicate which camera we wish to use.
+        parameters.cameraName = webcam;  // We indicate which camera we wish to use.
         parameters.useExtendedTracking = false;  // Turn off Extended tracking.  Set this true if you want Vuforia to track beyond the target.
 
         vLocalizer = ClassFactory.getInstance().createVuforia(parameters);  //  Instantiate the Vuforia engine
