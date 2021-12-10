@@ -12,7 +12,7 @@ public class MM_Ducker {
     private ElapsedTime runtime = new ElapsedTime();
     static final double MOTOR_POWER = 1.00;
     private DcMotor DuckerMotor= null;
-
+    private final double TIMEOUT_TIME = 5;
     // Constructor
     public MM_Ducker(LinearOpMode opMode){
         this.opMode = opMode;
@@ -20,24 +20,43 @@ public class MM_Ducker {
         DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void DuckerAuto(double timeoutTime) {
+    public void autoSpinRed(boolean redSide) {
         runtime.reset();
-
-        while (opMode.opModeIsActive() && runtime.seconds() < timeoutTime) {
-            DuckerMotor.setPower(MOTOR_POWER);
+        if (redSide) {
+            spinRed();
+        } else {
+            spinBlue();
         }
 
+        while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
+            opMode.telemetry.addLine("Spinning Ducker");
+        }
+        stop();
+    }
+
+    public void manualSpin() {
+        if (opMode.gamepad1.right_bumper) {
+            spinBlue();
+        } else if (opMode.gamepad1.left_bumper) {
+            spinRed();
+        } else {
+            stop();
+        }
+    }
+
+    private void stop() {
         DuckerMotor.setPower(0);
     }
 
-    public void DuckManual() {
-        if (opMode.gamepad1.right_bumper) {
-             DuckerMotor.setPower(MOTOR_POWER);
-        } else if (opMode.gamepad1.left_bumper) {
-            DuckerMotor.setPower(-MOTOR_POWER);
-        } else {
-            DuckerMotor.setPower(0);
-        }
+    private void setPower(double motorPower) {
+        DuckerMotor.setPower(motorPower);
+    }
 
+    private void spinRed() {
+        setPower(-MOTOR_POWER);
+    }
+
+    private void spinBlue() {
+        setPower(MOTOR_POWER);
     }
 }

@@ -20,7 +20,7 @@ public class MM_TeleOp extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            robot.ducker.DuckManual();
+            robot.ducker.manualSpin();
             robot.drivetrain.driveWithSticks();
             robot.slide.runSlide();
             robot.collector.runCollector();
