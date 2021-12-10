@@ -15,7 +15,7 @@ public class MM_Auto_Blue_Warehouse_OOTW extends LinearOpMode {
         telemetry.addData("Status", "Wait for initialization");
         telemetry.update();
 
-        robot.init();
+        robot.autoInit();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();

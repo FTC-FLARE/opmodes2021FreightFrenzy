@@ -16,16 +16,13 @@ public class MM_Robot {
         this.opMode = opMode;
     }
 
-    public void init(){
-        drivetrain = new MM_Drivetrain(opMode);
-        collector = new MM_Collector(opMode);
-        slide = new MM_Slide(opMode);
-        ducker = new MM_Ducker(opMode);
+    public void autoInit(){
+        init();
         vuforia = new MM_Vuforia(opMode);
         drivetrain.initalizeGyro();
     }
 
-    public void teleOpInit() {
+    public void init() {
         drivetrain = new MM_Drivetrain(opMode);
         collector = new MM_Collector(opMode);
         slide = new MM_Slide(opMode);
