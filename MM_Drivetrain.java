@@ -4,7 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -12,66 +12,34 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 public class MM_Drivetrain {
     private LinearOpMode opMode;
 
-    private ElapsedTime runtime = new ElapsedTime();
+    private BNO055IMU gyro;
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
     private DcMotor frontLeftDrive = null;
     private DcMotor frontRightDrive = null;
 
-    public BNO055IMU gyro;
+    private ElapsedTime runtime = new ElapsedTime();
+
     private double ticks = 0;
-
     private boolean slowMode = false;
-    private boolean slowModeIH = false;
+    private boolean slowModeIsHandled = false;
+    private double headingError;
+    private double robotHeading;
+    private boolean lookingForTarget;
 
-    static final double WHEEL_DIAMETER = 0;   // set this & use for calculating circumference
-    static final double WHEEL_CIRCUMFERENCE = 0;   // use this to calculate ticks/inch
-    static final double TICKS_PER_INCH = (537.7 / 12.3684);   //odometry wheel ticks = 1440
+    private double flPower = 0;
+    private double frPower = 0;
+    private double blPower = 0;
+    private double brPower = 0;
+
+    //4 inch wheels
+    static final double TICKS_PER_INCH = (537.7 / 12.3684);  // odometry wheel ticks = 1440, 12.3684 is pi r^2
     static final double DRIVE_SPEED = 0.3;
     static final double ANGLE_THRESHOLD = 0.25;
 
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
-
-        frontLeftDrive = opMode.hardwareMap.get(DcMotor.class, "FLMotor");
-        frontRightDrive = opMode.hardwareMap.get(DcMotor.class, "FRMotor");
-        backLeftDrive = opMode.hardwareMap.get(DcMotor.class, "BLMotor");
-        backRightDrive = opMode.hardwareMap.get(DcMotor.class, "BRMotor");
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
-
-        frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void initalizeGyro() {
-        BNO055IMU.Parameters gyroParameters = new BNO055IMU.Parameters();
-        gyroParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        gyroParameters.calibrationDataFile = "BNO055IMUCalibration.json";
-
-        gyro = opMode.hardwareMap.get(BNO055IMU.class, "imu");
-        gyro.initialize(gyroParameters);
-    }
-
-    public void setMotorPowers(double flPower, double frPower, double blPower, double brPower) {
-        frontLeftDrive.setPower(flPower);
-        backLeftDrive.setPower(frPower);
-        frontRightDrive.setPower(blPower);
-        backRightDrive.setPower(brPower);
+        init();
     }
 
     public void driveWithSticks() {
@@ -79,52 +47,27 @@ public class MM_Drivetrain {
         double turn = opMode.gamepad1.right_stick_x;
         double strafe = opMode.gamepad1.left_stick_x;
 
-        double flPower = Range.clip(drive + turn + strafe, -1.0, 1.0);
-        double frPower = Range.clip(drive + turn - strafe, -1.0, 1.0);
-        double blPower = Range.clip(drive - turn - strafe, -1.0, 1.0);
-        double brPower = Range.clip(drive - turn + strafe, -1.0, 1.0);
+        flPower = drive + turn + strafe;
+        frPower = drive + turn - strafe;
+        blPower = drive - turn - strafe;
+        brPower = drive - turn + strafe;
 
-        if (opMode.gamepad1.a & !slowModeIH) {
-            slowMode = !slowMode;
-            slowModeIH = true;
-        }
+        normalize();
+        handleSlowMode();
 
-        else if (!opMode.gamepad1.a & slowModeIH) {
-            slowModeIH = false;
-        }
-
-        if (slowMode) {
-            flPower = flPower/2;
-            frPower = frPower/2;
-            blPower = blPower/2;
-            brPower = brPower/2;
-        }
-        opMode.telemetry.addData("Slowmode", slowMode);
-        opMode.telemetry.addData("SlowmodeIH", slowModeIH);
-        setMotorPowers(flPower, frPower, blPower, brPower);
-    }
-
-    public int calculateTicks(double inches) {
-        ticks = inches * TICKS_PER_INCH;
-        return (int) ticks;
+        setDrivePowers(flPower, frPower, blPower, brPower);
     }
 
     public void driveForwardInches(double Inches, double timeoutTime) {
-
         setTargetPosition(Inches);
 
-        switchEncoderMode(false);
+        switchEncoderMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setDriveSame(DRIVE_SPEED);
 
         runtime.reset();
-        frontLeftDrive.setPower(Math.abs(DRIVE_SPEED));
-        backLeftDrive.setPower(Math.abs(DRIVE_SPEED));
-        frontRightDrive.setPower(Math.abs(DRIVE_SPEED));
-        backRightDrive.setPower(Math.abs(DRIVE_SPEED));
-
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutTime) && (frontLeftDrive.isBusy() && frontRightDrive.isBusy()) && (backLeftDrive.isBusy() && backRightDrive.isBusy())) {
-
-            // Display it for the driver.
-            opMode.telemetry.addData("Path2", "Running at %7d :%7d %7d %7d",
+           // Display it for the driver.
+            opMode.telemetry.addData("Current ticks", "Running at %7d :%7d %7d %7d",
                     frontLeftDrive.getCurrentPosition(),
                     frontRightDrive.getCurrentPosition(),
                     backLeftDrive.getCurrentPosition(),
@@ -133,118 +76,16 @@ public class MM_Drivetrain {
         }
 
         stop();
-
-        switchEncoderMode(true);
-
-    }
-    public void rotate(double targetHeading, double timeoutTime) {
-
-        double robotHeading;
-        double headingError;
-        boolean lookingForTarget = true;
-
-
-        while (opMode.opModeIsActive() && lookingForTarget) {
-
-            //get heading value from gyro
-            robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-            headingError = targetHeading - robotHeading;
-
-            //find error
-            if (headingError > 180) {
-                headingError -= 360;
-            }
-
-            else if (headingError < -180) {
-                headingError += 360;
-            }
-
-            //determine whether the angle error is within threshold set
-            if (headingError > ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(-0.2);
-                backLeftDrive.setPower(-0.2);
-                frontRightDrive.setPower(0.2);
-                backRightDrive.setPower(0.2);
-                opMode.telemetry.addData("Target Heading ", targetHeading);
-                opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
-                opMode.telemetry.update();
-            }
-
-            else if (headingError < -ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(0.2);
-                backLeftDrive.setPower(0.2);
-                frontRightDrive.setPower(-0.2);
-                backRightDrive.setPower(-0.2);
-                opMode.telemetry.addData("Target Heading ", targetHeading);
-                opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
-                opMode.telemetry.update();
-            }
-            else {
-                lookingForTarget = false;
-                stop();
-            }
-
-        }
-
+        switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void rotate180() {
-
-        double robotHeading;
-        double targetHeading;
-        boolean lookingForTarget = true;
-
-        robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-        targetHeading = 180 + robotHeading;
-
-        if (targetHeading > 180) {
-            targetHeading -= 360;
-        }
-
-        if (targetHeading > 179.75 || targetHeading < -179.75) {
-            while (opMode.opModeIsActive() && lookingForTarget) {
-                robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-
-                frontLeftDrive.setPower(-DRIVE_SPEED);
-                backLeftDrive.setPower(-DRIVE_SPEED);
-                frontRightDrive.setPower(DRIVE_SPEED);
-                backRightDrive.setPower(DRIVE_SPEED);
-                opMode.telemetry.addData("Target Heading ", targetHeading);
-                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
-                opMode.telemetry.update();
-
-                if (robotHeading < -179.75 || robotHeading > 179.75) {
-                    lookingForTarget = false;
-                }
-            }
-        }
-        else {
-            rotate(targetHeading, 7);
-        }
-
-
-
-
-
-
-
-    }
     public void strafeRightInches(double Inches, double timeoutTime) {
-
-        setTargetPosition(Inches);
         setTargetPositionStrafe(Inches);
-
-
-        switchEncoderMode(false);
+        switchEncoderMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setDriveSame(DRIVE_SPEED);
 
         runtime.reset();
-        frontLeftDrive.setPower(Math.abs(DRIVE_SPEED));
-        backLeftDrive.setPower(Math.abs(DRIVE_SPEED));
-        frontRightDrive.setPower(Math.abs(DRIVE_SPEED));
-        backRightDrive.setPower(Math.abs(DRIVE_SPEED));
-
+        //maybe change && to ||???????????
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutTime) && (frontLeftDrive.isBusy() && frontRightDrive.isBusy()) && (backLeftDrive.isBusy() && backRightDrive.isBusy())) {
 
             // Display it for the driver.
@@ -258,79 +99,65 @@ public class MM_Drivetrain {
         }
 
         stop();
-
-        switchEncoderMode(true);
-
+        switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void diagonalDriveInches (double forwardInches, double leftInches, double timeoutTime) {
+    public void rotateToAngle(double targetHeading, double timeoutTime) {
+        lookingForTarget = true;
 
-        double hypDistance;
-        double targetHeading;
-        double robotHeading;
-        double headingError;
-        boolean lookingForTarget = true;
-
-        hypDistance = (Math.hypot(forwardInches, leftInches));
-        targetHeading = Math.toDegrees(Math.atan2(leftInches, forwardInches));
-
-        while (lookingForTarget) {
-
-            //get heading value from gyro
-            robotHeading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-
-            headingError = targetHeading - robotHeading;
-
-            //find error
-            if (headingError > 180) {
-                headingError -= 360;
-            }
-
-            else if (headingError < -180) {
-                headingError += 360;
-            }
+        while (opMode.opModeIsActive() && lookingForTarget) {
+            robotHeading = getCurrentHeading();
+            calculateRotateError(targetHeading);
 
             //determine whether the angle error is within threshold set
             if (headingError > ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(-0.2);
-                backLeftDrive.setPower(-0.2);
-                frontRightDrive.setPower(0.2);
-                backRightDrive.setPower(0.2);
-                opMode.telemetry.addData("Target Heading ", targetHeading);
-                opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
-                opMode.telemetry.addData("hypotenuse", hypDistance);
-                opMode.telemetry.update();
-            }
-
-            else if (headingError < -ANGLE_THRESHOLD){
-                frontLeftDrive.setPower(0.2);
-                backLeftDrive.setPower(0.2);
-                frontRightDrive.setPower(-0.2);
-                backRightDrive.setPower(-0.2);
-                opMode.telemetry.addData("Target Heading ", targetHeading);
-                opMode.telemetry.addData("Robot Heading Error", headingError);
-                opMode.telemetry.addData("Actual Robot Heading", robotHeading);
-                opMode.telemetry.addData("hypotenuse", hypDistance);
-                opMode.telemetry.update();
-            }
-
-            else {
+                rotateCounterClockwise();
+            } else if (headingError < -ANGLE_THRESHOLD){
+                rotateClockwise();
+            } else {
                 lookingForTarget = false;
                 stop();
             }
 
+            opMode.telemetry.addData("Target Heading ", targetHeading);
+            opMode.telemetry.addData("Robot Heading Error", headingError);
+            opMode.telemetry.addData("Actual Robot Heading", robotHeading);
+            opMode.telemetry.update();
+        }
+    }
+
+    public void diagonalDriveInches(double forwardInches, double leftInches, double timeoutTime) {
+        double hypDistance = (Math.hypot(forwardInches, leftInches));
+        double targetHeading = Math.toDegrees(Math.atan2(leftInches, forwardInches));
+        lookingForTarget = true;
+
+        while (opMode.opModeIsActive() && lookingForTarget) {
+            robotHeading = getCurrentHeading();
+            calculateRotateError(targetHeading);
+
+            //determine whether the angle error is within threshold set
+            if (headingError > ANGLE_THRESHOLD) {
+                rotateCounterClockwise();
+            } else if (headingError < -ANGLE_THRESHOLD){
+                rotateClockwise();
+            } else {
+                lookingForTarget = false;
+                stop();
+            }
+            opMode.telemetry.addData("Target Heading ", targetHeading);
+            opMode.telemetry.addData("Robot Heading Error", headingError);
+            opMode.telemetry.addData("Actual Robot Heading", robotHeading);
+            opMode.telemetry.addData("hypotenuse", hypDistance);
+            opMode.telemetry.update();
         }
 
         driveForwardInches(hypDistance, timeoutTime);
-
     }
 
     public void driveToHub(String startPosition, double duckPosition) {
-
+        //needs clean up with other autodrivemethods
         double forwardInches = 0;
         double strafeInches = 0;
-
 
         if (startPosition == "Blue Warehouse") {
 
@@ -358,72 +185,36 @@ public class MM_Drivetrain {
             }
         }
 
-
         driveForwardInches(12, 5);
         strafeRightInches(strafeInches, 5);
-        rotate(179.74, 7);
+        rotateToAngle(180, 7);
         driveForwardInches(forwardInches, 3);
-
-    }
-
-
-    public void stop() {
-        frontLeftDrive.setPower(0);
-        frontRightDrive.setPower(0);
-        backLeftDrive.setPower(0);
-        backRightDrive.setPower(0);
-    }
-
-    public void setTargetPosition(double driveDistance) {
-        int frontLeftTargetInches;
-        int frontRightTargetInches;
-        int backLeftTargetInches;
-        int backRightTargetInches;
-
-        frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        frontRightTargetInches = frontRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        backLeftTargetInches = backLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        backRightTargetInches = backRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-
-        frontLeftDrive.setTargetPosition(frontLeftTargetInches);
-        frontRightDrive.setTargetPosition(frontRightTargetInches);
-        backLeftDrive.setTargetPosition(backLeftTargetInches);
-        backRightDrive.setTargetPosition(backRightTargetInches);
     }
 
     public void storagePark(boolean blueSide, double duckPosition, boolean storageStart) {
-
+        //clean up later with dead encoders
         double targetHeading;
+        //this variable is to straighten robot out after parking
         double secondTargetHeading;
         double forwardInches;
 
         forwardInches = 50;
 
         if (blueSide) {
-
             if (storageStart) {
                 forwardInches = 55;
             }
-
             targetHeading = -80;;
-
             if (duckPosition == 1) {
                 targetHeading = -82.75;
-            }
-
-            else if (duckPosition == 3){
+            } else if (duckPosition == 3){
                 targetHeading = -80;
             }
             secondTargetHeading = -90;
-        }
-
-        else {
-
+        } else {
             if (!storageStart) {
                 forwardInches = 47;
-            }
-
-            else {
+            } else {
                 forwardInches = 49;
             }
 
@@ -432,46 +223,36 @@ public class MM_Drivetrain {
 
             if (duckPosition == 1) {
                 targetHeading = 77;
-            }
-
-            else if (duckPosition == 3) {
+            } else if (duckPosition == 3) {
                 targetHeading = 80;
             }
         }
 
-        rotate(targetHeading, 5);
+        rotateToAngle(targetHeading, 5);
         driveForwardInches(forwardInches, 7);
-        rotate(secondTargetHeading, 3);
-
+        rotateToAngle(secondTargetHeading, 3);
     }
 
     public void outOfTheWay(boolean blueSide) {
 
         double strafeInches;
 
-        if (blueSide) {rotate(-90, 5);
+        if (blueSide) {
+            rotateToAngle(-90, 5);
         strafeInches = 16;
-        }
-
-        else { rotate(90, 5);
+        } else { rotateToAngle(90, 5);
         strafeInches = -16;
         }
 
         driveForwardInches(-24, 3);
         strafeRightInches(strafeInches, 4);
-
     }
 
-    public void setTargetPositionStrafe(double driveDistance) {
-        int frontLeftTargetInches;
-        int frontRightTargetInches;
-        int backLeftTargetInches;
-        int backRightTargetInches;
-
-        frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        frontRightTargetInches = frontRightDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
-        backLeftTargetInches = backLeftDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
-        backRightTargetInches = backRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
+    private void setTargetPositionStrafe(double driveDistance) {
+        int frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
+        int frontRightTargetInches = frontRightDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
+        int backLeftTargetInches = backLeftDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
+        int backRightTargetInches = backRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
 
         frontLeftDrive.setTargetPosition(frontLeftTargetInches);
         frontRightDrive.setTargetPosition(frontRightTargetInches);
@@ -479,26 +260,122 @@ public class MM_Drivetrain {
         backRightDrive.setTargetPosition(backRightTargetInches);
     }
 
+    private void setTargetPosition(double driveDistance) {
+        int frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
+        int frontRightTargetInches = frontRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
+        int backLeftTargetInches = backLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
+        int backRightTargetInches = backRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
 
-    public void switchEncoderMode(boolean runToPosition) {
-
-        if (runToPosition) {
-
-            frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        else {
-
-            frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-
+        frontLeftDrive.setTargetPosition(frontLeftTargetInches);
+        frontRightDrive.setTargetPosition(frontRightTargetInches);
+        backLeftDrive.setTargetPosition(backLeftTargetInches);
+        backRightDrive.setTargetPosition(backRightTargetInches);
     }
 
-}
+    private void switchEncoderMode(DcMotor.RunMode runMode) {
+            frontLeftDrive.setMode(runMode);
+            frontRightDrive.setMode(runMode);
+            backLeftDrive.setMode(runMode);
+            backRightDrive.setMode(runMode);
+    }
 
+    private void rotateClockwise() {
+        setDrivePowers(0.2, -0.2, 0.2, -0.2);
+    }
+
+    private void rotateCounterClockwise() {
+        setDrivePowers(-0.2, 0.2, -0.2, 0.2);
+    }
+
+    private float getCurrentHeading() {
+        return gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+    }
+
+    private void calculateRotateError(double targetHeading) {
+        headingError = targetHeading - robotHeading;
+
+        if (headingError > 180) {
+            headingError -= 360;
+        } else if (headingError < -180) {
+            headingError += 360;
+        }
+    }
+
+    private void stop() {
+        setDriveSame(0);
+    }
+
+    private void setDriveSame(double motorPower) {
+        setDrivePowers(motorPower, motorPower, motorPower, motorPower);
+    }
+
+    private void setDrivePowers(double flPower, double frPower, double blPower, double brPower) {
+        frontLeftDrive.setPower(flPower);
+        backLeftDrive.setPower(frPower);
+        frontRightDrive.setPower(blPower);
+        backRightDrive.setPower(brPower);
+    }
+
+    private void handleSlowMode() {
+        if (opMode.gamepad1.a & !slowModeIsHandled) {
+            slowMode = !slowMode;
+            slowModeIsHandled = true;
+        } else if (!opMode.gamepad1.a & slowModeIsHandled) {
+            slowModeIsHandled = false;
+        }
+
+        if (slowMode) {
+            flPower = flPower/2;
+            frPower = frPower/2;
+            blPower = blPower/2;
+            brPower = brPower/2;
+        }
+        opMode.telemetry.addData("Slowmode", slowMode);
+    }
+
+    private void normalize() {
+        double max = Math.max(Math.abs(flPower), Math.abs(frPower));
+        max = Math.max(max, Math.abs(blPower));
+        max =  Math.max(max, Math.abs(brPower));
+
+        if (max > 1) {
+            flPower = flPower/max;
+            frPower = frPower/max;
+            blPower = blPower/max;
+            brPower = brPower/max;
+        }
+    }
+    private int calculateTicks(double inches) {
+        ticks = inches * TICKS_PER_INCH;
+        return (int) ticks;
+    }
+
+    private void init() {
+        frontLeftDrive = opMode.hardwareMap.get(DcMotor.class, "FLMotor");
+        frontRightDrive = opMode.hardwareMap.get(DcMotor.class, "FRMotor");
+        backLeftDrive = opMode.hardwareMap.get(DcMotor.class, "BLMotor");
+        backRightDrive = opMode.hardwareMap.get(DcMotor.class, "BRMotor");
+
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        switchEncoderMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public void initalizeGyro() {
+        BNO055IMU.Parameters gyroParameters = new BNO055IMU.Parameters();
+        gyroParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        gyroParameters.calibrationDataFile = "BNO055IMUCalibration.json";
+
+        gyro = opMode.hardwareMap.get(BNO055IMU.class, "imu");
+        gyro.initialize(gyroParameters);
+    }
+}
