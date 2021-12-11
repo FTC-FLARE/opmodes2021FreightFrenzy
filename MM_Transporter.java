@@ -35,16 +35,16 @@ public class MM_Transporter {
     public void controlFlip() {
         if (opMode.gamepad2.dpad_up) { // deposit freight
             transport.setPosition(SCORE_POSITION);
-            slide.setLevelOne(0);
+            slide.setLevel1Progress(MM_Slide.NOT_LEVEL_1);
         } else if (opMode.gamepad2.dpad_down) {
             transport.setPosition(COLLECT_POSITION); // over-ride to collect position
 
         } else if (slide.getSlidePosition() > TRANSPORT_FLIP // cont'd
-                || slide.getLevelOne() > 1  // cont'd
+                || slide.getLevel1Progress() > MM_Slide.MOVING_TO_FLIP_POSITION  // cont'd
                 || (seesBox(transportUp) && (slide.isHeadedUp()))) {
             transport.setPosition(CARRY_POSITION);
 
-        } else if (slide.getLevelOne() < 2   // cont'd
+        } else if (slide.getLevel1Progress() < MM_Slide.MOVING_TO_SCORE_POSITION   // cont'd
                 && (seesBox(transportDown) || (slide.getSlidePosition() < TRANSPORT_FLIP))) {
             transport.setPosition(COLLECT_POSITION);
         }
