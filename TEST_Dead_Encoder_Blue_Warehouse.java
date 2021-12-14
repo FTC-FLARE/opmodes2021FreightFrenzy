@@ -4,9 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name="ZM_Auto_Partial_Storage", group="MM")
+@Autonomous(name="TEST_DEAD_ENCODER", group="MM")
 //@Disabled
-public class ZM_Auto_Partial_Storage extends LinearOpMode {
+public class TEST_Dead_Encoder_Blue_Warehouse extends LinearOpMode {
     private MM_Robot robot = new MM_Robot(this);
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -23,7 +23,11 @@ public class ZM_Auto_Partial_Storage extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        robot.drivetrain.driveForwardInchesOld(24, 4);
+        robot.drivetrain.driveForwardToPosition(72, 7);
+
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.update();
+
         robot.vuforia.deactivateTargets();
         robot.vuforia.deactivateTfod();
     }

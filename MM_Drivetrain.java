@@ -32,14 +32,57 @@ public class MM_Drivetrain {
     private double blPower = 0;
     private double brPower = 0;
 
+    private double leftEncoderTicks;
+    private double rightEncoderTicks;
+    private int leftPriorEncoderTarget = 0;
+    private int rightPriorEncoderTarget = 0;
+
     //4 inch wheels
-    static final double TICKS_PER_INCH = (537.7 / 12.3684);  // odometry wheel ticks = 1440, 12.3684 is pi r^2
-    static final double DRIVE_SPEED = 0.3;
+    static final double WHEEL_CIRCUMFERENCE = 12.3684;
+    static final double TICKS_PER_REVOLUTION_GOBUILDA = 537.7; //19.2 to 1 go builda
+    static final double TICKS_PER_REVOLUTION_ODOMETRY = 1440;
+    static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION_GOBUILDA / WHEEL_CIRCUMFERENCE);
+    static final double DRIVE_SPEED = 0.8;
     static final double ANGLE_THRESHOLD = 0.25;
+    static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
+    static final double SLOW_DOWN_POINT = 12 * TICKS_PER_INCH;
+    static final double P_COEFFICENT = 1/SLOW_DOWN_POINT;
 
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
         init();
+    }
+
+    public void driveForwardToPosition(double forwardInches, double timeoutTime) {
+        int leftTargetTicks = inchesToTicks(forwardInches) + leftPriorEncoderTarget;
+        int rightTargetTicks = inchesToTicks(forwardInches) + rightPriorEncoderTarget;
+        lookingForTarget = true;
+
+        runtime.reset();
+        while (lookingForTarget && opMode.opModeIsActive() && (runtime.seconds() < timeoutTime)) {
+            leftEncoderTicks = frontLeftDrive.getCurrentPosition();
+            rightEncoderTicks = frontRightDrive.getCurrentPosition();
+
+            double leftDistanceError = leftTargetTicks - leftEncoderTicks;
+            double rightDistanceError = rightTargetTicks - rightEncoderTicks;
+
+            double leftDrivePower = P_COEFFICENT * leftDistanceError;
+            double rightDrivePower = P_COEFFICENT * rightDistanceError;
+            setDrivePowers(leftDrivePower, rightDrivePower, leftDrivePower, rightDrivePower);
+
+            if (Math.abs(leftDistanceError) > DRIVE_THRESHOLD && Math.abs(rightDistanceError) > DRIVE_THRESHOLD) {
+                opMode.telemetry.addData("Left Distance", ticksToInches(leftDistanceError));
+                opMode.telemetry.addData("Right Distance", ticksToInches(rightDistanceError));
+                opMode.telemetry.addData("Left Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
+                opMode.telemetry.addData("Right Current", ticksToInches(frontRightDrive.getCurrentPosition()));
+            } else {
+                stop();
+                lookingForTarget = false;
+            }
+            opMode.telemetry.update();
+        }
+        leftPriorEncoderTarget = leftTargetTicks;
+        leftPriorEncoderTarget = rightTargetTicks;
     }
 
     public void driveWithSticks() {
@@ -58,9 +101,8 @@ public class MM_Drivetrain {
         setDrivePowers(flPower, frPower, blPower, brPower);
     }
 
-    public void driveForwardInches(double Inches, double timeoutTime) {
+    public void driveForwardInchesOld(double Inches, double timeoutTime) {
         setTargetPosition(Inches);
-
         switchEncoderMode(DcMotor.RunMode.RUN_TO_POSITION);
         setDriveSame(DRIVE_SPEED);
 
@@ -79,7 +121,7 @@ public class MM_Drivetrain {
         switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void strafeRightInches(double Inches, double timeoutTime) {
+    public void strafeRightInchesOld(double Inches, double timeoutTime) {
         setTargetPositionStrafe(Inches);
         switchEncoderMode(DcMotor.RunMode.RUN_TO_POSITION);
         setDriveSame(DRIVE_SPEED);
@@ -126,7 +168,7 @@ public class MM_Drivetrain {
         }
     }
 
-    public void diagonalDriveInches(double forwardInches, double leftInches, double timeoutTime) {
+    public void diagonalDriveInchesOld(double forwardInches, double leftInches, double timeoutTime) {
         double hypDistance = (Math.hypot(forwardInches, leftInches));
         double targetHeading = Math.toDegrees(Math.atan2(leftInches, forwardInches));
         lookingForTarget = true;
@@ -151,7 +193,7 @@ public class MM_Drivetrain {
             opMode.telemetry.update();
         }
 
-        driveForwardInches(hypDistance, timeoutTime);
+        driveForwardInchesOld(hypDistance, timeoutTime);
     }
 
     public void driveToHub(String startPosition, double duckPosition) {
@@ -185,10 +227,10 @@ public class MM_Drivetrain {
             }
         }
 
-        driveForwardInches(12, 5);
-        strafeRightInches(strafeInches, 5);
+        driveForwardInchesOld(12, 5);
+        strafeRightInchesOld(strafeInches, 5);
         rotateToAngle(180, 7);
-        driveForwardInches(forwardInches, 3);
+        driveForwardInchesOld(forwardInches, 3);
     }
 
     public void storagePark(boolean blueSide, double duckPosition, boolean storageStart) {
@@ -229,7 +271,7 @@ public class MM_Drivetrain {
         }
 
         rotateToAngle(targetHeading, 5);
-        driveForwardInches(forwardInches, 7);
+        driveForwardInchesOld(forwardInches, 7);
         rotateToAngle(secondTargetHeading, 3);
     }
 
@@ -244,8 +286,8 @@ public class MM_Drivetrain {
         strafeInches = -16;
         }
 
-        driveForwardInches(-24, 3);
-        strafeRightInches(strafeInches, 4);
+        driveForwardInchesOld(-24, 3);
+        strafeRightInchesOld(strafeInches, 4);
     }
 
     private void setTargetPositionStrafe(double driveDistance) {
@@ -345,9 +387,20 @@ public class MM_Drivetrain {
             brPower = brPower/max;
         }
     }
-    private int calculateTicks(double inches) {
-        ticks = inches * TICKS_PER_INCH;
-        return (int) ticks;
+    private int inchesToTicks(double inches) {
+        return (int) (inches * TICKS_PER_INCH);
+    }
+
+    private double ticksToInches(double ticks) {
+        return ticks / TICKS_PER_INCH;
+    }
+
+    private double determineDriveDirectionMultiplier(double distance) {
+        double multiplier = 1;
+        if (distance < 0) {
+            multiplier = -1;
+        }
+        return multiplier;
     }
 
     private void init() {
