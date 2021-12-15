@@ -16,7 +16,10 @@ public class MM_Transporter {
     private DistanceSensor transportUp = null;
 
     private final double TRANSPORT_FLIP = 1550;
-    private final double COLLECT_POSITION = 1;  // .7 works, but > .7 goes to 1 - why?
+
+    // .6 works for current servo (why?)- a change in servo may require a different setting
+    private final double COLLECT_POSITION = .6;
+
     private final double CARRY_POSITION = .4;
     private final double SCORE_POSITION = 0;
 
