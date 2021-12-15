@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -26,7 +27,8 @@ public class MM_Slide {
     private LinearOpMode opMode;
 
     private MM_Transporter transporter = null;
-    private DigitalChannel bottomStop = null;
+//    private DigitalChannel bottomStop = null;
+    private AnalogInput bottomStop = null;
     private DigitalChannel topStop = null;
     private DcMotor arm = null;
     private Servo shockAbsorber = null;
@@ -72,7 +74,7 @@ public class MM_Slide {
             isHandled = false;
 
         } else if (opMode.gamepad2.left_trigger > .1) { // slide request down
-            if (isTriggered(bottomStop)) {
+            if (isTriggeredMRtouch(bottomStop)) {
                 arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 setSlideTarget(TransportPosition.COLLECT.ticks);
             } else {
@@ -107,7 +109,7 @@ public class MM_Slide {
                 isHandled = true;
                 setHeadedUp();
 
-            } else if (isTriggered(bottomStop) && !headedUp) {
+            } else if (isTriggeredMRtouch(bottomStop) && !headedUp) {
                 arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 setSlideTarget(TransportPosition.COLLECT.ticks);
 
@@ -146,7 +148,7 @@ public class MM_Slide {
         opMode.telemetry.addData("headed Up", headedUp);
         opMode.telemetry.addData("shock engaged", shockAbsorberEngaged);
         opMode.telemetry.addData("levelOne", level1Progress);
-        opMode.telemetry.addData("bottom magnet sensor", isTriggered(bottomStop));
+        opMode.telemetry.addData("bottom magnet sensor", bottomStop.getVoltage());
         opMode.telemetry.addData("top magnet sensor", isTriggered(topStop));
 
         transporter.controlFlip();
@@ -202,7 +204,7 @@ public class MM_Slide {
         while (opMode.opModeIsActive() && arm.isBusy()) {
             transporter.controlFlip();
         }
-        if (isTriggered(bottomStop)) {
+        if (isTriggeredMRtouch(bottomStop)) {
             shockAbsorber.setPosition(0);
 //                    opMode.sleep(SLEEP_TIME);
             shockAbsorberEngaged = true;
@@ -300,6 +302,15 @@ public class MM_Slide {
             headedUp = false;
         }
     }
+    public boolean isTriggeredMRtouch(AnalogInput sensor) {
+        double voltage = (sensor.getVoltage());
+        if(voltage > 2){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
 
     private void init() {
         arm = opMode.hardwareMap.get(DcMotor.class, "arm");
@@ -311,8 +322,10 @@ public class MM_Slide {
         shockAbsorber = opMode.hardwareMap.get(Servo.class, "shockAbsorber");
         shockAbsorber.setPosition(0); // engage
 
-        bottomStop = opMode.hardwareMap.get(DigitalChannel.class, "bottomStop");//bottom limit switch on the slide
+//        bottomStop = opMode.hardwareMap.get(DigitalChannel.class, "bottomStop");//bottom limit switch on the slide
+//        bottomStop.setMode(DigitalChannel.Mode.INPUT);
         topStop = opMode.hardwareMap.get(DigitalChannel.class, "topStop");//top limit switch on the slide
-        bottomStop.setMode(DigitalChannel.Mode.INPUT);
+        bottomStop = opMode.hardwareMap.get(AnalogInput.class,"MR_touch");
+
     }
 }
