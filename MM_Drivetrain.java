@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -17,6 +18,9 @@ public class MM_Drivetrain {
     private DcMotor backRightDrive = null;
     private DcMotor frontLeftDrive = null;
     private DcMotor frontRightDrive = null;
+    private Servo odometryLeft = null;
+    private Servo odometryRight = null;
+    private Servo odometryBack = null;
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -248,6 +252,12 @@ public class MM_Drivetrain {
         strafeRightInches(strafeInches, 4);
     }
 
+    public void setOdometryServos(double position) {
+        odometryLeft.setPosition(position);
+        odometryBack.setPosition(position);
+        odometryBack.setPosition(position);
+    }
+
     private void setTargetPositionStrafe(double driveDistance) {
         int frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
         int frontRightTargetInches = frontRightDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
@@ -368,9 +378,15 @@ public class MM_Drivetrain {
 
         switchEncoderMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        odometryLeft = opMode.hardwareMap.get(Servo.class, "OdomLeft");
+        odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
+        odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
+        setOdometryServos(0);//whatever the initialization position is
+
     }
 
-    public void initalizeGyro() {
+    public void initializeGyro() {
         BNO055IMU.Parameters gyroParameters = new BNO055IMU.Parameters();
         gyroParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         gyroParameters.calibrationDataFile = "BNO055IMUCalibration.json";

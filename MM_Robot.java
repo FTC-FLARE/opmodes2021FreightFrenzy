@@ -19,7 +19,8 @@ public class MM_Robot {
     public void autoInit(){
         init();
         vuforia = new MM_Vuforia(opMode);
-        drivetrain.initalizeGyro();
+        drivetrain.initializeGyro();
+        drivetrain.setOdometryServos(1);//set to down position
     }
 
     public void init() {
