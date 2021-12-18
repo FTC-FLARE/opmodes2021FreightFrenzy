@@ -20,7 +20,6 @@ public class MM_Robot {
         init();
         vuforia = new MM_Vuforia(opMode);
         drivetrain.initializeGyro();
-        drivetrain.setOdometryServos(1);//set to down position
     }
 
     public void init() {
@@ -28,5 +27,10 @@ public class MM_Robot {
         collector = new MM_Collector(opMode);
         slide = new MM_Slide(opMode);
         ducker = new MM_Ducker(opMode);
+    }
+
+    public void teleOpinit() {
+        init();
+        drivetrain.initOdometryServos();
     }
 }

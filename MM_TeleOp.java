@@ -11,7 +11,7 @@ public class MM_TeleOp extends LinearOpMode {
     public void runOpMode() {
         telemetry.addData("Status", "Initializing... Please wait");
         telemetry.update();
-        robot.init();
+        robot.teleOpinit();
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 

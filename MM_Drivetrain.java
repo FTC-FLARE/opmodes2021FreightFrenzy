@@ -252,10 +252,13 @@ public class MM_Drivetrain {
         strafeRightInches(strafeInches, 4);
     }
 
-    public void setOdometryServos(double position) {
-        odometryLeft.setPosition(position);
-        odometryBack.setPosition(position);
-        odometryBack.setPosition(position);
+    public void initOdometryServos() {
+        odometryLeft = opMode.hardwareMap.get(Servo.class, "OdomLeft");
+        odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
+        odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
+        odometryLeft.setPosition(1);
+        odometryBack.setPosition(1);
+        odometryBack.setPosition(1);
     }
 
     private void setTargetPositionStrafe(double driveDistance) {
@@ -378,12 +381,6 @@ public class MM_Drivetrain {
 
         switchEncoderMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        odometryLeft = opMode.hardwareMap.get(Servo.class, "OdomLeft");
-        odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
-        odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
-        setOdometryServos(0);//whatever the initialization position is
-
     }
 
     public void initializeGyro() {
