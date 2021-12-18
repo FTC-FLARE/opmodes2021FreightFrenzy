@@ -257,7 +257,7 @@ public class MM_Drivetrain {
         odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
         odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
         odometryLeft.setPosition(1);
-        odometryBack.setPosition(1);
+        odometryRight.setPosition(1);
         odometryBack.setPosition(1);
     }
 
