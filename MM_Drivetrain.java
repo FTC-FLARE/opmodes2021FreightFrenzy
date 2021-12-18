@@ -35,13 +35,17 @@ public class MM_Drivetrain {
     private double rightDrivePower = 0;
     private double leftDistanceError = 0;
     private double rightDistanceError = 0;
+    private double backDistanceError = 0;
 
-    private double leftEncoderTicks;
-    private double rightEncoderTicks;
+    private double leftEncoderTicks = 0;
+    private double rightEncoderTicks = 0;
+    private double backEncoderTicks = 0;
     private int leftPriorEncoderTarget = 0;
     private int rightPriorEncoderTarget = 0;
+    private int backPriorEncoderTarget = 0;
     private int leftTargetTicks = 0;
     private int rightTargetTicks = 0;
+    private int backTargetTicks = 0;
 
     //4 inch wheels
     static final double WHEEL_CIRCUMFERENCE = 12.3684;
@@ -68,7 +72,7 @@ public class MM_Drivetrain {
 
         runtime.reset();
         while (lookingForTarget && opMode.opModeIsActive() && (runtime.seconds() < timeoutTime)) {
-            calculateDrivePowerAuto();
+            calculateDrivePowerAuto(true);
             assignMotorPowers(leftDrivePower, rightDrivePower, leftDrivePower, rightDrivePower);
             setDrivePowers();
 
@@ -84,19 +88,54 @@ public class MM_Drivetrain {
             opMode.telemetry.update();
         }
         leftPriorEncoderTarget = leftTargetTicks;
-        leftPriorEncoderTarget = rightTargetTicks;
+        rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    private void calculateDrivePowerAuto() {
-        leftEncoderTicks = frontLeftDrive.getCurrentPosition();
-        rightEncoderTicks = frontRightDrive.getCurrentPosition();
+    public void strafeToPosition(double strafeInches, double timeoutTime) {
+        backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
+        lookingForTarget = true;
+        robotHeading = getCurrentHeading();
 
-        leftDistanceError = leftTargetTicks - leftEncoderTicks;
-        rightDistanceError = rightTargetTicks - rightEncoderTicks;
+        runtime.reset();
+        while (lookingForTarget && opMode.opModeIsActive() && (runtime.seconds() < timeoutTime)) {
+            calculateDrivePowerAuto(false);
+            assignMotorPowers(flPower, frPower, blPower, brPower);
+            setDrivePowers();
 
-        leftDrivePower = P_COEFFICENT * leftDistanceError;
-        rightDrivePower = P_COEFFICENT * rightDistanceError;
-        straighten(robotHeading);
+            if (Math.abs(backDistanceError) > DRIVE_THRESHOLD) {
+                opMode.telemetry.addData("Distance", ticksToInches(backDistanceError));
+                opMode.telemetry.addData("Current", ticksToInches(backLeftDrive.getCurrentPosition()));
+            } else {
+                stop();
+                lookingForTarget = false;
+            }
+            opMode.telemetry.update();
+        }
+        backPriorEncoderTarget = backTargetTicks;
+    }
+
+    private void calculateDrivePowerAuto(boolean straight) {
+
+        if (straight) {
+            leftEncoderTicks = frontLeftDrive.getCurrentPosition();
+            rightEncoderTicks = frontRightDrive.getCurrentPosition();
+
+            leftDistanceError = leftTargetTicks - leftEncoderTicks;
+            rightDistanceError = rightTargetTicks - rightEncoderTicks;
+
+            leftDrivePower = P_COEFFICENT * leftDistanceError;
+            rightDrivePower = P_COEFFICENT * rightDistanceError;
+            straighten(robotHeading);
+        } else {
+            backEncoderTicks = backLeftDrive.getCurrentPosition(); //encoder port 2
+            backDistanceError = backTargetTicks - backEncoderTicks;
+
+            flPower = P_COEFFICENT * backDistanceError;
+            frPower = -P_COEFFICENT * backDistanceError;
+            blPower = -P_COEFFICENT * backDistanceError;
+            brPower = P_COEFFICENT * backDistanceError;
+            straightenStrafe(robotHeading);
+        }
     }
 
     private void straighten(double startHeading) {
@@ -104,9 +143,23 @@ public class MM_Drivetrain {
 
         if (headingError != 0) {
             rightDrivePower = rightDrivePower - (headingError * ANGLE_P_COEFFICENT * rightDrivePower);
-            leftDrivePower = leftDrivePower + (headingError * ANGLE_P_COEFFICENT* leftDrivePower);
+            leftDrivePower = leftDrivePower + (headingError * ANGLE_P_COEFFICENT * leftDrivePower);
         }
     }
+
+    private void straightenStrafe(double startHeading) {
+        calculateRotateError(startHeading);
+
+        if (headingError != 0) {
+            flPower = flPower + (headingError * ANGLE_P_COEFFICENT * flPower);
+            frPower = frPower - (headingError * ANGLE_P_COEFFICENT * frPower);
+            blPower = blPower + (headingError * ANGLE_P_COEFFICENT * blPower);
+            brPower = brPower - (headingError * ANGLE_P_COEFFICENT * brPower);
+
+        }
+
+    }
+
     public void driveWithSticks() {
         double drive = -opMode.gamepad1.left_stick_y;
         double turn = opMode.gamepad1.right_stick_x;
