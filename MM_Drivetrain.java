@@ -55,7 +55,7 @@ public class MM_Drivetrain {
     static final double WHEEL_CIRCUMFERENCE = 12.3684;
     static final double TICKS_PER_REVOLUTION_GOBUILDA = 537.7; //19.2 to 1 go builda
     static final double TICKS_PER_REVOLUTION_ODOMETRY = 1440;
-    static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION_GOBUILDA / WHEEL_CIRCUMFERENCE);
+    static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION_ODOMETRY / WHEEL_CIRCUMFERENCE);
     static final double DRIVE_SPEED = 0.8;
     static final double ANGLE_THRESHOLD = 0.25;
     static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
@@ -121,8 +121,8 @@ public class MM_Drivetrain {
     private void calculateDrivePowerAuto(boolean straight) {
 
         if (straight) {
-            leftEncoderTicks = frontLeftDrive.getCurrentPosition();
-            rightEncoderTicks = frontRightDrive.getCurrentPosition();
+            leftEncoderTicks = -(frontLeftDrive.getCurrentPosition());
+            rightEncoderTicks = -(frontRightDrive.getCurrentPosition());
 
             leftDistanceError = leftTargetTicks - leftEncoderTicks;
             rightDistanceError = rightTargetTicks - rightEncoderTicks;
