@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -18,6 +19,9 @@ public class MM_Drivetrain {
     private DcMotor backRightDrive = null;
     private DcMotor frontLeftDrive = null;
     private DcMotor frontRightDrive = null;
+    private DcMotorEx leftEncoder = null;
+    private DcMotorEx rightEncoder = null;
+    private DcMotorEx backEncoder = null;
     private Servo odometryLeft = null;
     private Servo odometryRight = null;
     private Servo odometryBack = null;
@@ -51,17 +55,19 @@ public class MM_Drivetrain {
     private int rightTargetTicks = 0;
     private int backTargetTicks = 0;
 
-    //4 inch wheels
-    static final double WHEEL_CIRCUMFERENCE = 12.3684;
-    static final double TICKS_PER_REVOLUTION_GOBUILDA = 537.7; //19.2 to 1 go builda
-    static final double TICKS_PER_REVOLUTION_ODOMETRY = 1440;
-    static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION_ODOMETRY / WHEEL_CIRCUMFERENCE);
+    // static final double WHEEL_CIRCUMFERENCE = 12.3684;  //4 inch wheels
+    // static final double TICKS_PER_REVOLUTION = 537.7; //19.2 to 1 go builda
+
+    private static final double WHEEL_DIAMETER = 1.496;  // odometry wheels
+    private static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
+    static final double TICKS_PER_REVOLUTION = 1440;
+    static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
     static final double DRIVE_SPEED = 0.8;
     static final double ANGLE_THRESHOLD = 0.25;
     static final double DRIVE_THRESHOLD = 0.5 * TICKS_PER_INCH; //numerical value is # of inches
-    static final double SLOW_DOWN_POINT = 96 * TICKS_PER_INCH;//numerical value is inches
-    static final double P_COEFFICENT = 1/SLOW_DOWN_POINT;
-    static final double ANGLE_P_COEFFICENT = 1/100;//numerator is gain per degree error
+    static final double SLOW_DOWN_POINT = 96 * TICKS_PER_INCH; //numerical value is inches
+    static final double P_COEFFICIENT = 1/SLOW_DOWN_POINT;
+    static final double ANGLE_P_COEFFICENT = 1/100; //numerator is gain per degree error
 
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -83,14 +89,15 @@ public class MM_Drivetrain {
             if (Math.abs(leftDistanceError) > DRIVE_THRESHOLD || Math.abs(rightDistanceError) > DRIVE_THRESHOLD) {
                 opMode.telemetry.addData("Left Distance", ticksToInches(leftDistanceError));
                 opMode.telemetry.addData("Right Distance", ticksToInches(rightDistanceError));
-                opMode.telemetry.addData("Left Current", ticksToInches(-backLeftDrive.getCurrentPosition()));
-                opMode.telemetry.addData("Right Current", ticksToInches(-frontRightDrive.getCurrentPosition()));
+                opMode.telemetry.addData("Left Current", ticksToInches(leftEncoderTicks));
+                opMode.telemetry.addData("Right Current", ticksToInches(rightEncoderTicks));
             } else {
-                stop();
                 lookingForTarget = false;
             }
             opMode.telemetry.update();
         }
+        stop();
+
         leftPriorEncoderTarget = leftTargetTicks;
         rightPriorEncoderTarget = rightTargetTicks;
     }
@@ -121,25 +128,25 @@ public class MM_Drivetrain {
     private void calculateDrivePowerAuto(boolean straight) {
 
         if (straight) {
-            leftEncoderTicks = (-backLeftDrive.getCurrentPosition());
-            rightEncoderTicks = (-frontRightDrive.getCurrentPosition());
+            leftEncoderTicks = (leftEncoder.getCurrentPosition());
+            rightEncoderTicks = (rightEncoder.getCurrentPosition());
 
-            rightEncoderTicks = leftEncoderTicks; //temporary
-
+//            rightEncoderTicks = leftEncoderTicks; //temporary
+//
             leftDistanceError = leftTargetTicks - leftEncoderTicks;
             rightDistanceError = rightTargetTicks - rightEncoderTicks;
 
-            leftDrivePower = P_COEFFICENT * leftDistanceError;
-            rightDrivePower = P_COEFFICENT * rightDistanceError;
+            leftDrivePower = P_COEFFICIENT * leftDistanceError;
+            rightDrivePower = P_COEFFICIENT * rightDistanceError;
             straighten(robotHeading);
         } else {
-            backEncoderTicks = frontLeftDrive.getCurrentPosition(); //encoder port 2
+            backEncoderTicks = backEncoder.getCurrentPosition(); //encoder port 2
             backDistanceError = backTargetTicks - backEncoderTicks;
 
-            flPower = P_COEFFICENT * backDistanceError;
-            frPower = -P_COEFFICENT * backDistanceError;
-            blPower = -P_COEFFICENT * backDistanceError;
-            brPower = P_COEFFICENT * backDistanceError;
+            flPower = P_COEFFICIENT * backDistanceError;
+            frPower = -P_COEFFICIENT * backDistanceError;
+            blPower = -P_COEFFICIENT * backDistanceError;
+            brPower = P_COEFFICIENT * backDistanceError;
             straightenStrafe(robotHeading);
         }
     }
@@ -186,7 +193,7 @@ public class MM_Drivetrain {
 
         runtime.reset();
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutTime) && (frontLeftDrive.isBusy() && frontRightDrive.isBusy()) && (backLeftDrive.isBusy() && backRightDrive.isBusy())) {
-           // Display it for the driver.
+            // Display it for the driver.
             opMode.telemetry.addData("Current ticks", "Running at %7d :%7d %7d %7d",
                     frontLeftDrive.getCurrentPosition(),
                     frontRightDrive.getCurrentPosition(),
@@ -359,9 +366,9 @@ public class MM_Drivetrain {
 
         if (blueSide) {
             rotateToAngle(-90, 5);
-        strafeInches = 16;
+            strafeInches = 16;
         } else { rotateToAngle(90, 5);
-        strafeInches = -16;
+            strafeInches = -16;
         }
 
         driveForwardInchesOld(-24, 3);
@@ -412,10 +419,13 @@ public class MM_Drivetrain {
     }
 
     private void switchEncoderMode(DcMotor.RunMode runMode) {
-            frontLeftDrive.setMode(runMode);
-            frontRightDrive.setMode(runMode);
-            backLeftDrive.setMode(runMode);
-            backRightDrive.setMode(runMode);
+        frontLeftDrive.setMode(runMode);
+        frontRightDrive.setMode(runMode);
+        backLeftDrive.setMode(runMode);
+        backRightDrive.setMode(runMode);
+        leftEncoder.setMode(runMode);
+        rightEncoder.setMode(runMode);
+        backEncoder.setMode(runMode);
     }
 
     private void rotateClockwise() {
@@ -524,8 +534,8 @@ public class MM_Drivetrain {
         backRightDrive = opMode.hardwareMap.get(DcMotor.class, "BRMotor");
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -533,8 +543,12 @@ public class MM_Drivetrain {
         backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        leftEncoder = opMode.hardwareMap.get(DcMotorEx.class, "FRMotor");  // was BL
+        rightEncoder = opMode.hardwareMap.get(DcMotorEx.class, "BLMotor");  // was FR
+        backEncoder = opMode.hardwareMap.get(DcMotorEx.class, "FLMotor");
+
         switchEncoderMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void initializeGyro() {
