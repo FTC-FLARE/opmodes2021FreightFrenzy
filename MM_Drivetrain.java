@@ -58,8 +58,8 @@ public class MM_Drivetrain {
     static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION_ODOMETRY / WHEEL_CIRCUMFERENCE);
     static final double DRIVE_SPEED = 0.8;
     static final double ANGLE_THRESHOLD = 0.25;
-    static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
-    static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH;//numerical value is inches
+    static final double DRIVE_THRESHOLD = 0.5 * TICKS_PER_INCH; //numerical value is # of inches
+    static final double SLOW_DOWN_POINT = 96 * TICKS_PER_INCH;//numerical value is inches
     static final double P_COEFFICENT = 1/SLOW_DOWN_POINT;
     static final double ANGLE_P_COEFFICENT = 1/100;//numerator is gain per degree error
 
@@ -80,11 +80,11 @@ public class MM_Drivetrain {
             assignMotorPowers(leftDrivePower, rightDrivePower, leftDrivePower, rightDrivePower);
             setDrivePowers();
 
-            if (Math.abs(leftDistanceError) > DRIVE_THRESHOLD && Math.abs(rightDistanceError) > DRIVE_THRESHOLD) {
+            if (Math.abs(leftDistanceError) > DRIVE_THRESHOLD || Math.abs(rightDistanceError) > DRIVE_THRESHOLD) {
                 opMode.telemetry.addData("Left Distance", ticksToInches(leftDistanceError));
                 opMode.telemetry.addData("Right Distance", ticksToInches(rightDistanceError));
-                opMode.telemetry.addData("Left Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
-                opMode.telemetry.addData("Right Current", ticksToInches(frontRightDrive.getCurrentPosition()));
+                opMode.telemetry.addData("Left Current", ticksToInches(-backLeftDrive.getCurrentPosition()));
+                opMode.telemetry.addData("Right Current", ticksToInches(-frontRightDrive.getCurrentPosition()));
             } else {
                 stop();
                 lookingForTarget = false;
@@ -108,7 +108,7 @@ public class MM_Drivetrain {
 
             if (Math.abs(backDistanceError) > DRIVE_THRESHOLD) {
                 opMode.telemetry.addData("Distance", ticksToInches(backDistanceError));
-                opMode.telemetry.addData("Current", ticksToInches(backLeftDrive.getCurrentPosition()));
+                opMode.telemetry.addData("Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
             } else {
                 stop();
                 lookingForTarget = false;
@@ -121,8 +121,10 @@ public class MM_Drivetrain {
     private void calculateDrivePowerAuto(boolean straight) {
 
         if (straight) {
-            leftEncoderTicks = -(frontLeftDrive.getCurrentPosition());
-            rightEncoderTicks = -(frontRightDrive.getCurrentPosition());
+            leftEncoderTicks = (-backLeftDrive.getCurrentPosition());
+            rightEncoderTicks = (-frontRightDrive.getCurrentPosition());
+
+            rightEncoderTicks = leftEncoderTicks; //temporary
 
             leftDistanceError = leftTargetTicks - leftEncoderTicks;
             rightDistanceError = rightTargetTicks - rightEncoderTicks;
@@ -131,7 +133,7 @@ public class MM_Drivetrain {
             rightDrivePower = P_COEFFICENT * rightDistanceError;
             straighten(robotHeading);
         } else {
-            backEncoderTicks = backLeftDrive.getCurrentPosition(); //encoder port 2
+            backEncoderTicks = frontLeftDrive.getCurrentPosition(); //encoder port 2
             backDistanceError = backTargetTicks - backEncoderTicks;
 
             flPower = P_COEFFICENT * backDistanceError;
@@ -145,10 +147,10 @@ public class MM_Drivetrain {
     private void straighten(double startHeading) {
         calculateRotateError(startHeading);
 
-        if (headingError != 0) {
+/*        if (headingError != 0) {
             rightDrivePower = rightDrivePower - (headingError * ANGLE_P_COEFFICENT * rightDrivePower);
             leftDrivePower = leftDrivePower + (headingError * ANGLE_P_COEFFICENT * leftDrivePower);
-        }
+        }*/
     }
 
     private void straightenStrafe(double startHeading) {
@@ -365,14 +367,24 @@ public class MM_Drivetrain {
         driveForwardInchesOld(-24, 3);
         strafeRightInchesOld(strafeInches, 4);
     }
-
-    public void initOdometryServos() {
+    public void odometryTelemetry() {
+        opMode.telemetry.addData("Back Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
+        opMode.telemetry.addData("Right Current", ticksToInches(-frontRightDrive.getCurrentPosition()));
+        opMode.telemetry.addData("Left Current", ticksToInches(-backLeftDrive.getCurrentPosition()));
+    }
+    public void initOdometryServos(double position) {
         odometryLeft = opMode.hardwareMap.get(Servo.class, "OdomLeft");
         odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
         odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
-        odometryLeft.setPosition(1);
-        odometryRight.setPosition(1);
-        odometryBack.setPosition(1);
+        odometryLeft.setPosition(position);
+        odometryRight.setPosition(position);
+        if (position == 1) {
+            odometryBack.setPosition(0);
+        }
+        else {
+            odometryBack.setPosition(1);
+        }
+
     }
 
     private void setTargetPositionStrafe(double driveDistance) {
@@ -454,7 +466,10 @@ public class MM_Drivetrain {
         backLeftDrive.setPower(frPower);
         frontRightDrive.setPower(blPower);
         backRightDrive.setPower(brPower);
-        opMode.telemetry.addData("drive Powers:", flPower);
+        opMode.telemetry.addData("front left power:", flPower);
+        opMode.telemetry.addData("front right power:", frPower);
+        opMode.telemetry.addData("back left power:,", blPower);
+        opMode.telemetry.addData("back right power:",  brPower);
     }
 
     private void handleSlowMode() {

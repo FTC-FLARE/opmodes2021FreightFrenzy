@@ -20,6 +20,7 @@ public class MM_Robot {
         init();
         vuforia = new MM_Vuforia(opMode);
         drivetrain.initializeGyro();
+        drivetrain.initOdometryServos(0);
     }
 
     public void init() {
@@ -31,6 +32,6 @@ public class MM_Robot {
 
     public void teleOpinit() {
         init();
-        drivetrain.initOdometryServos();
+        drivetrain.initOdometryServos(1);
     }
 }
