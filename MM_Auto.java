@@ -74,10 +74,31 @@ public class MM_Auto extends LinearOpMode {
         }
         int duckLocation = robot.vuforia.findDuckPosition();
 
-        robot.drivetrain.driveToHub("Blue Storage", duckLocation);
-        robot.slide.goToPositionAuto(duckLocation);
-        robot.slide.autoCollectPosition(duckLocation);
-        robot.drivetrain.storagePark(true, duckLocation, true);
+        if(alliance == RED){
+            if(startingPosition == WAREHOUSE){
+                robot.drivetrain.driveToHub("Blue Storage", duckLocation);
+                robot.slide.goToPositionAuto(duckLocation);
+                robot.slide.autoCollectPosition(duckLocation);
+                robot.drivetrain.outOfTheWay(false);
+            }else if(startingPosition == STORAGE){
+                robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
+                robot.slide.goToPositionAuto(duckLocation);
+                robot.slide.autoCollectPosition(duckLocation);
+                robot.drivetrain.storagePark(false, duckLocation, true);
+            }
+        }else if(alliance == BLUE){
+            if(startingPosition == WAREHOUSE){
+                robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
+                robot.slide.goToPositionAuto(duckLocation);
+                robot.slide.autoCollectPosition(duckLocation);
+                robot.drivetrain.outOfTheWay(true);
+            }else if(startingPosition == STORAGE){
+                robot.drivetrain.driveToHub("Blue Storage", duckLocation);
+                robot.slide.goToPositionAuto(duckLocation);
+                robot.slide.autoCollectPosition(duckLocation);
+                robot.drivetrain.storagePark(true, duckLocation, true);
+            }
+        }
 
         robot.vuforia.deactivateTargets();
         robot.vuforia.deactivateTfod();

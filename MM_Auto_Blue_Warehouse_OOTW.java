@@ -24,11 +24,9 @@ public class MM_Auto_Blue_Warehouse_OOTW extends LinearOpMode {
         runtime.reset();
 
         int duckLocation = robot.vuforia.findDuckPosition();
+
         robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
-
-
         robot.slide.goToPositionAuto(duckLocation);
-
         robot.slide.autoCollectPosition(duckLocation);
         robot.drivetrain.outOfTheWay(true);
 
