@@ -41,6 +41,13 @@ public class MM_Drivetrain {
     static final double DRIVE_SPEED = 0.3;
     static final double ANGLE_THRESHOLD = 0.25;
 
+    static final int RED = 1;
+    static final int BLUE = 2;
+    static final int WAREHOUSE = 1;
+    static final int STORAGE = 2;
+
+
+
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
         init();
@@ -158,25 +165,23 @@ public class MM_Drivetrain {
         driveForwardInches(hypDistance, timeoutTime);
     }
 
-    public void driveToHub(String startPosition, double duckPosition) {
+    public void driveToHub(int alliance, int startingPosition, double duckPosition) {
         //needs clean up with other autodrivemethods
         double forwardInches = 0;
         double strafeInches = 0;
 
-        if (startPosition == "Blue Warehouse") {
+        if((alliance == BLUE && startingPosition == WAREHOUSE) || (alliance == RED && startingPosition == STORAGE)) {
 
             forwardInches = -6;
             strafeInches = 30.5;
 
             //determine driving position
-            if (duckPosition == 1) {
+            if(duckPosition == 1) {
                 forwardInches = -5.0;
-            } else if (duckPosition == 2) {
+            } else if(duckPosition == 2) {
                 forwardInches = -2.5;
             }
-        }
-
-        if (startPosition == "Blue Storage") {
+        }else if((alliance == BLUE && startingPosition == STORAGE) || (alliance == RED && startingPosition == WAREHOUSE)) {
 
             forwardInches = -3;
             strafeInches = -28.5;
@@ -237,18 +242,18 @@ public class MM_Drivetrain {
         rotateToAngle(secondTargetHeading, 3);
     }
 
-    public void outOfTheWay(boolean blueSide) {
+    public void outOfTheWay(int alliance){
+        double angle = 90;
+        double driveInches = -24;
+        double strafeInches = -16;
 
-        double strafeInches;
-
-        if (blueSide) {
-            rotateToAngle(-90, 5);
-        strafeInches = 16;
-        } else { rotateToAngle(90, 5);
-        strafeInches = -16;
+        if (alliance == BLUE) {
+            angle = -angle;
+            strafeInches = -strafeInches;
         }
 
-        driveForwardInches(-24, 3);
+        rotateToAngle(angle, 5);
+        driveForwardInches(driveInches, 3);
         strafeRightInches(strafeInches, 4);
     }
 
@@ -383,7 +388,6 @@ public class MM_Drivetrain {
         odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
         odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
         setOdometryServos(0);//whatever the initialization position is
-
     }
 
     public void initializeGyro() {

@@ -76,13 +76,13 @@ public class MM_Auto extends LinearOpMode {
 
         if(alliance == RED){
             if(startingPosition == WAREHOUSE){
-                robot.drivetrain.driveToHub("Blue Storage", duckLocation);
+                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
-                robot.drivetrain.outOfTheWay(false);
+                robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Red warehouse");
             }else if(startingPosition == STORAGE){
-                robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
+                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
                 robot.drivetrain.storagePark(false, duckLocation, true);
@@ -90,13 +90,13 @@ public class MM_Auto extends LinearOpMode {
             }
         }else if(alliance == BLUE){
             if(startingPosition == WAREHOUSE){
-                robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
+                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
-                robot.drivetrain.outOfTheWay(true);
+                robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Blue warehouse");
             }else if(startingPosition == STORAGE){
-                robot.drivetrain.driveToHub("Blue Storage", duckLocation);
+                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
                 robot.drivetrain.storagePark(true, duckLocation, true);
