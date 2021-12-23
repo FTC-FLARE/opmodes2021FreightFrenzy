@@ -24,11 +24,9 @@ public class MM_Auto_Red_Storage extends LinearOpMode {
         runtime.reset();
 
         int duckLocation = robot.vuforia.findDuckPosition();
+
         robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
-
-
         robot.slide.goToPositionAuto(duckLocation);
-
         robot.slide.autoCollectPosition(duckLocation);
         robot.drivetrain.storagePark(false, duckLocation, true);
 
