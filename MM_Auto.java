@@ -80,11 +80,13 @@ public class MM_Auto extends LinearOpMode {
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
                 robot.drivetrain.outOfTheWay(false);
+                telemetry.addLine("Red warehouse");
             }else if(startingPosition == STORAGE){
                 robot.drivetrain.driveToHub("Blue Warehouse", duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
                 robot.drivetrain.storagePark(false, duckLocation, true);
+                telemetry.addLine("Red storage");
             }
         }else if(alliance == BLUE){
             if(startingPosition == WAREHOUSE){
@@ -92,12 +94,20 @@ public class MM_Auto extends LinearOpMode {
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
                 robot.drivetrain.outOfTheWay(true);
+                telemetry.addLine("Blue warehouse");
             }else if(startingPosition == STORAGE){
                 robot.drivetrain.driveToHub("Blue Storage", duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
                 robot.drivetrain.storagePark(true, duckLocation, true);
+                telemetry.addLine("Blue storage");
             }
+        }
+        telemetry.update();
+//        **********************************************************************************************
+//        *********************remember to delete before tournament**************************************
+//        **********************************************************************************************
+        while(opModeIsActive()){
         }
 
         robot.vuforia.deactivateTargets();
