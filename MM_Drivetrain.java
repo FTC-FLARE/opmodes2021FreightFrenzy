@@ -39,11 +39,15 @@ public class MM_Drivetrain {
     private double frPower = 0;
     private double blPower = 0;
     private double brPower = 0;
+    private double minPower = 0;
+    private boolean rampUp = false;
+    private double rampPrecentage = 0;
     private double leftDrivePower = 0;
     private double rightDrivePower = 0;
     private double leftDistanceError = 0;
     private double rightDistanceError = 0;
     private double backDistanceError = 0;
+    private double pCoefficient = 0;
 
     private double leftEncoderTicks = 0;
     private double rightEncoderTicks = 0;
@@ -64,10 +68,10 @@ public class MM_Drivetrain {
     static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
     static final double DRIVE_SPEED = 0.8;
     static final double ANGLE_THRESHOLD = 0.25;
-    static final double DRIVE_THRESHOLD = 0.5 * TICKS_PER_INCH; //numerical value is # of inches
-    static final double SLOW_DOWN_POINT = 96 * TICKS_PER_INCH; //numerical value is inches
-    static final double P_COEFFICIENT = 1/SLOW_DOWN_POINT;
-    static final double ANGLE_P_COEFFICENT = 1/100; //numerator is gain per degree error
+    static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
+    static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
+    static final double ANGLE_P_COEFFICIENT = 1/100; //numerator is gain per degree error
+    static final double RAMP_INTERVAL = 0.1;
 
     static final int RED = 1;
     static final int BLUE = 2;
@@ -82,6 +86,18 @@ public class MM_Drivetrain {
     }
 
     public void driveForwardToPosition(double forwardInches, double timeoutTime) {
+
+        if (forwardInches <= 24) {
+            pCoefficient = 1/(SLOW_DOWN_POINT * (forwardInches/16));
+            minPower = 0.12;
+        } else if (forwardInches <=48){
+            pCoefficient= 1/(SLOW_DOWN_POINT * (forwardInches/24));
+            minPower = 0.09;
+        } else {
+            pCoefficient= 1/(SLOW_DOWN_POINT * (forwardInches/30));
+            minPower = 0.08;
+        }
+
         leftTargetTicks = inchesToTicks(forwardInches) + leftPriorEncoderTarget;
         rightTargetTicks = inchesToTicks(forwardInches) + rightPriorEncoderTarget;
         lookingForTarget = true;
@@ -143,17 +159,29 @@ public class MM_Drivetrain {
             leftDistanceError = leftTargetTicks - leftEncoderTicks;
             rightDistanceError = rightTargetTicks - rightEncoderTicks;
 
-            leftDrivePower = P_COEFFICIENT * leftDistanceError;
-            rightDrivePower = P_COEFFICIENT * rightDistanceError;
+            leftDrivePower = pCoefficient * leftDistanceError;
+            rightDrivePower = pCoefficient * rightDistanceError;
+
+            //assign minimum drive power of 0.14 according to the higher power
+            if (Math.abs(leftDrivePower) < minPower || Math.abs(rightDrivePower) < minPower) {
+                double minimum = Math.min(Math.abs(leftDrivePower), Math.abs(rightDrivePower));
+                leftDrivePower = ((1/minimum) * minPower * leftDrivePower);
+                rightDrivePower = ((1/minimum) * minPower * rightDrivePower);
+            }
             straighten(robotHeading);
+
+            if (rampUp) {
+                rampUp();
+            }
+
         } else {
             backEncoderTicks = backEncoder.getCurrentPosition(); //encoder port 2
             backDistanceError = backTargetTicks - backEncoderTicks;
 
-            flPower = P_COEFFICIENT * backDistanceError;
-            frPower = -P_COEFFICIENT * backDistanceError;
-            blPower = -P_COEFFICIENT * backDistanceError;
-            brPower = P_COEFFICIENT * backDistanceError;
+            flPower = pCoefficient * backDistanceError;
+            frPower = -pCoefficient * backDistanceError;
+            blPower = -pCoefficient * backDistanceError;
+            brPower = pCoefficient * backDistanceError;
             straightenStrafe(robotHeading);
         }
     }
@@ -171,10 +199,10 @@ public class MM_Drivetrain {
         calculateRotateError(startHeading);
 
         if (headingError != 0) {
-            flPower = flPower + (headingError * ANGLE_P_COEFFICENT * flPower);
-            frPower = frPower - (headingError * ANGLE_P_COEFFICENT * frPower);
-            blPower = blPower + (headingError * ANGLE_P_COEFFICENT * blPower);
-            brPower = brPower - (headingError * ANGLE_P_COEFFICENT * brPower);
+            flPower = flPower + (headingError * ANGLE_P_COEFFICIENT * flPower);
+            frPower = frPower - (headingError * ANGLE_P_COEFFICIENT * frPower);
+            blPower = blPower + (headingError * ANGLE_P_COEFFICIENT * blPower);
+            brPower = brPower - (headingError * ANGLE_P_COEFFICIENT * brPower);
 
         }
 
@@ -459,6 +487,17 @@ public class MM_Drivetrain {
         setDriveSame(0);
     }
 
+    private void rampUp() {
+        rampPrecentage =  rampPrecentage + RAMP_INTERVAL;
+        leftDrivePower = leftDrivePower * rampPrecentage;
+        rightDrivePower = rightDrivePower * rampPrecentage;
+
+        if (rampPrecentage == 1) {
+            rampUp = false;
+        }
+    }
+
+
     private void setDriveSame(double motorPower) {
         assignMotorPowers(motorPower, motorPower, motorPower, motorPower);
         setDrivePowers();
@@ -472,13 +511,19 @@ public class MM_Drivetrain {
     }
 
     private void setDrivePowers() {
-        normalize();
-        handleSlowMode();
+
+        if (rampUp) {
+            rampUp();
+        } else {
+            normalize();
+            handleSlowMode();
+        }
 
         frontLeftDrive.setPower(flPower);
         backLeftDrive.setPower(frPower);
         frontRightDrive.setPower(blPower);
         backRightDrive.setPower(brPower);
+
         opMode.telemetry.addData("front left power:", flPower);
         opMode.telemetry.addData("front right power:", frPower);
         opMode.telemetry.addData("back left power:,", blPower);
@@ -520,14 +565,6 @@ public class MM_Drivetrain {
 
     private double ticksToInches(double ticks) {
         return ticks / TICKS_PER_INCH;
-    }
-
-    private double determineDriveDirectionMultiplier(double distance) {
-        double multiplier = 1;
-        if (distance < 0) {
-            multiplier = -1;
-        }
-        return multiplier;
     }
 
     private void init() {

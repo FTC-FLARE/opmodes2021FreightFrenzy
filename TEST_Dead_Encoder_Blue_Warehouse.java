@@ -23,7 +23,7 @@ public class TEST_Dead_Encoder_Blue_Warehouse extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        robot.drivetrain.driveForwardToPosition(72, 7);
+        robot.drivetrain.driveForwardToPosition(30, 7);
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.update();
