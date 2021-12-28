@@ -18,9 +18,9 @@ public class MM_Robot {
 
     public void autoInit(){
         init();
+        drivetrain.initOdometryServos(0);
         vuforia = new MM_Vuforia(opMode);
         drivetrain.initializeGyro();
-        drivetrain.initOdometryServos(0);
     }
 
     public void init() {
@@ -28,10 +28,6 @@ public class MM_Robot {
         collector = new MM_Collector(opMode);
         slide = new MM_Slide(opMode);
         ducker = new MM_Ducker(opMode);
-    }
-
-    public void teleOpinit() {
-        init();
         drivetrain.initOdometryServos(1);
     }
 }

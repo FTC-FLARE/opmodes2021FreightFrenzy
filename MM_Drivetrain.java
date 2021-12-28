@@ -69,6 +69,13 @@ public class MM_Drivetrain {
     static final double P_COEFFICIENT = 1/SLOW_DOWN_POINT;
     static final double ANGLE_P_COEFFICENT = 1/100; //numerator is gain per degree error
 
+    static final int RED = 1;
+    static final int BLUE = 2;
+    static final int WAREHOUSE = 1;
+    static final int STORAGE = 2;
+
+
+
     public MM_Drivetrain(LinearOpMode opMode) {
         this.opMode = opMode;
         init();
@@ -281,25 +288,23 @@ public class MM_Drivetrain {
         driveForwardInchesOld(hypDistance, timeoutTime);
     }
 
-    public void driveToHub(String startPosition, double duckPosition) {
+    public void driveToHub(int alliance, int startingPosition, double duckPosition) {
         //needs clean up with other autodrivemethods
         double forwardInches = 0;
         double strafeInches = 0;
 
-        if (startPosition == "Blue Warehouse") {
+        if((alliance == BLUE && startingPosition == WAREHOUSE) || (alliance == RED && startingPosition == STORAGE)) {
 
             forwardInches = -6;
             strafeInches = 30.5;
 
             //determine driving position
-            if (duckPosition == 1) {
+            if(duckPosition == 1) {
                 forwardInches = -5.0;
-            } else if (duckPosition == 2) {
+            } else if(duckPosition == 2) {
                 forwardInches = -2.5;
             }
-        }
-
-        if (startPosition == "Blue Storage") {
+        }else if((alliance == BLUE && startingPosition == STORAGE) || (alliance == RED && startingPosition == WAREHOUSE)) {
 
             forwardInches = -3;
             strafeInches = -28.5;
@@ -360,18 +365,18 @@ public class MM_Drivetrain {
         rotateToAngle(secondTargetHeading, 3);
     }
 
-    public void outOfTheWay(boolean blueSide) {
+    public void outOfTheWay(int alliance){
+        double angle = 90;
+        double driveInches = -24;
+        double strafeInches = -16;
 
-        double strafeInches;
-
-        if (blueSide) {
-            rotateToAngle(-90, 5);
-            strafeInches = 16;
-        } else { rotateToAngle(90, 5);
-            strafeInches = -16;
+        if (alliance == BLUE) {
+            angle = -angle;
+            strafeInches = -strafeInches;
         }
 
-        driveForwardInchesOld(-24, 3);
+        rotateToAngle(angle, 5);
+        driveForwardInchesOld(driveInches, 3);
         strafeRightInchesOld(strafeInches, 4);
     }
     public void odometryTelemetry() {
@@ -387,11 +392,9 @@ public class MM_Drivetrain {
         odometryRight.setPosition(position);
         if (position == 1) {
             odometryBack.setPosition(0);
-        }
-        else {
+        }else {
             odometryBack.setPosition(1);
         }
-
     }
 
     private void setTargetPositionStrafe(double driveDistance) {
