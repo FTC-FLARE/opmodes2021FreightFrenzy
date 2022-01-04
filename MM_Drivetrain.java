@@ -136,6 +136,24 @@ public class MM_Drivetrain {
             opMode.telemetry.update();
         }
     }
+    public void pRotateDegrees(double degrees){//timeout
+        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        ((Test_Stuff)opMode).pTurnController.setInputRange(0, degrees);
+        ((Test_Stuff)opMode).pTurnController.setOutputRange(.14, .6);
+        ((Test_Stuff)opMode).pTurnController.setSetpoint(degrees);
+        do {
+            double turnPower = .14 + ((Test_Stuff)opMode).pTurnController.calculatePower(getCurrentHeading());
+            if(degrees > 0){
+                setDrivePowers(-turnPower, turnPower, -turnPower, turnPower);
+
+            }else {
+                setDrivePowers(turnPower, -turnPower, turnPower, -turnPower);
+            }
+            opMode.telemetry.update();
+        }while (opMode.opModeIsActive() && !((Test_Stuff)opMode).pTurnController.reachedTarget());
+        stop();
+    }
 
     public void diagonalDriveInches(double forwardInches, double leftInches, double timeoutTime) {
         double hypDistance = (Math.hypot(forwardInches, leftInches));
