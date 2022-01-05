@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 public class MM_Drivetrain {
-    private LinearOpMode opMode;
+    private MM_OpMode opMode;
 
     private BNO055IMU gyro;
     private DcMotor backLeftDrive = null;
@@ -48,7 +48,7 @@ public class MM_Drivetrain {
 
 
 
-    public MM_Drivetrain(LinearOpMode opMode) {
+    public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
         init();
     }
@@ -140,12 +140,12 @@ public class MM_Drivetrain {
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         double targetAngle = translateAngle(getCurrentHeading() + degrees);
 
-        ((Test_Stuff)opMode).pTurnController.setInputRange(0, Math.abs(degrees));
-        ((Test_Stuff)opMode).pTurnController.setOutputRange(.12, .7);
-        ((Test_Stuff)opMode).pTurnController.setSetpoint(targetAngle);
+        opMode.pTurnController.setInputRange(0, Math.abs(degrees));
+        opMode.pTurnController.setOutputRange(.12, .7);
+        opMode.pTurnController.setSetpoint(targetAngle);
         do {
-            double turnPower = ((Test_Stuff)opMode).pTurnController.getMinOutput() + ((Test_Stuff)opMode).pTurnController.calculatePower(getCurrentHeading());
-            double translatedError = translateAngle(((Test_Stuff)opMode).pTurnController.getCurrentError());
+            double turnPower = opMode.pTurnController.getMinOutput() + opMode.pTurnController.calculatePower(getCurrentHeading());
+            double translatedError = translateAngle(opMode.pTurnController.getCurrentError());
 
             if(translatedError > 0){
                 setDrivePowers(-turnPower, turnPower, -turnPower, turnPower);
@@ -156,7 +156,7 @@ public class MM_Drivetrain {
 
             opMode.telemetry.addData("Power to motors", turnPower);
             opMode.telemetry.update();
-        }while (opMode.opModeIsActive() && !((Test_Stuff)opMode).pTurnController.reachedTarget());
+        }while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
         stop();
     }
 

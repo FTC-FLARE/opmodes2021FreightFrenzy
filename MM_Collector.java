@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class MM_Collector {
-    private LinearOpMode opMode;
+    private MM_OpMode opMode;
 
     private DcMotor collector = null;
 
@@ -13,7 +13,7 @@ public class MM_Collector {
 
     private final double TIMEOUT_TIME = 2;
 
-    public MM_Collector(LinearOpMode opMode) {
+    public MM_Collector(MM_OpMode opMode) {
         this.opMode = opMode;
         collector = opMode.hardwareMap.get(DcMotor.class, "collector");
     }

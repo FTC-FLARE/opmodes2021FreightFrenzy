@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MM_Vuforia {
-    private OpMode opMode;  // Give us access to the calling OpMode
+    private MM_OpMode opMode;  // Give us access to the calling OpMode
 
     //define constants for field navigation
     private static final String VUFORIA_KEY = "AZ5woGn/////AAABmSDumo9pA0BDovmvaV5gG7wLT6ES1QrKcI14JsHiEtQ7Gb6e+KM8ILBQGt8hjfHFNwKixlUDQ6vuz0AdKiYelGz5KcfJ9UV4xCMuDxDGvzOqYIS46QLHeFtsx4c4EP5o5a+H4ZM4crit1cva6avYORJXAH4EYCNluvawI+qm7qOru223kxOmNw83qfl17h9ASLtxxZuZ6OiAnQEq0OsSJf5n43QzVRFI55ZYdVAq+7bSeBEMptf1ZbrzvAZWnq8diTq+ojaADlkeZloub6tSLn4OqqbVtnjk65dNVejK2nTY1y7j7v0BQAkqc0w6oMkg30ynxOoyGid1xjSDDEaS1DvbVjQO0ODZZ4O9v6C30dtQ";
@@ -47,7 +47,7 @@ public class MM_Vuforia {
 
     private boolean targetVisible = false;
 
-    public MM_Vuforia(OpMode opMode) {
+    public MM_Vuforia(MM_OpMode opMode) {
         this.opMode = opMode;
         vuforiaInit();
         tfodInit();

@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 public class MM_Robot {
-    private LinearOpMode opMode;
+    private MM_OpMode opMode;
 
     public MM_Drivetrain drivetrain;
     public MM_Collector collector;
@@ -12,7 +12,7 @@ public class MM_Robot {
     public MM_Vuforia vuforia;
 
     // Constructor
-    public MM_Robot(LinearOpMode opMode){
+    public MM_Robot(MM_OpMode opMode){
         this.opMode = opMode;
     }
 

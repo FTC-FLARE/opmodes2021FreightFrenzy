@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name="ZM_Auto_Partial_Storage", group="MM")
 @Disabled
-public class ZM_Auto_Partial_Storage extends LinearOpMode {
+public class ZM_Auto_Partial_Storage extends MM_OpMode {
     private MM_Robot robot = new MM_Robot(this);
     private ElapsedTime runtime = new ElapsedTime();
 

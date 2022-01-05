@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Autonomous(name="MM_Auto", group="MM")
-public class MM_Auto extends LinearOpMode {
+public class MM_Auto extends MM_OpMode {
     private MM_Robot robot = new MM_Robot(this);
 
     static final int RED = 1;

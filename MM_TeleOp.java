@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 @TeleOp(name="TeleOp", group="MM")
-public class MM_TeleOp extends LinearOpMode {
+public class MM_TeleOp extends MM_OpMode {
     public MM_Robot robot = new MM_Robot(this);
 
     @Override
