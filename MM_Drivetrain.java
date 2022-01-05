@@ -59,8 +59,8 @@ public class MM_Drivetrain {
         double strafe = opMode.gamepad1.left_stick_x;
 
         flPower = drive + turn + strafe;
-        frPower = drive + turn - strafe;
-        blPower = drive - turn - strafe;
+        frPower = drive + turn - strafe; // What???
+        blPower = drive - turn - strafe; // What???
         brPower = drive - turn + strafe;
 
         normalize();
@@ -140,7 +140,7 @@ public class MM_Drivetrain {
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         ((Test_Stuff)opMode).pTurnController.setInputRange(0, degrees);
-        ((Test_Stuff)opMode).pTurnController.setOutputRange(.14, .6);
+        ((Test_Stuff)opMode).pTurnController.setOutputRange(.14, .3);
         ((Test_Stuff)opMode).pTurnController.setSetpoint(degrees);
         do {
             double turnPower = .14 + ((Test_Stuff)opMode).pTurnController.calculatePower(getCurrentHeading());
@@ -150,9 +150,31 @@ public class MM_Drivetrain {
             }else {
                 setDrivePowers(turnPower, -turnPower, turnPower, -turnPower);
             }
+
+            opMode.telemetry.addData("Power to motors", turnPower);
             opMode.telemetry.update();
         }while (opMode.opModeIsActive() && !((Test_Stuff)opMode).pTurnController.reachedTarget());
         stop();
+    }
+
+    public void testMotors(){
+        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        while (opMode.opModeIsActive()) {
+            if (opMode.gamepad1.x) flPower = .5;
+            else flPower = 0;
+
+            if (opMode.gamepad1.y) frPower = .5;
+            else frPower = 0;
+
+            if (opMode.gamepad1.a) blPower = .5;
+            else blPower = 0;
+
+            if (opMode.gamepad1.b) brPower = .5;
+            else brPower = 0;
+
+            setDrivePowers(flPower, frPower, blPower, brPower);
+        }
     }
 
     public void diagonalDriveInches(double forwardInches, double leftInches, double timeoutTime) {
@@ -338,8 +360,8 @@ public class MM_Drivetrain {
 
     private void setDrivePowers(double flPower, double frPower, double blPower, double brPower) {
         frontLeftDrive.setPower(flPower);
-        backLeftDrive.setPower(frPower);
-        frontRightDrive.setPower(blPower);
+        backLeftDrive.setPower(frPower); // What????
+        frontRightDrive.setPower(blPower); // What????
         backRightDrive.setPower(brPower);
     }
 

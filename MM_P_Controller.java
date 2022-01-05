@@ -32,8 +32,8 @@ public class MM_P_Controller {
         if(power > outputRange){
             power = outputRange;
         }
-        opMode.telemetry.addData("current error", currentError);
         opMode.telemetry.addData("input", currentInput);
+        opMode.telemetry.addData("current error", currentError);
         opMode.telemetry.addData("calculated power", power);
         return power;
     }
