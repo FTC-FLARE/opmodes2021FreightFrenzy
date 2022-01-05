@@ -59,8 +59,8 @@ public class MM_Drivetrain {
         double strafe = opMode.gamepad1.left_stick_x;
 
         flPower = drive + turn + strafe;
-        frPower = drive + turn - strafe;
-        blPower = drive - turn - strafe;
+        frPower = drive - turn - strafe;
+        blPower = drive + turn - strafe;
         brPower = drive - turn + strafe;
 
         normalize();
@@ -320,8 +320,8 @@ public class MM_Drivetrain {
 
     private void setDrivePowers(double flPower, double frPower, double blPower, double brPower) {
         frontLeftDrive.setPower(flPower);
-        backLeftDrive.setPower(frPower);
-        frontRightDrive.setPower(blPower);
+        frontRightDrive.setPower(frPower);
+        backLeftDrive.setPower(blPower);
         backRightDrive.setPower(brPower);
     }
 
