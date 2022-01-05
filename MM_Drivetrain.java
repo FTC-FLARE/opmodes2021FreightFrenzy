@@ -140,7 +140,7 @@ public class MM_Drivetrain {
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         ((Test_Stuff)opMode).pTurnController.setInputRange(0, degrees);
-        ((Test_Stuff)opMode).pTurnController.setOutputRange(.14, .3);
+        ((Test_Stuff)opMode).pTurnController.setOutputRange(.14, .6);
         ((Test_Stuff)opMode).pTurnController.setSetpoint(degrees);
         do {
             double turnPower = .14 + ((Test_Stuff)opMode).pTurnController.calculatePower(getCurrentHeading());
@@ -336,7 +336,7 @@ public class MM_Drivetrain {
         setDrivePowers(-0.2, 0.2, -0.2, 0.2);
     }
 
-    private float getCurrentHeading() {
+    public float getCurrentHeading() {
         return gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
     }
 
