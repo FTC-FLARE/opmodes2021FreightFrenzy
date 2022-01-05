@@ -13,6 +13,7 @@ public class MM_P_Controller {
     private double maxOutput = 0;
     private double outputRange = 0;
     private double inputRange = 0;
+    private double absError = 0;
     private double currentError = 0;
     private double currentInput = 0;
 
@@ -27,19 +28,23 @@ public class MM_P_Controller {
     }
     public double calculatePower(double currentInput){
         this.currentInput = currentInput;
-        currentError = Math.abs(Math.abs(setpoint) - Math.abs(currentInput));
-        double power = currentError * P_COEFFICIENT * (outputRange);
+        absError = Math.abs(Math.abs(setpoint) - Math.abs(currentInput));
+        currentError = setpoint - currentInput;
+
+        double power = absError * P_COEFFICIENT * (outputRange);
         if(power > outputRange){
             power = outputRange;
         }
         opMode.telemetry.addData("input", currentInput);
-        opMode.telemetry.addData("current error", currentError);
+        opMode.telemetry.addData("current error", absError);
         opMode.telemetry.addData("calculated power", power);
         return power;
     }
     public boolean reachedTarget(){
-        if ((currentError / inputRange) * 100 < PCT_THRESHOLD){
-            return true;
+//        if ((absError / inputRange) * 100 < PCT_THRESHOLD){
+        if ((Math.abs(currentError) / inputRange) * 100 < PCT_THRESHOLD){
+
+        return true;
         }
         return false;
     }
@@ -58,5 +63,16 @@ public class MM_P_Controller {
         this.minOutput = minOutput;
         this.maxOutput = maxOutput;
         outputRange = maxOutput - minOutput;
+    }
+
+    public double getCurrentError(){
+        return currentError;
+    }
+
+    public double getCurrentInput(){
+        return currentInput;
+    }
+    public double getMinOutput(){
+        return minOutput;
     }
 }

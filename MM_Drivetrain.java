@@ -138,13 +138,16 @@ public class MM_Drivetrain {
     }
     public void pRotateDegrees(double degrees){//timeout
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        double targetAngle = translateAngle(getCurrentHeading() + degrees);
 
-        ((Test_Stuff)opMode).pTurnController.setInputRange(0, degrees);
-        ((Test_Stuff)opMode).pTurnController.setOutputRange(.14, .6);
-        ((Test_Stuff)opMode).pTurnController.setSetpoint(degrees);
+        ((Test_Stuff)opMode).pTurnController.setInputRange(0, Math.abs(degrees));
+        ((Test_Stuff)opMode).pTurnController.setOutputRange(.12, .7);
+        ((Test_Stuff)opMode).pTurnController.setSetpoint(targetAngle);
         do {
-            double turnPower = .14 + ((Test_Stuff)opMode).pTurnController.calculatePower(getCurrentHeading());
-            if(degrees > 0){
+            double turnPower = ((Test_Stuff)opMode).pTurnController.getMinOutput() + ((Test_Stuff)opMode).pTurnController.calculatePower(getCurrentHeading());
+            double translatedError = translateAngle(((Test_Stuff)opMode).pTurnController.getCurrentError());
+
+            if(translatedError > 0){
                 setDrivePowers(-turnPower, turnPower, -turnPower, turnPower);
 
             }else {
@@ -338,6 +341,15 @@ public class MM_Drivetrain {
 
     public float getCurrentHeading() {
         return gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+    }
+
+    private double translateAngle(double angle) {
+        if (angle > 180) {
+            angle -= 360;
+        } else if (angle < -180) {
+            angle += 360;
+        }
+        return angle;
     }
 
     private void calculateRotateError(double targetHeading) {
