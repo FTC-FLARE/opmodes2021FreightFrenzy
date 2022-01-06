@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 public class MM_Drivetrain {
-    private LinearOpMode opMode;
+    private MM_OpMode opMode;
 
     private BNO055IMU gyro;
     private DcMotor backLeftDrive = null;
@@ -80,7 +80,7 @@ public class MM_Drivetrain {
 
 
 
-    public MM_Drivetrain(LinearOpMode opMode) {
+    public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
         init();
     }
@@ -214,8 +214,8 @@ public class MM_Drivetrain {
         double strafe = opMode.gamepad1.left_stick_x;
 
         flPower = drive + turn + strafe;
-        frPower = drive + turn - strafe;
-        blPower = drive - turn - strafe;
+        frPower = drive - turn - strafe;
+        blPower = drive + turn - strafe;
         brPower = drive - turn + strafe;
 
         setDrivePowers();
@@ -285,6 +285,49 @@ public class MM_Drivetrain {
             opMode.telemetry.addData("Robot Heading Error", headingError);
             opMode.telemetry.addData("Actual Robot Heading", robotHeading);
             opMode.telemetry.update();
+        }
+    }
+    public void pRotateDegrees(double degrees){//timeout
+        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        double targetAngle = translateAngle(getCurrentHeading() + degrees);
+
+        opMode.pTurnController.setInputRange(0, Math.abs(degrees));
+        opMode.pTurnController.setOutputRange(.12, .7);
+        opMode.pTurnController.setSetpoint(targetAngle);
+        do {
+            double turnPower = opMode.pTurnController.getMinOutput() + opMode.pTurnController.calculatePower(getCurrentHeading());
+            double translatedError = translateAngle(opMode.pTurnController.getCurrentError());
+
+            if(translatedError > 0){
+                setDrivePowers(-turnPower, turnPower, -turnPower, turnPower);
+
+            }else {
+                setDrivePowers(turnPower, -turnPower, turnPower, -turnPower);
+            }
+
+            opMode.telemetry.addData("Power to motors", turnPower);
+            opMode.telemetry.update();
+        }while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
+        stop();
+    }
+
+    public void testMotors(){
+        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        while (opMode.opModeIsActive()) {
+            if (opMode.gamepad1.x) flPower = .5;
+            else flPower = 0;
+
+            if (opMode.gamepad1.y) frPower = .5;
+            else frPower = 0;
+
+            if (opMode.gamepad1.a) blPower = .5;
+            else blPower = 0;
+
+            if (opMode.gamepad1.b) brPower = .5;
+            else brPower = 0;
+
+            setDrivePowers(flPower, frPower, blPower, brPower);
         }
     }
 
@@ -469,8 +512,17 @@ public class MM_Drivetrain {
         setDrivePowers();
     }
 
-    private float getCurrentHeading() {
+    public float getCurrentHeading() {
         return gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+    }
+
+    private double translateAngle(double angle) {
+        if (angle > 180) {
+            angle -= 360;
+        } else if (angle < -180) {
+            angle += 360;
+        }
+        return angle;
     }
 
     private void calculateRotateError(double targetHeading) {
@@ -520,8 +572,8 @@ public class MM_Drivetrain {
         }
 
         frontLeftDrive.setPower(flPower);
-        backLeftDrive.setPower(frPower);
-        frontRightDrive.setPower(blPower);
+        frontRightDrive.setPower(frPower);
+        backLeftDrive.setPower(blPower);
         backRightDrive.setPower(brPower);
 
         opMode.telemetry.addData("front left power:", flPower);

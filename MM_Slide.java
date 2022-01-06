@@ -24,7 +24,7 @@ public class MM_Slide {
         }
     }
 
-    private LinearOpMode opMode;
+    private MM_OpMode opMode;
 
     private MM_Transporter transporter = null;
 //    private DigitalChannel bottomStop = null;
@@ -49,7 +49,7 @@ public class MM_Slide {
     static final int MOVING_TO_SCORE_POSITION = 2;
     static final int CHILLIN_AT_LEVEL_1 = 3;
 
-    public MM_Slide(LinearOpMode opMode) {
+    public MM_Slide(MM_OpMode opMode) {
         this.opMode = opMode;
 
         transporter = new MM_Transporter(opMode, this);

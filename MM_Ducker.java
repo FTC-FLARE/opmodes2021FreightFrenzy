@@ -7,14 +7,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class MM_Ducker {
 
     // this gives us access to all opMode information
-    private LinearOpMode opMode;
+    private MM_OpMode opMode;
 
     private ElapsedTime runtime = new ElapsedTime();
     static final double MOTOR_POWER = 1.00;
     private DcMotor DuckerMotor= null;
     private final double TIMEOUT_TIME = 5;
     // Constructor
-    public MM_Ducker(LinearOpMode opMode){
+    public MM_Ducker(MM_OpMode opMode){
         this.opMode = opMode;
         DuckerMotor = opMode.hardwareMap.get(DcMotor.class, "Ducker");
         DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
