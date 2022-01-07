@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -256,7 +255,7 @@ public class MM_Drivetrain {
             if (storageStart) {
                 forwardInches = 55;
             }
-            targetHeading = -80;;
+            targetHeading = -80;
             if (duckPosition == 1) {
                 targetHeading = -82.75;
             } else if (duckPosition == 3){
@@ -436,11 +435,11 @@ public class MM_Drivetrain {
         odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
         odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
         odometryLeft.setPosition(position);
-        odometryRight.setPosition(position);
+        odometryBack.setPosition(position);
         if (position == 1) {
-            odometryBack.setPosition(0);
+            odometryRight.setPosition(0);
         }else {
-            odometryBack.setPosition(1);
+            odometryRight.setPosition(1);
         }
     }
 
