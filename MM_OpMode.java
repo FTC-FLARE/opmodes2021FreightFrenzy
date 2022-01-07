@@ -6,8 +6,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 public abstract class MM_OpMode extends LinearOpMode {
     public MM_Robot robot = new MM_Robot(this);
     public MM_P_Controller pTurnController = new MM_P_Controller(this, 2, .01);
-
-//
+    public MM_P_Controller flMotorController = new MM_P_Controller(this,(5/3), .000136);
+    public MM_P_Controller frMotorController = new MM_P_Controller(this,(5/3), .000136);
+    public MM_P_Controller blMotorController = new MM_P_Controller(this,(5/3), .000136);
+    public MM_P_Controller brMotorController = new MM_P_Controller(this,(5/3), .000136);
 //    @Override
 //    public void runOpMode() {
 //        telemetry.addData("Status", "Initializing... Please wait");
