@@ -404,7 +404,7 @@ public class MM_Drivetrain {
             if (storageStart) {
                 forwardInches = 55;
             }
-            targetHeading = -80;;
+            targetHeading = -80;
             if (duckPosition == 1) {
                 targetHeading = -82.75;
             } else if (duckPosition == 3){
