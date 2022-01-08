@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -77,8 +76,6 @@ public class MM_Drivetrain {
     static final int BLUE = 2;
     static final int WAREHOUSE = 1;
     static final int STORAGE = 2;
-
-
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -299,10 +296,10 @@ public class MM_Drivetrain {
             double translatedError = translateAngle(opMode.pTurnController.getCurrentError());
 
             if(translatedError > 0){
-                setDrivePowers(-turnPower, turnPower, -turnPower, turnPower);
+                startMotors(-turnPower, turnPower, -turnPower, turnPower);
 
             }else {
-                setDrivePowers(turnPower, -turnPower, turnPower, -turnPower);
+                startMotors(turnPower, -turnPower, turnPower, -turnPower);
             }
 
             opMode.telemetry.addData("Power to motors", turnPower);
@@ -327,7 +324,7 @@ public class MM_Drivetrain {
             if (opMode.gamepad1.b) brPower = .5;
             else brPower = 0;
 
-            setDrivePowers(flPower, frPower, blPower, brPower);
+            startMotors(flPower, frPower, blPower, brPower);
         }
     }
 
@@ -388,10 +385,10 @@ public class MM_Drivetrain {
             }
         }
 
-        driveForwardInchesOld(12, 5);
-        strafeRightInchesOld(strafeInches, 5);
-        rotateToAngle(180, 7);
-        driveForwardInchesOld(forwardInches, 3);
+        driveForwardToPosition(12, 5);
+//        strafeRightInchesOld(strafeInches, 5);
+        pRotateDegrees(179);
+//        driveForwardToPosition(forwardInches, 3);
     }
 
     public void storagePark(boolean blueSide, double duckPosition, boolean storageStart) {
@@ -432,7 +429,7 @@ public class MM_Drivetrain {
         }
 
         rotateToAngle(targetHeading, 5);
-        driveForwardInchesOld(forwardInches, 7);
+        driveForwardToPosition(forwardInches, 7);
         rotateToAngle(secondTargetHeading, 3);
     }
 
@@ -447,8 +444,8 @@ public class MM_Drivetrain {
         }
 
         rotateToAngle(angle, 5);
-        driveForwardInchesOld(driveInches, 3);
-        strafeRightInchesOld(strafeInches, 4);
+        driveForwardToPosition(driveInches, 3);
+//        strafeRightInchesOld(strafeInches, 4);
     }
     public void odometryTelemetry() {
         opMode.telemetry.addData("Back Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
@@ -460,11 +457,11 @@ public class MM_Drivetrain {
         odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
         odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
         odometryLeft.setPosition(position);
-        odometryRight.setPosition(position);
+        odometryBack.setPosition(position);
         if (position == 1) {
-            odometryBack.setPosition(0);
+            odometryRight.setPosition(0);
         }else {
-            odometryBack.setPosition(1);
+            odometryRight.setPosition(1);
         }
     }
 
@@ -571,15 +568,19 @@ public class MM_Drivetrain {
             handleSlowMode();
         }
 
-        frontLeftDrive.setPower(flPower);
-        frontRightDrive.setPower(frPower);
-        backLeftDrive.setPower(blPower);
-        backRightDrive.setPower(brPower);
+        startMotors(flPower, frPower, blPower, brPower);
 
         opMode.telemetry.addData("front left power:", flPower);
         opMode.telemetry.addData("front right power:", frPower);
         opMode.telemetry.addData("back left power:,", blPower);
         opMode.telemetry.addData("back right power:",  brPower);
+    }
+
+    private void startMotors(double flPower, double frPower, double blPower, double brPower) {
+        frontLeftDrive.setPower(flPower);
+        frontRightDrive.setPower(frPower);
+        backLeftDrive.setPower(blPower);
+        backRightDrive.setPower(brPower);
     }
 
     private void handleSlowMode() {

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -27,7 +26,7 @@ public class MM_Slide {
     private MM_OpMode opMode;
 
     private MM_Transporter transporter = null;
-//    private DigitalChannel bottomStop = null;
+    //    private DigitalChannel bottomStop = null;
     private AnalogInput bottomStop = null;
     private DigitalChannel topStop = null;
     private DcMotor arm = null;
@@ -58,10 +57,7 @@ public class MM_Slide {
 
     public void runSlide() {
         if (opMode.gamepad2.right_trigger > .1) { // slide request up
-            if (shockAbsorberEngaged) { // lift shock absorber before starting up
-                shockAbsorber.setPosition(1);
-                shockAbsorberEngaged = false;
-            }
+            engageShock(false);
             arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             if (arm.getCurrentPosition() < TransportPosition.MAX.ticks && !isTriggered(topStop)) {
@@ -113,10 +109,7 @@ public class MM_Slide {
                 arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 setSlideTarget(TransportPosition.COLLECT.ticks);
 
-                if (!shockAbsorberEngaged) {
-                    shockAbsorber.setPosition(0);
-                    shockAbsorberEngaged = true;
-                }
+                engageShock(true);
                 isHandled = false;
 
             } else if (opMode.gamepad2.x && !isHandled) {
@@ -168,10 +161,7 @@ public class MM_Slide {
             setHeadedUp();
 
             if (headedUp) {
-                if (shockAbsorberEngaged) { // lift shock absorber before starting up
-                    shockAbsorber.setPosition(1);
-                    shockAbsorberEngaged = false;
-                }
+                engageShock(false);
                 arm.setPower(UP_POWER);
             } else {
                 arm.setPower(DOWN_POWER);
@@ -193,10 +183,7 @@ public class MM_Slide {
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         setHeadedUp();
         if (headedUp) {
-            if (shockAbsorberEngaged) {
-                shockAbsorber.setPosition(1);
-                shockAbsorberEngaged = false;
-            }
+            engageShock(false);
             arm.setPower(UP_POWER);
         } else {
             arm.setPower(DOWN_POWER);
@@ -205,9 +192,7 @@ public class MM_Slide {
             transporter.controlFlip();
         }
         if (isTriggeredMRtouch(bottomStop)) {
-            shockAbsorber.setPosition(0);
-//                    opMode.sleep(SLEEP_TIME);
-            shockAbsorberEngaged = true;
+            engageShock(true);
         }
     }
 
@@ -220,58 +205,36 @@ public class MM_Slide {
             position = TransportPosition.LEVEL2.ticks;
         }
 
-
         if (isTriggered(topStop)) {
             arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             arm.setPower(0);
 
-//        } else if (levelOne == 3 && opMode.gamepad2.x) {  // decided not to dump at level 1
-//            levelOne = 0;  // allow flip before doing down, but not going up
-        } else if (duckPosition == 1) {
-            arm.setTargetPosition(position);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            setHeadedUp();
-            if (headedUp) {
-                if (shockAbsorberEngaged) {
-                    shockAbsorber.setPosition(1);
-                    shockAbsorberEngaged = false;
-                }
-                arm.setPower(UP_POWER);
-            } else {
-                arm.setPower(DOWN_POWER);
-            }
-            while (opMode.opModeIsActive() && arm.isBusy()) {
-                transporter.controlFlip();
-            }
-            arm.setTargetPosition(TransportPosition.LEVEL1_PART_2.ticks);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            while (opMode.opModeIsActive() && arm.isBusy()) {
-            }
-            transporter.scoreFreight();
-            opMode.sleep(1500);
-
-        } else if (duckPosition == 2 || duckPosition == 3) {
+        } else {
             arm.setTargetPosition(position);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             setHeadedUp();
 
             if (headedUp) {
-                if (shockAbsorberEngaged) { // lift shock absorber before starting up
-                    shockAbsorber.setPosition(1);
-                    shockAbsorberEngaged = false;
-                }
+                engageShock(false);
                 arm.setPower(UP_POWER);
             } else {
                 arm.setPower(DOWN_POWER);
             }
+
             while (opMode.opModeIsActive() && arm.isBusy()) {
                 transporter.controlFlip();
                 opMode.telemetry.addData("slide moving - encoder count", arm.getCurrentPosition());
                 opMode.telemetry.update();
             }
+
+            if (duckPosition == 1) {
+                arm.setTargetPosition(TransportPosition.LEVEL1_PART_2.ticks);
+                arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                while (opMode.opModeIsActive() && arm.isBusy()) {
+                }
+            }
             transporter.scoreFreight();
             opMode.sleep(1500);
-            /*            goToPosition(TransportPosition.COLLECT.ticks);*/
         }
     }
 
@@ -302,15 +265,26 @@ public class MM_Slide {
             headedUp = false;
         }
     }
+
     public boolean isTriggeredMRtouch(AnalogInput sensor) {
         double voltage = (sensor.getVoltage());
-        if(voltage > 2){
+        if (voltage > 2) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 
+    private void engageShock(boolean engage) {
+        if (shockAbsorberEngaged != engage) {
+            if (engage){
+                shockAbsorber.setPosition(0);
+            }else {
+                shockAbsorber.setPosition(1);
+            }
+            shockAbsorberEngaged = engage;
+        }
+    }
 
     private void init() {
         arm = opMode.hardwareMap.get(DcMotor.class, "arm");
@@ -325,7 +299,7 @@ public class MM_Slide {
 //        bottomStop = opMode.hardwareMap.get(DigitalChannel.class, "bottomStop");//bottom limit switch on the slide
 //        bottomStop.setMode(DigitalChannel.Mode.INPUT);
         topStop = opMode.hardwareMap.get(DigitalChannel.class, "topStop");//top limit switch on the slide
-        bottomStop = opMode.hardwareMap.get(AnalogInput.class,"MR_touch");
+        bottomStop = opMode.hardwareMap.get(AnalogInput.class, "MR_touch");
 
     }
 }

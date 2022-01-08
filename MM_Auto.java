@@ -79,13 +79,13 @@ public class MM_Auto extends MM_OpMode {
                 robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
-                robot.drivetrain.outOfTheWay(alliance);
+//                robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Red warehouse");
             }else if(startingPosition == STORAGE){
                 robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
-                robot.drivetrain.storagePark(false, duckLocation, true);
+//                robot.drivetrain.storagePark(false, duckLocation, true);
                 telemetry.addLine("Red storage");
             }
         }else if(alliance == BLUE){
@@ -93,13 +93,13 @@ public class MM_Auto extends MM_OpMode {
                 robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
-                robot.drivetrain.outOfTheWay(alliance);
+//                robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Blue warehouse");
             }else if(startingPosition == STORAGE){
                 robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
                 robot.slide.goToPositionAuto(duckLocation);
                 robot.slide.autoCollectPosition(duckLocation);
-                robot.drivetrain.storagePark(true, duckLocation, true);
+//                robot.drivetrain.storagePark(true, duckLocation, true);
                 telemetry.addLine("Blue storage");
             }
         }

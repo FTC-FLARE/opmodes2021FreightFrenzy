@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name="TEST_DEAD_ENCODER", group="MM")
 //@Disabled
-public class TEST_Dead_Encoder_Blue_Warehouse extends LinearOpMode {
+public class TEST_Dead_Encoder_Blue_Warehouse extends MM_OpMode {
     private MM_Robot robot = new MM_Robot(this);
     private ElapsedTime runtime = new ElapsedTime();
 
