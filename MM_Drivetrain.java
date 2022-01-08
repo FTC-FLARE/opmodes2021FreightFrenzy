@@ -13,7 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 public class MM_Drivetrain {
     private MM_OpMode opMode;
 
-
     private BNO055IMU gyro;
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
@@ -464,18 +463,6 @@ public class MM_Drivetrain {
         opMode.telemetry.addData("Back Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
         opMode.telemetry.addData("Right Current", ticksToInches(-frontRightDrive.getCurrentPosition()));
         opMode.telemetry.addData("Left Current", ticksToInches(-backLeftDrive.getCurrentPosition()));
-    }
-    public void initOdometryServos(double position) {
-        odometryLeft = opMode.hardwareMap.get(Servo.class, "OdomLeft");
-        odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
-        odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
-        odometryLeft.setPosition(position);
-        odometryRight.setPosition(position);
-        if (position == 1) {
-            odometryBack.setPosition(0);
-        }else {
-            odometryBack.setPosition(1);
-        }
     }
 
     private void setTargetPositionStrafe(double driveDistance) {
