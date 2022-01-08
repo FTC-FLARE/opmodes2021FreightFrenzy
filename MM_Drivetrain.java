@@ -69,8 +69,10 @@ public class MM_Drivetrain {
     static final double ANGLE_THRESHOLD = 0.25;
     static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
     static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
-    static final double ANGLE_P_COEFFICIENT = 1/100; //numerator is gain per degree error
+    static final double ANGLE_P_COEFFICIENT = 1/10; //numerator is gain per degree error
     static final double RAMP_INTERVAL = 0.1;
+    static final double MIN_DRIVE_SPEED = 0.12;
+    static final double MAX_DRIVE_SPEED = 0.8;
 
     static final int RED = 1;
     static final int BLUE = 2;
@@ -84,6 +86,7 @@ public class MM_Drivetrain {
 
     public void driveForwardToPosition(double forwardInches, double timeoutTime) {
 
+/*
         if (forwardInches <= 24) {
             pCoefficient = 1/(SLOW_DOWN_POINT * (forwardInches/16));
             minPower = 0.12;
@@ -94,11 +97,19 @@ public class MM_Drivetrain {
             pCoefficient= 1/(SLOW_DOWN_POINT * (forwardInches/30));
             minPower = 0.08;
         }
+*/
 
         leftTargetTicks = inchesToTicks(forwardInches) + leftPriorEncoderTarget;
         rightTargetTicks = inchesToTicks(forwardInches) + rightPriorEncoderTarget;
         lookingForTarget = true;
         robotHeading = getCurrentHeading();
+
+        opMode.flMotorController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
+        opMode.flMotorController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
+        opMode.flMotorController.setSetpoint(leftTargetTicks);
+        opMode.frMotorController.setInputRange(rightPriorEncoderTarget, rightTargetTicks);
+        opMode.frMotorController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
+        opMode.frMotorController.setSetpoint(rightTargetTicks);
 
         runtime.reset();
         while (lookingForTarget && opMode.opModeIsActive() && (runtime.seconds() < timeoutTime)) {
@@ -106,9 +117,9 @@ public class MM_Drivetrain {
             assignMotorPowers(leftDrivePower, rightDrivePower, leftDrivePower, rightDrivePower);
             setDrivePowers();
 
-            if (Math.abs(leftDistanceError) > DRIVE_THRESHOLD || Math.abs(rightDistanceError) > DRIVE_THRESHOLD) {
-                opMode.telemetry.addData("Left Distance", ticksToInches(leftDistanceError));
-                opMode.telemetry.addData("Right Distance", ticksToInches(rightDistanceError));
+            if (!opMode.flMotorController.reachedTarget() && !opMode.frMotorController.reachedTarget()) {
+                opMode.telemetry.addData("Left Distance", ticksToInches(opMode.flMotorController.getCurrentError()));
+                opMode.telemetry.addData("Right Distance", ticksToInches(opMode.frMotorController.getCurrentError()));
                 opMode.telemetry.addData("Left Current", ticksToInches(leftEncoderTicks));
                 opMode.telemetry.addData("Right Current", ticksToInches(rightEncoderTicks));
             } else {
@@ -122,10 +133,15 @@ public class MM_Drivetrain {
         rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    public void strafeToPosition(double strafeInches, double timeoutTime) {
-        backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
+    public void strafeToPosition(double rightStrafeInches, double timeoutTime) {
+        backTargetTicks = inchesToTicks(rightStrafeInches) + backPriorEncoderTarget;
         lookingForTarget = true;
         robotHeading = getCurrentHeading();
+
+        //same for all motors
+        opMode.flMotorController.setInputRange(backPriorEncoderTarget, backTargetTicks);
+        opMode.flMotorController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
+        opMode.flMotorController.setSetpoint(backTargetTicks);
 
         runtime.reset();
         while (lookingForTarget && opMode.opModeIsActive() && (runtime.seconds() < timeoutTime)) {
@@ -133,9 +149,9 @@ public class MM_Drivetrain {
             assignMotorPowers(flPower, frPower, blPower, brPower);
             setDrivePowers();
 
-            if (Math.abs(backDistanceError) > DRIVE_THRESHOLD) {
-                opMode.telemetry.addData("Distance", ticksToInches(backDistanceError));
-                opMode.telemetry.addData("Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
+            if (!opMode.flMotorController.reachedTarget()) {
+                opMode.telemetry.addData("Distance", ticksToInches(opMode.flMotorController.getCurrentError()));
+                opMode.telemetry.addData("Current", ticksToInches(backEncoderTicks));
             } else {
                 stop();
                 lookingForTarget = false;
@@ -151,19 +167,13 @@ public class MM_Drivetrain {
             leftEncoderTicks = (leftEncoder.getCurrentPosition());
             rightEncoderTicks = (rightEncoder.getCurrentPosition());
 
-//            rightEncoderTicks = leftEncoderTicks; //temporary
-//
-            leftDistanceError = leftTargetTicks - leftEncoderTicks;
-            rightDistanceError = rightTargetTicks - rightEncoderTicks;
+            leftDrivePower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks); //* (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+            rightDrivePower = opMode.frMotorController.getMinOutput() + opMode.frMotorController.calculatePower(rightEncoderTicks); //* (opMode.frMotorController.getCurrentError()/Math.abs(opMode.frMotorController.getCurrentError()));
 
-            leftDrivePower = pCoefficient * leftDistanceError;
-            rightDrivePower = pCoefficient * rightDistanceError;
-
-            //assign minimum drive power of 0.14 according to the higher power
-            if (Math.abs(leftDrivePower) < minPower || Math.abs(rightDrivePower) < minPower) {
-                double minimum = Math.min(Math.abs(leftDrivePower), Math.abs(rightDrivePower));
-                leftDrivePower = ((1/minimum) * minPower * leftDrivePower);
-                rightDrivePower = ((1/minimum) * minPower * rightDrivePower);
+            if (opMode.flMotorController.getCurrentError() < 0) {
+                leftDrivePower = leftDrivePower * -1;
+            } if (opMode.frMotorController.getCurrentError() < 0) {
+                rightDrivePower = rightDrivePower * -1;
             }
             straighten(robotHeading);
 
@@ -173,23 +183,27 @@ public class MM_Drivetrain {
 
         } else {
             backEncoderTicks = backEncoder.getCurrentPosition(); //encoder port 2
-            backDistanceError = backTargetTicks - backEncoderTicks;
 
-            flPower = pCoefficient * backDistanceError;
-            frPower = -pCoefficient * backDistanceError;
-            blPower = -pCoefficient * backDistanceError;
-            brPower = pCoefficient * backDistanceError;
+            flPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+            frPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+            blPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+            brPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+
             straightenStrafe(robotHeading);
+
+            if (rampUp) {
+                rampUpStrafe();
+            }
         }
     }
 
     private void straighten(double startHeading) {
         calculateRotateError(startHeading);
 
-/*        if (headingError != 0) {
-            rightDrivePower = rightDrivePower - (headingError * ANGLE_P_COEFFICENT * rightDrivePower);
-            leftDrivePower = leftDrivePower + (headingError * ANGLE_P_COEFFICENT * leftDrivePower);
-        }*/
+        if (headingError != 0) {
+            rightDrivePower = rightDrivePower - (headingError * ANGLE_P_COEFFICIENT * rightDrivePower);
+            leftDrivePower = leftDrivePower + (headingError * ANGLE_P_COEFFICIENT * leftDrivePower);
+        }
     }
 
     private void straightenStrafe(double startHeading) {
@@ -200,9 +214,7 @@ public class MM_Drivetrain {
             frPower = frPower - (headingError * ANGLE_P_COEFFICIENT * frPower);
             blPower = blPower + (headingError * ANGLE_P_COEFFICIENT * blPower);
             brPower = brPower - (headingError * ANGLE_P_COEFFICIENT * brPower);
-
         }
-
     }
 
     public void driveWithSticks() {
@@ -452,18 +464,6 @@ public class MM_Drivetrain {
         opMode.telemetry.addData("Right Current", ticksToInches(-frontRightDrive.getCurrentPosition()));
         opMode.telemetry.addData("Left Current", ticksToInches(-backLeftDrive.getCurrentPosition()));
     }
-    public void initOdometryServos(double position) {
-        odometryLeft = opMode.hardwareMap.get(Servo.class, "OdomLeft");
-        odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
-        odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
-        odometryLeft.setPosition(position);
-        odometryBack.setPosition(position);
-        if (position == 1) {
-            odometryRight.setPosition(0);
-        }else {
-            odometryRight.setPosition(1);
-        }
-    }
 
     private void setTargetPositionStrafe(double driveDistance) {
         int frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
@@ -540,6 +540,18 @@ public class MM_Drivetrain {
         rampPrecentage =  rampPrecentage + RAMP_INTERVAL;
         leftDrivePower = leftDrivePower * rampPrecentage;
         rightDrivePower = rightDrivePower * rampPrecentage;
+
+        if (rampPrecentage == 1) {
+            rampUp = false;
+        }
+    }
+
+    private void rampUpStrafe() {
+        rampPrecentage =  rampPrecentage + RAMP_INTERVAL;
+        flPower = flPower * rampPrecentage;
+        frPower = frPower * rampPrecentage;
+        blPower = blPower * rampPrecentage;
+        brPower = brPower * rampPrecentage;
 
         if (rampPrecentage == 1) {
             rampUp = false;
@@ -642,6 +654,19 @@ public class MM_Drivetrain {
 
         switchEncoderMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void initOdometryServos(double position) {
+        odometryLeft = opMode.hardwareMap.get(Servo.class, "OdomLeft");
+        odometryRight = opMode.hardwareMap.get(Servo.class, "OdomRight");
+        odometryBack = opMode.hardwareMap.get(Servo.class, "OdomBack");
+        odometryLeft.setPosition(position);
+        odometryBack.setPosition(position);
+        if (position == 1) {
+            odometryRight.setPosition(0);
+        }else {
+            odometryRight.setPosition(1);
+        }
     }
 
     public void initializeGyro() {
