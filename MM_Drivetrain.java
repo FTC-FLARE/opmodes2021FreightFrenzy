@@ -69,10 +69,10 @@ public class MM_Drivetrain {
     static final double ANGLE_THRESHOLD = 0.25;
     static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
     static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
-    static final double ANGLE_P_COEFFICIENT = 1/100; //numerator is gain per degree error
+    static final double ANGLE_P_COEFFICIENT = 1/10; //numerator is gain per degree error
     static final double RAMP_INTERVAL = 0.1;
-    static final double MIN_DRIVE_SPEED = 0.09;
-    static final double MAX_DRIVE_SPEED = 0.9;
+    static final double MIN_DRIVE_SPEED = 0.12;
+    static final double MAX_DRIVE_SPEED = 0.8;
 
     static final int RED = 1;
     static final int BLUE = 2;
@@ -119,7 +119,7 @@ public class MM_Drivetrain {
             assignMotorPowers(leftDrivePower, rightDrivePower, leftDrivePower, rightDrivePower);
             setDrivePowers();
 
-            if (!opMode.flMotorController.reachedTarget() || !opMode.frMotorController.reachedTarget()) {
+            if (!opMode.flMotorController.reachedTarget() && !opMode.frMotorController.reachedTarget()) {
                 opMode.telemetry.addData("Left Distance", ticksToInches(opMode.flMotorController.getCurrentError()));
                 opMode.telemetry.addData("Right Distance", ticksToInches(opMode.frMotorController.getCurrentError()));
                 opMode.telemetry.addData("Left Current", ticksToInches(leftEncoderTicks));
@@ -169,8 +169,14 @@ public class MM_Drivetrain {
             leftEncoderTicks = (leftEncoder.getCurrentPosition());
             rightEncoderTicks = (rightEncoder.getCurrentPosition());
 
-            leftDrivePower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-            rightDrivePower = opMode.frMotorController.getMinOutput() + opMode.frMotorController.calculatePower(rightEncoderTicks) * (opMode.frMotorController.getCurrentError()/Math.abs(opMode.frMotorController.getCurrentError()));
+            leftDrivePower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks); //* (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+            rightDrivePower = opMode.frMotorController.getMinOutput() + opMode.frMotorController.calculatePower(rightEncoderTicks); //* (opMode.frMotorController.getCurrentError()/Math.abs(opMode.frMotorController.getCurrentError()));
+
+            if (opMode.flMotorController.getCurrentError() < 0) {
+                leftDrivePower = leftDrivePower * -1;
+            } if (opMode.frMotorController.getCurrentError() < 0) {
+                rightDrivePower = rightDrivePower * -1;
+            }
 
             straighten(robotHeading);
 
@@ -649,7 +655,7 @@ public class MM_Drivetrain {
         backEncoder = opMode.hardwareMap.get(DcMotorEx.class, "FLMotor");
 
         switchEncoderMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void initOdometryServos(double position) {
