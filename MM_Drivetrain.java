@@ -227,6 +227,14 @@ public class MM_Drivetrain {
         blPower = drive + turn - strafe;
         brPower = drive - turn + strafe;
 
+        if (opMode.gamepad1.left_trigger > 0) {
+            frPower += 0.05;
+            brPower += 0.05;
+        } if (opMode.gamepad1.right_trigger > 0) {
+            flPower += 0.05;
+            blPower += 0.05;
+        }
+
         setDrivePowers();
     }
 
