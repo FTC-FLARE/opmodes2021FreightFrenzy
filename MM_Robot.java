@@ -16,19 +16,17 @@ public class MM_Robot {
         this.opMode = opMode;
     }
 
-    public void autoInit(){
-        init();
-        drivetrain.initOdometryServos(0);
-        vuforia = new MM_Vuforia(opMode);
-        drivetrain.initializeGyro();
-    }
-
     public void init() {
         drivetrain = new MM_Drivetrain(opMode);
         collector = new MM_Collector(opMode);
         slide = new MM_Slide(opMode);
         ducker = new MM_Ducker(opMode);
-        drivetrain.initOdometryServos(1);
+        if (opMode.getClass() == MM_TeleOp.class) {
+            drivetrain.initOdometryServos(1);
+        } else{
+            drivetrain.initOdometryServos(0);
+            vuforia = new MM_Vuforia(opMode);
+            drivetrain.initializeGyro();
+        }
     }
-
 }

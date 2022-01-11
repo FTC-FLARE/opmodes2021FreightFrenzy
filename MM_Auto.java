@@ -118,7 +118,7 @@ public class MM_Auto extends MM_OpMode {
         telemetry.addData("Status", "Wait for initialization");
         telemetry.update();
 
-        robot.autoInit();
+        robot.init();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();

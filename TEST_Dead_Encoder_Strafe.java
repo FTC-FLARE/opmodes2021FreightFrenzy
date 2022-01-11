@@ -14,7 +14,7 @@ public class TEST_Dead_Encoder_Strafe extends MM_OpMode {
         telemetry.addData("Status", "Wait for initialization");
         telemetry.update();
 
-        robot.autoInit();
+        robot.init();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
