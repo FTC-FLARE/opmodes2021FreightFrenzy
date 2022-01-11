@@ -73,6 +73,8 @@ public class MM_Drivetrain {
     static final double RAMP_INTERVAL = 0.1;
     static final double MIN_DRIVE_SPEED = 0.12;
     static final double MAX_DRIVE_SPEED = 0.8;
+    static final double PIN_POWER_HIGH = 0.78;
+    static final double PIN_POWER_LOW = 0.70;
 
     static final int RED = 1;
     static final int BLUE = 2;
@@ -218,23 +220,23 @@ public class MM_Drivetrain {
     }
 
     public void driveWithSticks() {
-        double drive = -opMode.gamepad1.left_stick_y;
-        double turn = opMode.gamepad1.right_stick_x;
-        double strafe = opMode.gamepad1.left_stick_x;
-
-        flPower = drive + turn + strafe;
-        frPower = drive - turn - strafe;
-        blPower = drive + turn - strafe;
-        brPower = drive - turn + strafe;
 
         if (opMode.gamepad1.left_trigger > 0) {
-            frPower += 0.05;
-            brPower += 0.05;
-        } if (opMode.gamepad1.right_trigger > 0) {
-            flPower += 0.05;
-            blPower += 0.05;
-        }
+            assignMotorPowers(PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH);
+            slowMode = true;
+        } else if (opMode.gamepad1.right_trigger > 0) {
+            assignMotorPowers(PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW);
+            slowMode = true;
+        } else {
+            double drive = -opMode.gamepad1.left_stick_y;
+            double turn = opMode.gamepad1.right_stick_x;
+            double strafe = opMode.gamepad1.left_stick_x;
 
+            flPower = drive + turn + strafe;
+            frPower = drive - turn - strafe;
+            blPower = drive + turn - strafe;
+            brPower = drive - turn + strafe;
+        }
         setDrivePowers();
     }
 
