@@ -75,6 +75,8 @@ public class MM_Drivetrain {
     static final double MAX_DRIVE_SPEED = 0.8;
     static final double PIN_POWER_HIGH = 0.78;
     static final double PIN_POWER_LOW = 0.70;
+    static final double MIN_STRAFE_POWER = 0.14;
+    static final double MAX_STRAFE_POWER = 0.8;
 
     static final int RED = 1;
     static final int BLUE = 2;
@@ -142,7 +144,7 @@ public class MM_Drivetrain {
 
         //same for all motors
         opMode.flMotorController.setInputRange(backPriorEncoderTarget, backTargetTicks);
-        opMode.flMotorController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
+        opMode.flMotorController.setOutputRange(MIN_STRAFE_POWER, MAX_STRAFE_POWER);
         opMode.flMotorController.setSetpoint(backTargetTicks);
 
         runtime.reset();
@@ -185,13 +187,22 @@ public class MM_Drivetrain {
 
         } else {
             backEncoderTicks = backEncoder.getCurrentPosition(); //encoder port 2
+            double calculatedPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks);
 
-            flPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-            frPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-            blPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-            brPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(leftEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+            if(opMode.flMotorController.getCurrentError() < 0){
+                calculatedPower = -calculatedPower;
+            }
+            flPower = calculatedPower;
+            frPower = -calculatedPower;
+            blPower = -calculatedPower;
+            brPower = calculatedPower;
 
-            straightenStrafe(robotHeading);
+//            flPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+//            frPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+//            blPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+//            brPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
+
+//            straightenStrafe(robotHeading);
 
             if (rampUp) {
                 rampUpStrafe();

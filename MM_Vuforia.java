@@ -162,7 +162,7 @@ public class MM_Vuforia {
         tfodParameters.inputSize = 320;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vLocalizer);
 
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, new String[] {"junk", "junk", "Duck"});
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, new String[] {"ball", "junk", "Duck"});
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1, 16.0 / 9.0);

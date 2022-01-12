@@ -16,9 +16,9 @@ public class MM_Auto extends MM_OpMode {
     private int alliance = RED;
     private int startingPosition = WAREHOUSE;
     private int finishPosition = OOTW;
-    private int sleepTime = 0;
     private boolean spinDucker = false;
     private boolean isHandled = false;
+    private long sleepTime = 0;
 
 
     @Override
@@ -74,31 +74,27 @@ public class MM_Auto extends MM_OpMode {
         }
         int duckLocation = robot.vuforia.findDuckPosition();
 
+        sleep(sleepTime);
+
+//        robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
+//        robot.slide.goToPositionAuto(duckLocation);
+//        robot.slide.autoCollectPosition(duckLocation);
+
         if(alliance == RED){
             if(startingPosition == WAREHOUSE){
-                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
-                robot.slide.goToPositionAuto(duckLocation);
-                robot.slide.autoCollectPosition(duckLocation);
 //                robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Red warehouse");
             }else if(startingPosition == STORAGE){
-                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
-                robot.slide.goToPositionAuto(duckLocation);
-                robot.slide.autoCollectPosition(duckLocation);
+                robot.ducker.autoSpinRed(spinDucker, alliance);
 //                robot.drivetrain.storagePark(false, duckLocation, true);
                 telemetry.addLine("Red storage");
             }
         }else if(alliance == BLUE){
             if(startingPosition == WAREHOUSE){
-                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
-                robot.slide.goToPositionAuto(duckLocation);
-                robot.slide.autoCollectPosition(duckLocation);
 //                robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Blue warehouse");
             }else if(startingPosition == STORAGE){
-                robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
-                robot.slide.goToPositionAuto(duckLocation);
-                robot.slide.autoCollectPosition(duckLocation);
+                robot.ducker.autoSpinRed(spinDucker, alliance);
 //                robot.drivetrain.storagePark(true, duckLocation, true);
                 telemetry.addLine("Blue storage");
             }

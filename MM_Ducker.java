@@ -12,7 +12,11 @@ public class MM_Ducker {
     private ElapsedTime runtime = new ElapsedTime();
     static final double MOTOR_POWER = 1.00;
     private DcMotor DuckerMotor= null;
-    private final double TIMEOUT_TIME = 5;
+    private final double TIMEOUT_TIME = 2.75;
+
+    static final int RED = 1;
+    static final int BLUE = 2;
+
     // Constructor
     public MM_Ducker(MM_OpMode opMode){
         this.opMode = opMode;
@@ -20,18 +24,21 @@ public class MM_Ducker {
         DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void autoSpinRed(boolean redSide) {
+    public void autoSpinRed(boolean spinDucker, int alliance) {
         runtime.reset();
-        if (redSide) {
-            spinRed();
-        } else {
-            spinBlue();
+
+        if (spinDucker) {
+            if (alliance == RED){
+                spinRed();
+            }else if (alliance == BLUE){
+                spinBlue();
+            }
+            while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
+                opMode.telemetry.addLine("Spinning Ducker");
+            }
+            stop();
         }
 
-        while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
-            opMode.telemetry.addLine("Spinning Ducker");
-        }
-        stop();
     }
 
     public void manualSpin() {
