@@ -42,7 +42,7 @@ public class MM_P_Controller {
     }
     public boolean reachedTarget(){
 //        if ((absError / inputRange) * 100 < PCT_THRESHOLD){
-        if ((Math.abs(currentError) / inputRange) * 100 < PCT_THRESHOLD){
+        if ((Math.abs(currentError / inputRange)) * 100 < PCT_THRESHOLD){
             return true;
         }
         return false;
