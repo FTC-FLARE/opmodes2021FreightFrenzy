@@ -216,14 +216,13 @@ public class MM_Drivetrain {
         calculateRotateError(startHeading);
 
         if (headingError != 0) {
-            rightDrivePower = rightDrivePower - (headingError * SRAIGHT_P_COEFFICIENT * rightDrivePower);
-            leftDrivePower = leftDrivePower + (headingError * SRAIGHT_P_COEFFICIENT * leftDrivePower);
+            rightDrivePower = rightDrivePower + (headingError * SRAIGHT_P_COEFFICIENT * rightDrivePower);
+            leftDrivePower = leftDrivePower - (headingError * SRAIGHT_P_COEFFICIENT * leftDrivePower);
         }
     }
 
     private void straightenStrafe(double startHeading) {
         calculateRotateError(startHeading);
-
 
         if (headingError != 0) {
             flPower = flPower + (headingError * ANGLE_P_COEFFICIENT * flPower);
