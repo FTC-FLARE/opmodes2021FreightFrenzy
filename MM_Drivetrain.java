@@ -70,6 +70,7 @@ public class MM_Drivetrain {
     static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
     static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
     static final double ANGLE_P_COEFFICIENT = .2; //numerator is gain per degree error
+    static final double SRAIGHT_P_COEFFICIENT = .010;
     static final double RAMP_INTERVAL = 0.1;
     static final double MIN_DRIVE_SPEED = 0.12;
     static final double MAX_DRIVE_SPEED = 0.8;
@@ -215,14 +216,13 @@ public class MM_Drivetrain {
         calculateRotateError(startHeading);
 
         if (headingError != 0) {
-            rightDrivePower = rightDrivePower - (headingError * ANGLE_P_COEFFICIENT * rightDrivePower);
-            leftDrivePower = leftDrivePower + (headingError * ANGLE_P_COEFFICIENT * leftDrivePower);
+            rightDrivePower = rightDrivePower - (headingError * SRAIGHT_P_COEFFICIENT * rightDrivePower);
+            leftDrivePower = leftDrivePower + (headingError * SRAIGHT_P_COEFFICIENT * leftDrivePower);
         }
     }
 
     private void straightenStrafe(double startHeading) {
         calculateRotateError(startHeading);
-        opMode.telemetry.addLine("HI");
 
 
         if (headingError != 0) {
@@ -547,7 +547,7 @@ public class MM_Drivetrain {
     }
 
     private void calculateRotateError(double targetHeading) {
-        headingError = targetHeading - getCurrentHeading();;
+        headingError = targetHeading - getCurrentHeading();
 
         if (headingError > 180) {
             headingError -= 360;
