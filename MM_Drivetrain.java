@@ -48,15 +48,16 @@ public class MM_Drivetrain {
     private double backDistanceError = 0;
     private double pCoefficient = 0;
 
-    private double leftEncoderTicks = 0;
-    private double rightEncoderTicks = 0;
-    private double backEncoderTicks = 0;
+    private int leftEncoderTicks = 0;
+    private int rightEncoderTicks = 0;
+    private int backEncoderTicks = 0;
     private int leftPriorEncoderTarget = 0;
     private int rightPriorEncoderTarget = 0;
     private int backPriorEncoderTarget = 0;
     private int leftTargetTicks = 0;
     private int rightTargetTicks = 0;
     private int backTargetTicks = 0;
+    private double priorAngleTarget = 0;
 
     // static final double WHEEL_CIRCUMFERENCE = 12.3684;  //4 inch wheels
     // static final double TICKS_PER_REVOLUTION = 537.7; //19.2 to 1 go builda
@@ -107,7 +108,7 @@ public class MM_Drivetrain {
         leftTargetTicks = inchesToTicks(forwardInches) + leftPriorEncoderTarget;
         rightTargetTicks = inchesToTicks(forwardInches) + rightPriorEncoderTarget;
         lookingForTarget = true;
-        robotHeading = 0;
+        robotHeading = priorAngleTarget;
 //        rampUp = true;
 
         opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
@@ -142,7 +143,7 @@ public class MM_Drivetrain {
     public void strafeToPosition(double rightStrafeInches, double timeoutTime) {
         backTargetTicks = inchesToTicks(rightStrafeInches) + backPriorEncoderTarget;
         lookingForTarget = true;
-        robotHeading = 0;
+        robotHeading = priorAngleTarget;
 
 
         //same for all motors
@@ -317,6 +318,8 @@ public class MM_Drivetrain {
         }
     }
     public void pRotateDegrees(double degrees){//timeout
+        leftEncoderTicks = leftEncoder.getCurrentPosition();
+        rightEncoderTicks = rightEncoder.getCurrentPosition();
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         double targetAngle = degrees;
 
@@ -338,6 +341,11 @@ public class MM_Drivetrain {
             opMode.telemetry.update();
         }while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
         stop();
+        int rotateDistance = leftEncoder.getCurrentPosition() - leftEncoderTicks;
+        leftPriorEncoderTarget = leftPriorEncoderTarget + rotateDistance;
+        rotateDistance = rightEncoder.getCurrentPosition() - rightEncoderTicks;
+        rightPriorEncoderTarget = rightPriorEncoderTarget + rotateDistance;
+        priorAngleTarget = targetAngle;
     }
 
     public void testMotors(){
