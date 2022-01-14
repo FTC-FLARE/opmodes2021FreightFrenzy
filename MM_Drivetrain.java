@@ -318,9 +318,9 @@ public class MM_Drivetrain {
     }
     public void pRotateDegrees(double degrees){//timeout
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        double targetAngle = translateAngle(getCurrentHeading() + degrees);
+        double targetAngle = degrees;
 
-        opMode.pTurnController.setInputRange(0, Math.abs(degrees));
+        opMode.pTurnController.setInputRange(Math.abs(getCurrentHeading()), Math.abs(degrees));
         opMode.pTurnController.setOutputRange(.12, .7);
         opMode.pTurnController.setSetpoint(targetAngle);
         do {
