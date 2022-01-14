@@ -70,7 +70,7 @@ public class MM_Drivetrain {
     static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
     static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
     static final double ANGLE_P_COEFFICIENT = .2; //numerator is gain per degree error
-    static final double SRAIGHT_P_COEFFICIENT = .010;
+    static final double SRAIGHT_P_COEFFICIENT = .01;
     static final double RAMP_INTERVAL = 0.1;
     static final double MIN_DRIVE_SPEED = 0.12;
     static final double MAX_DRIVE_SPEED = 0.8;
@@ -322,9 +322,9 @@ public class MM_Drivetrain {
     }
     public void pRotateDegrees(double degrees){//timeout
         switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        double targetAngle = translateAngle(getCurrentHeading() + degrees);
+        double targetAngle = degrees;
 
-        opMode.pTurnController.setInputRange(0, Math.abs(degrees));
+        opMode.pTurnController.setInputRange(Math.abs(getCurrentHeading()), Math.abs(degrees));
         opMode.pTurnController.setOutputRange(.12, .7);
         opMode.pTurnController.setSetpoint(targetAngle);
         do {
