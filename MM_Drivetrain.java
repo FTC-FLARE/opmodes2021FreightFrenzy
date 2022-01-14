@@ -394,12 +394,14 @@ public class MM_Drivetrain {
     public void driveToHub(int alliance, int startingPosition, double duckPosition) {
         //needs clean up with other autodrivemethods
         double forwardInches = 0;
-        double strafeInches = 0;
+        double strafeInches = 0;// temp drive until working strafe
+        double rotateDegrees = 90;
 
         if((alliance == BLUE && startingPosition == WAREHOUSE) || (alliance == RED && startingPosition == STORAGE)) {
 
             forwardInches = -6;
             strafeInches = 30.5;
+            rotateDegrees = -90;
 
             //determine driving position
             if(duckPosition == 1) {
@@ -421,9 +423,11 @@ public class MM_Drivetrain {
         }
 
         driveForwardToPosition(12, 5);
+        pRotateDegrees(rotateDegrees);
+        driveForwardToPosition(strafeInches,5);
 //        strafeRightInchesOld(strafeInches, 5);
         pRotateDegrees(179);
-//        driveForwardToPosition(forwardInches, 3);
+        driveForwardToPosition(forwardInches, 3);
     }
 
     public void storagePark(boolean blueSide, double duckPosition, boolean storageStart) {
@@ -463,14 +467,14 @@ public class MM_Drivetrain {
             }
         }
 
-        rotateToAngle(targetHeading, 5);
+        pRotateDegrees(targetHeading);
         driveForwardToPosition(forwardInches, 7);
-        rotateToAngle(secondTargetHeading, 3);
+        pRotateDegrees(secondTargetHeading);
     }
 
     public void outOfTheWay(int alliance){
-        double angle = 90;
-        double driveInches = -24;
+        double angle = 135;
+        double driveInches = -30;
         double strafeInches = -16;
 
         if (alliance == BLUE) {
@@ -478,8 +482,9 @@ public class MM_Drivetrain {
             strafeInches = -strafeInches;
         }
 
-        rotateToAngle(angle, 5);
-        driveForwardToPosition(driveInches, 3);
+        pRotateDegrees(angle);
+        driveForwardToPosition(driveInches, 4);
+
 //        strafeRightInchesOld(strafeInches, 4);
     }
     public void odometryTelemetry() {
