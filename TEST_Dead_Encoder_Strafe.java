@@ -22,7 +22,14 @@ public class TEST_Dead_Encoder_Strafe extends MM_OpMode {
         waitForStart();
         runtime.reset();
 
-        robot.drivetrain.strafeToPosition(36, 7);
+        robot.drivetrain.driveForwardToPosition(24, 7);
+        robot.drivetrain.pRotateDegrees(90);
+        robot.drivetrain.driveForwardToPosition(24, 7);
+        robot.drivetrain.pRotateDegrees(90);
+        robot.drivetrain.driveForwardToPosition(24, 7);
+        robot.drivetrain.pRotateDegrees(90);
+        robot.drivetrain.driveForwardToPosition(24, 7);
+        robot.drivetrain.pRotateDegrees(90);
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.update();

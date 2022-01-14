@@ -70,10 +70,10 @@ public class MM_Drivetrain {
     static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
     static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
     static final double ANGLE_P_COEFFICIENT = .2; //numerator is gain per degree error
-    static final double SRAIGHT_P_COEFFICIENT = .010;
-    static final double RAMP_INTERVAL = 0.1;
+    static final double SRAIGHT_P_COEFFICIENT = .13;
+    static final double RAMP_INTERVAL = 0.01;
     static final double MIN_DRIVE_SPEED = 0.12;
-    static final double MAX_DRIVE_SPEED = 0.8;
+    static final double MAX_DRIVE_SPEED = 0.6;
     static final double PIN_POWER_HIGH = 0.78;
     static final double PIN_POWER_LOW = 0.70;
     static final double MIN_STRAFE_POWER = 0.17 ;
@@ -107,7 +107,8 @@ public class MM_Drivetrain {
         leftTargetTicks = inchesToTicks(forwardInches) + leftPriorEncoderTarget;
         rightTargetTicks = inchesToTicks(forwardInches) + rightPriorEncoderTarget;
         lookingForTarget = true;
-        robotHeading = getCurrentHeading();
+        robotHeading = 0;
+//        rampUp = true;
 
         opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
         opMode.pLeftDriveController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
@@ -141,7 +142,8 @@ public class MM_Drivetrain {
     public void strafeToPosition(double rightStrafeInches, double timeoutTime) {
         backTargetTicks = inchesToTicks(rightStrafeInches) + backPriorEncoderTarget;
         lookingForTarget = true;
-        robotHeading = getCurrentHeading();
+        robotHeading = 0;
+
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
@@ -201,11 +203,6 @@ public class MM_Drivetrain {
 
             straightenStrafe(robotHeading);
 
-//            flPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-//            frPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-//            blPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-//            brPower = opMode.flMotorController.getMinOutput() + opMode.flMotorController.calculatePower(backEncoderTicks) * (-opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-
             if (rampUp) {
                 rampUpStrafe();
             }
@@ -216,8 +213,8 @@ public class MM_Drivetrain {
         calculateRotateError(startHeading);
 
         if (headingError != 0) {
-            rightDrivePower = rightDrivePower + (headingError * SRAIGHT_P_COEFFICIENT * rightDrivePower);
-            leftDrivePower = leftDrivePower - (headingError * SRAIGHT_P_COEFFICIENT * leftDrivePower);
+            rightDrivePower = rightDrivePower + (headingError * SRAIGHT_P_COEFFICIENT * Math.abs(rightDrivePower));
+            leftDrivePower = leftDrivePower - (headingError * SRAIGHT_P_COEFFICIENT * Math.abs(leftDrivePower));
         }
     }
 
@@ -533,7 +530,9 @@ public class MM_Drivetrain {
     }
 
     public float getCurrentHeading() {
-        return gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+        float heading = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
+        opMode.telemetry.addData("Heading:", heading);
+        return heading;
     }
 
     private double translateAngle(double angle) {
@@ -576,7 +575,7 @@ public class MM_Drivetrain {
         blPower = blPower * rampPrecentage;
         brPower = brPower * rampPrecentage;
 
-        if (rampPrecentage == 1) {
+        if (rampPrecentage >= 1) {
             rampUp = false;
         }
     }
@@ -612,10 +611,16 @@ public class MM_Drivetrain {
     }
 
     private void startMotors(double flPower, double frPower, double blPower, double brPower) {
-        backLeftDrive.setPower(blPower);
-        frontLeftDrive.setPower(flPower);
-        backRightDrive.setPower(brPower);
-        frontRightDrive.setPower(frPower);
+        frontRightDrive.setPower(frPower * 1.04);
+        backLeftDrive.setPower(blPower * 0.985);
+        backRightDrive.setPower(brPower * 1.015);
+        frontLeftDrive.setPower(flPower * 0.965);
+
+/*
+        backLeftDrive.setPower(blPower * 0.99);
+        frontRightDrive.setPower(frPower * 1.01);
+        backRightDrive.setPower(brPower * 1.01);
+        frontLeftDrive.setPower(flPower * 0.99);*/
     }
 
     private void handleSlowMode() {

@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class TEST_Dead_Encoder_Straight extends MM_OpMode {
     private MM_Robot robot = new MM_Robot(this);
     private ElapsedTime runtime = new ElapsedTime();
-    private double driveInches = 65;
-    private double secondDriveInches = 12;
+    private double driveInches = -24;
+    private double secondDriveInches = -12;
     private boolean isHandled = false;
 
     @Override
@@ -27,13 +27,13 @@ public class TEST_Dead_Encoder_Straight extends MM_OpMode {
             if(gamepad1.dpad_up && !isHandled){
                  driveInches += 1;
                 isHandled = true;
-            }else if(gamepad1.dpad_down && driveInches > 0 && !isHandled){
+            }else if(gamepad1.dpad_down && !isHandled){
                 driveInches -= 1;
                 isHandled = true;
             }else if(gamepad1.dpad_right && !isHandled){
                 secondDriveInches += 1;
                 isHandled = true;
-            }else if(gamepad1.dpad_left && secondDriveInches > 0 && !isHandled){
+            }else if(gamepad1.dpad_left && !isHandled){
                 secondDriveInches -= 1;
                 isHandled = true;
             } else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y){
