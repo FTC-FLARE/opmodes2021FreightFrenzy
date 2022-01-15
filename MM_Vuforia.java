@@ -55,7 +55,7 @@ public class MM_Vuforia {
 
     public int findDuckPosition() {
         //possibly change to void statement to just drive
-        double duckLeftPixel = -1;
+        double duckLeftPixel = -16;
         int duckPosition = 0;
         runtime.reset();
 
@@ -71,7 +71,7 @@ public class MM_Vuforia {
             }
         }
 
-        if  (duckLeftPixel < 0) {
+        if  (duckLeftPixel < -15) {
             duckPosition = 3;
         } else if (duckLeftPixel > 220) {
             duckPosition = 2;

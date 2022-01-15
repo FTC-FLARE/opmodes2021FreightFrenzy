@@ -398,30 +398,29 @@ public class MM_Drivetrain {
 
     public void driveToHub(int alliance, int startingPosition, double duckPosition) {
         //needs clean up with other autodrivemethods
-        double forwardInches = 0;
+        double forwardInches = -6;
         double strafeInches = 0;// temp drive until working strafe
         double rotateDegrees = 90;
 
         if((alliance == BLUE && startingPosition == WAREHOUSE) || (alliance == RED && startingPosition == STORAGE)) {
 
-            forwardInches = -6;
             strafeInches = 17;
             rotateDegrees = -90;
 
             //determine driving position
             if(duckPosition == 1) {
-                forwardInches = -8.0;
+                forwardInches = -8.75;
             } else if(duckPosition == 2) {
-                forwardInches = -2.5;
+                forwardInches = -5;
             }
         }else if((alliance == BLUE && startingPosition == STORAGE) || (alliance == RED && startingPosition == WAREHOUSE)) {
 
             forwardInches = -3;
-            strafeInches = 28.5;
+            strafeInches = 22;
 
             //determine driving position (MEASURE)
             if (duckPosition == 1) {
-                forwardInches = -7.25;
+                forwardInches = -6.75;
             } else if (duckPosition == 2) {
                 forwardInches = -3.5;
             }
@@ -446,7 +445,7 @@ public class MM_Drivetrain {
 
         if (blueSide) {
             if (storageStart) {
-                forwardInches = 55;
+                forwardInches = 47;
             }
             targetHeading = -80;
             if (duckPosition == 1) {
@@ -479,7 +478,7 @@ public class MM_Drivetrain {
 
     public void outOfTheWay(int alliance){
         double angle = 100;
-        double driveInches = 12;
+        double driveInches = 24;
         double strafeInches = 16;
 
         if (alliance == RED) {
@@ -492,9 +491,9 @@ public class MM_Drivetrain {
 //        strafeRightInchesOld(strafeInches, 4);
     }
     public void odometryTelemetry() {
-        opMode.telemetry.addData("Back Current", ticksToInches(frontLeftDrive.getCurrentPosition()));
-        opMode.telemetry.addData("Right Current", ticksToInches(-frontRightDrive.getCurrentPosition()));
-        opMode.telemetry.addData("Left Current", ticksToInches(-backLeftDrive.getCurrentPosition()));
+        opMode.telemetry.addData("Back Current", ticksToInches(backEncoder.getCurrentPosition()));
+        opMode.telemetry.addData("Right Current", ticksToInches(rightEncoder.getCurrentPosition()));
+        opMode.telemetry.addData("Left Current", ticksToInches(leftEncoder.getCurrentPosition()));
     }
 
     private void setTargetPositionStrafe(double driveDistance) {
