@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Autonomous(name="MM_Auto", group="MM")
 public class MM_Auto extends MM_OpMode {
@@ -86,7 +85,8 @@ public class MM_Auto extends MM_OpMode {
                 telemetry.addLine("Red warehouse");
             }else if(startingPosition == STORAGE){
                 if (spinDucker) {
-
+                    robot.drivetrain.driveToCarousel(true, duckLocation);
+                    robot.ducker.autoSpin(RED);
                 } else {
                     robot.drivetrain.storagePark(false, duckLocation, true);
                 }
@@ -99,7 +99,8 @@ public class MM_Auto extends MM_OpMode {
                 telemetry.addLine("Blue warehouse");
             }else if(startingPosition == STORAGE){
                 if (spinDucker) {
-
+                    robot.drivetrain.driveToCarousel(false, duckLocation);
+                    robot.ducker.autoSpin(BLUE);
                 } else {
                     robot.drivetrain.storagePark(true, duckLocation, true);
                 }

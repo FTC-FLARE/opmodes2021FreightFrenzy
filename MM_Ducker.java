@@ -24,21 +24,18 @@ public class MM_Ducker {
         DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void autoSpinRed(boolean spinDucker, int alliance) {
+    public void autoSpin(int alliance) {
         runtime.reset();
 
-        if (spinDucker) {
-            if (alliance == RED){
-                spinRed();
-            }else if (alliance == BLUE){
-                spinBlue();
-            }
-            while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
-                opMode.telemetry.addLine("Spinning Ducker");
-            }
-            stop();
+        if (alliance == RED){
+            spinRed();
+        }else if (alliance == BLUE){
+            spinBlue();
         }
-
+        while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
+            opMode.telemetry.addLine("Spinning Ducker");
+        }
+        stop();
     }
 
     public void manualSpin() {

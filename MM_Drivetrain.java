@@ -396,6 +396,42 @@ public class MM_Drivetrain {
         driveForwardInchesOld(hypDistance, timeoutTime);
     }
 
+    public void driveToCarousel(boolean redSide, double duckPosition) {
+        double forwardInches = 46;
+        double targetAngle = 100;
+        double secondTargetAngle = -20;
+        double timeoutTime = 0.75;
+        if (!redSide) {
+            forwardInches = 44;
+            targetAngle = -100;
+            secondTargetAngle = 20;
+        }
+
+        pRotateDegrees(targetAngle);
+        driveForwardToPosition(forwardInches, 3);
+        pRotateDegrees(secondTargetAngle);
+        if (duckPosition == 2) {
+            timeoutTime = 0.9;
+        } else if (duckPosition == 1) {
+            timeoutTime = 1.1;
+        }
+        runtime.reset();
+        startMotors(-0.2, -0.2, -0.2,-0.2);
+        while (opMode.opModeIsActive() && runtime.seconds() < timeoutTime) {
+        }
+        stop();
+    }
+
+    public void parkFromCarousel(boolean redSide) {
+        double driveInches = 30;
+
+        if (!redSide) {
+            driveInches = -driveInches;
+        }
+
+        driveForwardToPosition(driveInches, 3);
+    }
+
     public void driveToHub(int alliance, int startingPosition, double duckPosition) {
         //needs clean up with other autodrivemethods
         double forwardInches = -6;
@@ -415,7 +451,7 @@ public class MM_Drivetrain {
             }
         }else if((alliance == BLUE && startingPosition == STORAGE) || (alliance == RED && startingPosition == WAREHOUSE)) {
 
-            forwardInches = -3;
+            forwardInches = -6;
             strafeInches = 22;
 
             //determine driving position (MEASURE)
