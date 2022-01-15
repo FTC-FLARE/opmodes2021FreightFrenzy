@@ -405,12 +405,12 @@ public class MM_Drivetrain {
         if((alliance == BLUE && startingPosition == WAREHOUSE) || (alliance == RED && startingPosition == STORAGE)) {
 
             forwardInches = -6;
-            strafeInches = -30.5;
+            strafeInches = 17;
             rotateDegrees = -90;
 
             //determine driving position
             if(duckPosition == 1) {
-                forwardInches = -5.0;
+                forwardInches = -8.0;
             } else if(duckPosition == 2) {
                 forwardInches = -2.5;
             }
@@ -478,14 +478,13 @@ public class MM_Drivetrain {
     }
 
     public void outOfTheWay(int alliance){
-        double angle = 135;
-        double driveInches = -30;
-        double strafeInches = -16;
+        double angle = 100;
+        double driveInches = 12;
+        double strafeInches = 16;
 
-        if (alliance == BLUE) {
+        if (alliance == RED) {
             angle = -angle;
-            strafeInches = -strafeInches;
-        }
+         }
 
         pRotateDegrees(angle);
         driveForwardToPosition(driveInches, 4);
