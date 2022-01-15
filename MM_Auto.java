@@ -85,7 +85,11 @@ public class MM_Auto extends MM_OpMode {
                 robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Red warehouse");
             }else if(startingPosition == STORAGE){
-                robot.drivetrain.storagePark(false, duckLocation, true);
+                if (spinDucker) {
+
+                } else {
+                    robot.drivetrain.storagePark(false, duckLocation, true);
+                }
 //                robot.ducker.autoSpinRed(spinDucker, alliance);
                  telemetry.addLine("Red storage");
             }
@@ -94,7 +98,11 @@ public class MM_Auto extends MM_OpMode {
                 robot.drivetrain.outOfTheWay(alliance);
                 telemetry.addLine("Blue warehouse");
             }else if(startingPosition == STORAGE){
-                robot.drivetrain.storagePark(true, duckLocation, true);
+                if (spinDucker) {
+
+                } else {
+                    robot.drivetrain.storagePark(true, duckLocation, true);
+                }
 //                robot.ducker.autoSpinRed(spinDucker, alliance);
                 telemetry.addLine("Blue storage");
             }
