@@ -397,14 +397,15 @@ public class MM_Drivetrain {
     }
 
     public void driveToCarousel(boolean redSide, double duckPosition) {
-        double forwardInches = 46;
-        double targetAngle = 100;
-        double secondTargetAngle = -20;
-        double timeoutTime = 0.75;
+        double forwardInches = 42;
+        double targetAngle = 103;
+        double secondTargetAngle = -37;
+        double timeoutTime = 0.90; //default for red 3
         if (!redSide) {
             forwardInches = 44;
             targetAngle = -100;
             secondTargetAngle = 20;
+            timeoutTime = 0.75; //default for blue 3
         }
 
         pRotateDegrees(targetAngle);
@@ -423,13 +424,13 @@ public class MM_Drivetrain {
     }
 
     public void parkFromCarousel(boolean redSide) {
-        double driveInches = 30;
-
-        if (!redSide) {
-            driveInches = -driveInches;
+        if (redSide) {
+            runtime.reset();
+            startMotors(0.2, 0.2, 0.2,0.2);
+            while (opMode.opModeIsActive() && runtime.seconds() < 1) {
+            }
+            stop();
         }
-
-        driveForwardToPosition(driveInches, 3);
     }
 
     public void driveToHub(int alliance, int startingPosition, double duckPosition) {
@@ -447,7 +448,7 @@ public class MM_Drivetrain {
             if(duckPosition == 1) {
                 forwardInches = -8.75;
             } else if(duckPosition == 2) {
-                forwardInches = -5;
+                forwardInches = -6;
             }
         }else if((alliance == BLUE && startingPosition == STORAGE) || (alliance == RED && startingPosition == WAREHOUSE)) {
 
@@ -514,7 +515,7 @@ public class MM_Drivetrain {
 
     public void outOfTheWay(int alliance){
         double angle = 100;
-        double driveInches = 24;
+        double driveInches = 18;
         double strafeInches = 16;
 
         if (alliance == RED) {

@@ -55,7 +55,7 @@ public class MM_Vuforia {
 
     public int findDuckPosition() {
         //possibly change to void statement to just drive
-        double duckLeftPixel = -16;
+        double duckLeftPixel = -1;
         int duckPosition = 0;
         runtime.reset();
 
@@ -64,14 +64,14 @@ public class MM_Vuforia {
                 List<Recognition> tfodRecognitions = tfod.getRecognitions();
                 if (!tfodRecognitions.isEmpty()) {
                     Recognition recognition = tfodRecognitions.get(0);
-                    duckLeftPixel = recognition.getLeft();
+                    duckLeftPixel = Math.abs(recognition.getLeft());
                     opMode.telemetry.addData("Duck Found left:", "%.03f", duckLeftPixel);
                     opMode.telemetry.update();
                 }
             }
         }
 
-        if  (duckLeftPixel < -15) {
+        if  (duckLeftPixel < 0) {
             duckPosition = 3;
         } else if (duckLeftPixel > 220) {
             duckPosition = 2;

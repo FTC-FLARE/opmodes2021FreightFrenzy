@@ -87,6 +87,7 @@ public class MM_Auto extends MM_OpMode {
                 if (spinDucker) {
                     robot.drivetrain.driveToCarousel(true, duckLocation);
                     robot.ducker.autoSpin(RED);
+                    robot.drivetrain.parkFromCarousel(true);
                 } else {
                     robot.drivetrain.storagePark(false, duckLocation, true);
                 }
@@ -101,6 +102,7 @@ public class MM_Auto extends MM_OpMode {
                 if (spinDucker) {
                     robot.drivetrain.driveToCarousel(false, duckLocation);
                     robot.ducker.autoSpin(BLUE);
+                    robot.drivetrain.parkFromCarousel(true);
                 } else {
                     robot.drivetrain.storagePark(true, duckLocation, true);
                 }
