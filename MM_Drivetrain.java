@@ -405,7 +405,7 @@ public class MM_Drivetrain {
         if((alliance == BLUE && startingPosition == WAREHOUSE) || (alliance == RED && startingPosition == STORAGE)) {
 
             forwardInches = -6;
-            strafeInches = 30.5;
+            strafeInches = -30.5;
             rotateDegrees = -90;
 
             //determine driving position
@@ -417,7 +417,7 @@ public class MM_Drivetrain {
         }else if((alliance == BLUE && startingPosition == STORAGE) || (alliance == RED && startingPosition == WAREHOUSE)) {
 
             forwardInches = -3;
-            strafeInches = -28.5;
+            strafeInches = 28.5;
 
             //determine driving position (MEASURE)
             if (duckPosition == 1) {
