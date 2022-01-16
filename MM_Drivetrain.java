@@ -514,18 +514,34 @@ public class MM_Drivetrain {
     }
 
     public void outOfTheWay(int alliance){
-        double angle = 100;
+        double angle = -105;
         double driveInches = 18;
         double strafeInches = 16;
+        double motorPowers = 0.3;
+        double rightMotorPowers = 0.3;
+        double leftMotorPowers = 0.32;
 
-        if (alliance == RED) {
+        if (alliance == BLUE) {
             angle = -angle;
+            motorPowers = -motorPowers;
+            rightMotorPowers = 0.32;
+            leftMotorPowers = 0.3;
          }
+
 
         pRotateDegrees(angle);
         driveForwardToPosition(driveInches, 4);
-
-//        strafeRightInchesOld(strafeInches, 4);
+        initOdometryServos(1);
+        runtime.reset();
+        startMotors(motorPowers, -motorPowers, -motorPowers, motorPowers);
+        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
+        }
+        stop();
+        runtime.reset();
+        startMotors(leftMotorPowers, rightMotorPowers, leftMotorPowers, rightMotorPowers);
+        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
+        }
+        stop();
     }
     public void odometryTelemetry() {
         opMode.telemetry.addData("Back Current", ticksToInches(backEncoder.getCurrentPosition()));
