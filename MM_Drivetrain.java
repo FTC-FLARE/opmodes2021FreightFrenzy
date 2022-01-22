@@ -27,7 +27,6 @@ public class MM_Drivetrain {
 
     private ElapsedTime runtime = new ElapsedTime();
 
-    private double ticks = 0;
     private boolean slowMode = false;
     private boolean slowModeIsHandled = false;
     private double headingError;
@@ -38,15 +37,14 @@ public class MM_Drivetrain {
     private double frPower = 0;
     private double blPower = 0;
     private double brPower = 0;
-    private double minPower = 0;
     private boolean rampUp = false;
     private double rampPrecentage = 0;
     private double leftDrivePower = 0;
     private double rightDrivePower = 0;
-    private double leftDistanceError = 0;
+/*    private double leftDistanceError = 0;
     private double rightDistanceError = 0;
     private double backDistanceError = 0;
-    private double pCoefficient = 0;
+    private double pCoefficient = 0;*/
 
     private int leftEncoderTicks = 0;
     private int rightEncoderTicks = 0;
@@ -61,17 +59,18 @@ public class MM_Drivetrain {
 
     // static final double WHEEL_CIRCUMFERENCE = 12.3684;  //4 inch wheels
     // static final double TICKS_PER_REVOLUTION = 537.7; //19.2 to 1 go builda
-
     private static final double WHEEL_DIAMETER = 1.496;  // odometry wheels
     private static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
     static final double TICKS_PER_REVOLUTION = 1440;
     static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
     static final double DRIVE_SPEED = 0.8;
     static final double ANGLE_THRESHOLD = 0.25;
+/*
     static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
     static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
+*/
     static final double ANGLE_P_COEFFICIENT = .2; //numerator is gain per degree error
-    static final double SRAIGHT_P_COEFFICIENT = .13;
+    static final double STRAIGHT_P_COEFFICIENT = .13;
     static final double RAMP_INTERVAL = 0.01;
     static final double MIN_DRIVE_SPEED = 0.12;
     static final double MAX_DRIVE_SPEED = 0.6;
@@ -91,20 +90,6 @@ public class MM_Drivetrain {
     }
 
     public void driveForwardToPosition(double forwardInches, double timeoutTime) {
-
-/*
-        if (forwardInches <= 24) {
-            pCoefficient = 1/(SLOW_DOWN_POINT * (forwardInches/16));
-            minPower = 0.12;
-        } else if (forwardInches <=48){
-            pCoefficient= 1/(SLOW_DOWN_POINT * (forwardInches/24));
-            minPower = 0.09;
-        } else {
-            pCoefficient= 1/(SLOW_DOWN_POINT * (forwardInches/30));
-            minPower = 0.08;
-        }
-*/
-
         leftTargetTicks = inchesToTicks(forwardInches) + leftPriorEncoderTarget;
         rightTargetTicks = inchesToTicks(forwardInches) + rightPriorEncoderTarget;
         lookingForTarget = true;
@@ -140,11 +125,10 @@ public class MM_Drivetrain {
         rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    public void strafeToPosition(double rightStrafeInches, double timeoutTime) {
-        backTargetTicks = inchesToTicks(rightStrafeInches) + backPriorEncoderTarget;
+    public void strafeToPosition(double strafeInches, double timeoutTime) {
+        backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
         lookingForTarget = true;
         robotHeading = priorAngleTarget;
-
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
@@ -170,7 +154,6 @@ public class MM_Drivetrain {
     }
 
     private void calculateDrivePowerAuto(boolean straight) {
-
         if (straight) {
             leftEncoderTicks = (leftEncoder.getCurrentPosition());
             rightEncoderTicks = (rightEncoder.getCurrentPosition());
@@ -214,8 +197,8 @@ public class MM_Drivetrain {
         calculateRotateError(startHeading);
 
         if (headingError != 0) {
-            rightDrivePower = rightDrivePower + (headingError * SRAIGHT_P_COEFFICIENT * Math.abs(rightDrivePower));
-            leftDrivePower = leftDrivePower - (headingError * SRAIGHT_P_COEFFICIENT * Math.abs(leftDrivePower));
+            rightDrivePower = rightDrivePower + (headingError * STRAIGHT_P_COEFFICIENT * Math.abs(rightDrivePower));
+            leftDrivePower = leftDrivePower - (headingError * STRAIGHT_P_COEFFICIENT * Math.abs(leftDrivePower));
         }
     }
 
@@ -251,79 +234,13 @@ public class MM_Drivetrain {
         setDrivePowers();
     }
 
-    public void driveForwardInchesOld(double Inches, double timeoutTime) {
-        setTargetPosition(Inches);
-        switchEncoderMode(DcMotor.RunMode.RUN_TO_POSITION);
-        setDriveSame(DRIVE_SPEED);
-
-        runtime.reset();
-        while (opMode.opModeIsActive() && (runtime.seconds() < timeoutTime) && (frontLeftDrive.isBusy() && frontRightDrive.isBusy()) && (backLeftDrive.isBusy() && backRightDrive.isBusy())) {
-            // Display it for the driver.
-            opMode.telemetry.addData("Current ticks", "Running at %7d :%7d %7d %7d",
-                    frontLeftDrive.getCurrentPosition(),
-                    frontRightDrive.getCurrentPosition(),
-                    backLeftDrive.getCurrentPosition(),
-                    backRightDrive.getCurrentPosition());
-            opMode.telemetry.update();
-        }
-
-        stop();
-        switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void strafeRightInchesOld(double Inches, double timeoutTime) {
-        setTargetPositionStrafe(Inches);
-        switchEncoderMode(DcMotor.RunMode.RUN_TO_POSITION);
-        setDriveSame(DRIVE_SPEED);
-
-        runtime.reset();
-        //maybe change && to ||???????????
-        while (opMode.opModeIsActive() && (runtime.seconds() < timeoutTime) && (frontLeftDrive.isBusy() && frontRightDrive.isBusy()) && (backLeftDrive.isBusy() && backRightDrive.isBusy())) {
-
-            // Display it for the driver.
-            opMode.telemetry.addData("Drive Inches", "Running to %7f ", Inches);
-            opMode.telemetry.addData("Current Encoders", "Running at %7d :%7d %7d %7d",
-                    frontLeftDrive.getCurrentPosition(),
-                    frontRightDrive.getCurrentPosition(),
-                    backLeftDrive.getCurrentPosition(),
-                    backRightDrive.getCurrentPosition());
-            opMode.telemetry.update();
-        }
-
-        stop();
-        switchEncoderMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    public void rotateToAngle(double targetHeading, double timeoutTime) {
-        lookingForTarget = true;
-
-        while (opMode.opModeIsActive() && lookingForTarget) {
-            robotHeading = getCurrentHeading();
-            calculateRotateError(targetHeading);
-
-            //determine whether the angle error is within threshold set
-            if (headingError > ANGLE_THRESHOLD){
-                rotateCounterClockwise();
-            } else if (headingError < -ANGLE_THRESHOLD){
-                rotateClockwise();
-            } else {
-                lookingForTarget = false;
-                stop();
-            }
-
-            opMode.telemetry.addData("Target Heading ", targetHeading);
-            opMode.telemetry.addData("Robot Heading Error", headingError);
-            opMode.telemetry.addData("Actual Robot Heading", robotHeading);
-            opMode.telemetry.update();
-        }
-    }
     public void pRotateDegrees(double degrees){//timeout
         leftEncoderTicks = leftEncoder.getCurrentPosition();
         rightEncoderTicks = rightEncoder.getCurrentPosition();
-        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//TODO Delete?
         double targetAngle = degrees;
 
-        opMode.pTurnController.setInputRange(Math.abs(getCurrentHeading()), Math.abs(degrees));
+        opMode.pTurnController.setInputRange(Math.abs(getCurrentHeading()), Math.abs(degrees));//TODO get rid of absolute value?
         opMode.pTurnController.setOutputRange(.12, .7);
         opMode.pTurnController.setSetpoint(targetAngle);
         do {
@@ -331,20 +248,20 @@ public class MM_Drivetrain {
             double translatedError = translateAngle(opMode.pTurnController.getCurrentError());
 
             if(translatedError > 0){
-                startMotors(-turnPower, turnPower, -turnPower, turnPower);
+                startMotors(-turnPower, turnPower, -turnPower, turnPower);//TODO Change to counter clockwise and clockwise
 
             }else {
                 startMotors(turnPower, -turnPower, turnPower, -turnPower);
             }
 
-            opMode.telemetry.addData("Power to motors", turnPower);
             opMode.telemetry.update();
-        }while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
+        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
         stop();
         int rotateDistance = leftEncoder.getCurrentPosition() - leftEncoderTicks;
         leftPriorEncoderTarget = leftPriorEncoderTarget + rotateDistance;
         rotateDistance = rightEncoder.getCurrentPosition() - rightEncoderTicks;
         rightPriorEncoderTarget = rightPriorEncoderTarget + rotateDistance;
+        //TODO Add rotate distance to back
         priorAngleTarget = targetAngle;
     }
 
@@ -368,40 +285,15 @@ public class MM_Drivetrain {
         }
     }
 
-    public void diagonalDriveInchesOld(double forwardInches, double leftInches, double timeoutTime) {
-        double hypDistance = (Math.hypot(forwardInches, leftInches));
-        double targetHeading = Math.toDegrees(Math.atan2(leftInches, forwardInches));
-        lookingForTarget = true;
-
-        while (opMode.opModeIsActive() && lookingForTarget) {
-            robotHeading = getCurrentHeading();
-            calculateRotateError(targetHeading);
-
-            //determine whether the angle error is within threshold set
-            if (headingError > ANGLE_THRESHOLD) {
-                rotateCounterClockwise();
-            } else if (headingError < -ANGLE_THRESHOLD){
-                rotateClockwise();
-            } else {
-                lookingForTarget = false;
-                stop();
-            }
-            opMode.telemetry.addData("Target Heading ", targetHeading);
-            opMode.telemetry.addData("Robot Heading Error", headingError);
-            opMode.telemetry.addData("Actual Robot Heading", robotHeading);
-            opMode.telemetry.addData("hypotenuse", hypDistance);
-            opMode.telemetry.update();
-        }
-
-        driveForwardInchesOld(hypDistance, timeoutTime);
-    }
-
     public void driveToCarousel(boolean redSide, double duckPosition) {
         double forwardInches = 42;
         double targetAngle = 103;
         double secondTargetAngle = -37;
         double timeoutTime = 0.90; //default for red 3
-        if (!redSide) {
+        if (duckPosition == 1 && redSide) {
+            secondTargetAngle = -27;
+        }
+         if (!redSide) {
             forwardInches = 44;
             targetAngle = -100;
             secondTargetAngle = 20;
@@ -549,30 +441,6 @@ public class MM_Drivetrain {
         opMode.telemetry.addData("Left Current", ticksToInches(leftEncoder.getCurrentPosition()));
     }
 
-    private void setTargetPositionStrafe(double driveDistance) {
-        int frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        int frontRightTargetInches = frontRightDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
-        int backLeftTargetInches = backLeftDrive.getCurrentPosition() - (int) (driveDistance * TICKS_PER_INCH);
-        int backRightTargetInches = backRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-
-        frontLeftDrive.setTargetPosition(frontLeftTargetInches);
-        frontRightDrive.setTargetPosition(frontRightTargetInches);
-        backLeftDrive.setTargetPosition(backLeftTargetInches);
-        backRightDrive.setTargetPosition(backRightTargetInches);
-    }
-
-    private void setTargetPosition(double driveDistance) {
-        int frontLeftTargetInches = frontLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        int frontRightTargetInches = frontRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        int backLeftTargetInches = backLeftDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-        int backRightTargetInches = backRightDrive.getCurrentPosition() + (int) (driveDistance * TICKS_PER_INCH);
-
-        frontLeftDrive.setTargetPosition(frontLeftTargetInches);
-        frontRightDrive.setTargetPosition(frontRightTargetInches);
-        backLeftDrive.setTargetPosition(backLeftTargetInches);
-        backRightDrive.setTargetPosition(backRightTargetInches);
-    }
-
     private void switchEncoderMode(DcMotor.RunMode runMode) {
         frontLeftDrive.setMode(runMode);
         frontRightDrive.setMode(runMode);
@@ -583,6 +451,7 @@ public class MM_Drivetrain {
         backEncoder.setMode(runMode);
     }
 
+    //TODO Use these methods for rotating
     private void rotateClockwise() {
         assignMotorPowers(0.2, -0.2, 0.2, -0.2);
         setDrivePowers();
@@ -649,7 +518,7 @@ public class MM_Drivetrain {
         assignMotorPowers(motorPower, motorPower, motorPower, motorPower);
         setDrivePowers();
     }
-
+//TODO Combine assignMotorPowers, setDrivePowers, and startMotors
     private void assignMotorPowers(double flPower, double frPower, double blPower, double brPower) {
         this.flPower = flPower;
         this.frPower = frPower;
@@ -668,10 +537,6 @@ public class MM_Drivetrain {
 
         startMotors(flPower, frPower, blPower, brPower);
 
-        opMode.telemetry.addData("front left power:", flPower);
-        opMode.telemetry.addData("front right power:", frPower);
-        opMode.telemetry.addData("back left power:,", blPower);
-        opMode.telemetry.addData("back right power:",  brPower);
     }
 
     private void startMotors(double flPower, double frPower, double blPower, double brPower) {
@@ -685,6 +550,11 @@ public class MM_Drivetrain {
         frontRightDrive.setPower(frPower * 1.01);
         backRightDrive.setPower(brPower * 1.01);
         frontLeftDrive.setPower(flPower * 0.99);*/
+
+        opMode.telemetry.addData("front left power:", flPower);
+        opMode.telemetry.addData("front right power:", frPower);
+        opMode.telemetry.addData("back left power:,", blPower);
+        opMode.telemetry.addData("back right power:",  brPower);
     }
 
     private void handleSlowMode() {

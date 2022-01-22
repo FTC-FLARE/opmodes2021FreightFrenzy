@@ -23,12 +23,13 @@ public class MM_P_Controller {
     public MM_P_Controller(LinearOpMode opMode, double pctThreshold, double pCoefficient){
         this.opMode = opMode;
 
-        PCT_THRESHOLD = pctThreshold;//something
-        P_COEFFICIENT = pCoefficient;//also something
+        //defining the state of this instance
+        PCT_THRESHOLD = pctThreshold;
+        P_COEFFICIENT = pCoefficient;
     }
     public double calculatePower(double currentInput){
         this.currentInput = currentInput;
-        absError = Math.abs(Math.abs(setpoint) - Math.abs(currentInput));
+        absError = Math.abs(Math.abs(setpoint) - Math.abs(currentInput)); //TODO Change to Math.abs(setpoint - currentInput)
         currentError = setpoint - currentInput;
 
         double power = absError * P_COEFFICIENT * (outputRange);
@@ -38,7 +39,7 @@ public class MM_P_Controller {
         opMode.telemetry.addData("input", currentInput);
         opMode.telemetry.addData("current error", absError);
         opMode.telemetry.addData("calculated power", power);
-        return power;
+        return power; //TODO Add min output
     }
     public boolean reachedTarget(){
 //        if ((absError / inputRange) * 100 < PCT_THRESHOLD){

@@ -23,6 +23,7 @@ public class MM_Ducker {
         DuckerMotor = opMode.hardwareMap.get(DcMotor.class, "Ducker");
         DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
+    //TODO Add ramp up acceleration
 
     public void autoSpin(int alliance) {
         runtime.reset();
