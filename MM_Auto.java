@@ -6,19 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class MM_Auto extends MM_OpMode {
     private MM_Robot robot = new MM_Robot(this);
 
-    static final int RED = 1;
-    static final int BLUE = 2;
-    static final int WAREHOUSE = 1;
-    static final int STORAGE = 2;
-    static final int OOTW = 1;
-    static final int PARK = 2;
-    private int alliance = RED;
-    private int startingPosition = WAREHOUSE;
-    private int finishPosition = OOTW;
-    private boolean spinDucker = false;
     private boolean isHandled = false;
-    private long sleepTime = 0;
-
 
     @Override
     public void runOpMode() {
@@ -42,10 +30,10 @@ public class MM_Auto extends MM_OpMode {
             }else if(gamepad1.b && finishPosition == PARK && !isHandled){
                 finishPosition = OOTW;
                 isHandled = true;
-            }else if(gamepad1.y && spinDucker == false && !isHandled){
+            }else if(gamepad1.y && !spinDucker && !isHandled){
                 spinDucker = true;
                 isHandled = true;
-            }else if(gamepad1.y && spinDucker == true && !isHandled){
+            }else if(gamepad1.y && spinDucker && !isHandled){
                 spinDucker = false;
                 isHandled = true;
             }else if(sleepTime >= 15000){
@@ -67,50 +55,27 @@ public class MM_Auto extends MM_OpMode {
             telemetry.addLine();
             telemetry.addData("sleep time", sleepTime);
             telemetry.addData(alliance == RED ? "Red" : "Blue", startingPosition == WAREHOUSE ? "Warehouse" : "Storage");
-            telemetry.addData(finishPosition == OOTW ? "get out of the way" : "park", spinDucker == true ? "spin ducker" : "");
+            telemetry.addData(finishPosition == OOTW ? "get out of the way" : "park", spinDucker ? "spin ducker" : "");
             telemetry.update();
-
         }
+        //*************************************** DRIVER HIT PLAY **************************************************
         int duckLocation = robot.vuforia.findDuckPosition();
 
-        sleep(sleepTime);
+        sleep(sleepTime); //driver-selected sleep time
 
-        robot.drivetrain.driveToHub(alliance, startingPosition, duckLocation);
+        robot.drivetrain.driveToHub(duckLocation);
         robot.slide.goToPositionAuto(duckLocation);
         robot.slide.autoCollectPosition(duckLocation);
 
-        if(alliance == RED){
-            if(startingPosition == WAREHOUSE){
-                robot.drivetrain.outOfTheWay(alliance);
-                telemetry.addLine("Red warehouse");
-            }else if(startingPosition == STORAGE){
-                if (spinDucker) {
-                    robot.drivetrain.driveToCarousel(true, duckLocation);
-                    robot.ducker.autoSpin(RED);
-                    robot.drivetrain.parkFromCarousel(true);
-                } else {
-                    robot.drivetrain.storagePark(false, duckLocation, true);
-                }
-//                robot.ducker.autoSpinRed(spinDucker, alliance);
-                 telemetry.addLine("Red storage");
+        if(startingPosition == WAREHOUSE){
+            robot.drivetrain.warehousePark();
+        }else if(startingPosition == STORAGE){
+            if (spinDucker) {
+                robot.drivetrain.driveToCarousel(duckLocation);
+                robot.ducker.autoSpin();
             }
-        }else if(alliance == BLUE){
-            if(startingPosition == WAREHOUSE){
-                robot.drivetrain.outOfTheWay(alliance);
-                telemetry.addLine("Blue warehouse");
-            }else if(startingPosition == STORAGE){
-                if (spinDucker) {
-                    robot.drivetrain.driveToCarousel(false, duckLocation);
-                    robot.ducker.autoSpin(BLUE);
-                    robot.drivetrain.parkFromCarousel(true);
-                } else {
-                    robot.drivetrain.storagePark(true, duckLocation, true);
-                }
-//                robot.ducker.autoSpinRed(spinDucker, alliance);
-                telemetry.addLine("Blue storage");
-            }
+            robot.drivetrain.storagePark(duckLocation);
         }
-        telemetry.update();
 
         robot.vuforia.deactivateTargets();
         robot.vuforia.deactivateTfod();

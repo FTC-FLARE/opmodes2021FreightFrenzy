@@ -29,17 +29,18 @@ public class MM_P_Controller {
     }
     public double calculatePower(double currentInput){
         this.currentInput = currentInput;
-        absError = Math.abs(Math.abs(setpoint) - Math.abs(currentInput)); //TODO Change to Math.abs(setpoint - currentInput)
+/*        absError = Math.abs(setpoint - currentInput);*/
         currentError = setpoint - currentInput;
 
-        double power = absError * P_COEFFICIENT * (outputRange);
+        double power = currentError * P_COEFFICIENT * (outputRange);
         if(power > outputRange){
             power = outputRange;
         }
+        power = power + minOutput;
         opMode.telemetry.addData("input", currentInput);
-        opMode.telemetry.addData("current error", absError);
+        opMode.telemetry.addData("current error", Math.abs(currentError));
         opMode.telemetry.addData("calculated power", power);
-        return power; //TODO Add min output
+        return power;
     }
     public boolean reachedTarget(){
 //        if ((absError / inputRange) * 100 < PCT_THRESHOLD){

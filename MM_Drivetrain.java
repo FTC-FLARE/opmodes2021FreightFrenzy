@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 public class MM_Drivetrain {
     private MM_OpMode opMode;
-
+    //TODO start new class for utilities
     private BNO055IMU gyro;
     private DcMotor backLeftDrive = null;
     private DcMotor backRightDrive = null;
@@ -25,95 +25,66 @@ public class MM_Drivetrain {
     private Servo odometryRight = null;
     private Servo odometryBack = null;
 
-    private ElapsedTime runtime = new ElapsedTime();
+    private final ElapsedTime runtime = new ElapsedTime();
 
     private boolean slowMode = false;
     private boolean slowModeIsHandled = false;
-    private double headingError;
     private double robotHeading;
-    private boolean lookingForTarget;
 
     private double flPower = 0;
     private double frPower = 0;
     private double blPower = 0;
     private double brPower = 0;
     private boolean rampUp = false;
-    private double rampPrecentage = 0;
+    private double rampPercentage = 0;
     private double leftDrivePower = 0;
     private double rightDrivePower = 0;
-/*    private double leftDistanceError = 0;
-    private double rightDistanceError = 0;
-    private double backDistanceError = 0;
-    private double pCoefficient = 0;*/
 
-    private int leftEncoderTicks = 0;
-    private int rightEncoderTicks = 0;
-    private int backEncoderTicks = 0;
+    private int leftCurrentTicks = 0;
+    private int rightCurrentTicks = 0;
+    private int backCurrentTicks = 0;
     private int leftPriorEncoderTarget = 0;
     private int rightPriorEncoderTarget = 0;
     private int backPriorEncoderTarget = 0;
-    private int leftTargetTicks = 0;
-    private int rightTargetTicks = 0;
-    private int backTargetTicks = 0;
     private double priorAngleTarget = 0;
 
-    // static final double WHEEL_CIRCUMFERENCE = 12.3684;  //4 inch wheels
-    // static final double TICKS_PER_REVOLUTION = 537.7; //19.2 to 1 go builda
-    private static final double WHEEL_DIAMETER = 1.496;  // odometry wheels
+    private static final double WHEEL_DIAMETER = 1.496;  // odometry wheels in inches
     private static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
-    static final double TICKS_PER_REVOLUTION = 1440;
-    static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
-    static final double DRIVE_SPEED = 0.8;
-    static final double ANGLE_THRESHOLD = 0.25;
-/*
-    static final double DRIVE_THRESHOLD = 0.25 * TICKS_PER_INCH; //numerical value is # of inches
-    static final double SLOW_DOWN_POINT = 24 * TICKS_PER_INCH; //numerical value is inches
-*/
-    static final double ANGLE_P_COEFFICIENT = .2; //numerator is gain per degree error
-    static final double STRAIGHT_P_COEFFICIENT = .13;
-    static final double RAMP_INTERVAL = 0.01;
-    static final double MIN_DRIVE_SPEED = 0.12;
-    static final double MAX_DRIVE_SPEED = 0.6;
-    static final double PIN_POWER_HIGH = 0.78;
-    static final double PIN_POWER_LOW = 0.70;
-    static final double MIN_STRAFE_POWER = 0.17 ;
-    static final double MAX_STRAFE_POWER = .8;
-
-    static final int RED = 1;
-    static final int BLUE = 2;
-    static final int WAREHOUSE = 1;
-    static final int STORAGE = 2;
+    private static final double TICKS_PER_REVOLUTION = 1440;
+    private static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
+    private static final double STRAFE_P_COEFFICIENT = .2; //numerator is gain per degree error
+    private static final double STRAIGHT_P_COEFFICIENT = .095;
+    private static final double RAMP_INTERVAL = 0.01;
+    private static final double PIN_POWER_HIGH = 0.39;
+    private static final double PIN_POWER_LOW = 0.35;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
         init();
     }
 
-    public void driveForwardToPosition(double forwardInches, double timeoutTime) {
-        leftTargetTicks = inchesToTicks(forwardInches) + leftPriorEncoderTarget;
-        rightTargetTicks = inchesToTicks(forwardInches) + rightPriorEncoderTarget;
-        lookingForTarget = true;
+    public void driveForwardInches(double forwardInches, double timeoutTime) {
+        int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(forwardInches);
+        int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(forwardInches);
+        boolean lookingForTarget = true;
         robotHeading = priorAngleTarget;
 //        rampUp = true;
 
         opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
-        opMode.pLeftDriveController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
         opMode.pLeftDriveController.setSetpoint(leftTargetTicks);
         opMode.pRightDriveController.setInputRange(rightPriorEncoderTarget, rightTargetTicks);
-        opMode.pRightDriveController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
         opMode.pRightDriveController.setSetpoint(rightTargetTicks);
 
         runtime.reset();
-        while (lookingForTarget && opMode.opModeIsActive() && (runtime.seconds() < timeoutTime)) {
-            calculateDrivePowerAuto(true);
-            assignMotorPowers(leftDrivePower, rightDrivePower, leftDrivePower, rightDrivePower);
-            setDrivePowers();
+        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
+            setStraightPower();
 
             if (!opMode.pLeftDriveController.reachedTarget() && !opMode.pRightDriveController.reachedTarget()) {
                 opMode.telemetry.addData("Left Distance", ticksToInches(opMode.pLeftDriveController.getCurrentError()));
                 opMode.telemetry.addData("Right Distance", ticksToInches(opMode.pRightDriveController.getCurrentError()));
-                opMode.telemetry.addData("Left Current", ticksToInches(leftEncoderTicks));
-                opMode.telemetry.addData("Right Current", ticksToInches(rightEncoderTicks));
+                opMode.telemetry.addData("Left Current", ticksToInches(leftCurrentTicks));
+                opMode.telemetry.addData("Right Current", ticksToInches(rightCurrentTicks));
+                opMode.telemetry.addData("Angle Heading", getCurrentHeading());
             } else {
                 lookingForTarget = false;
             }
@@ -125,25 +96,22 @@ public class MM_Drivetrain {
         rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    public void strafeToPosition(double strafeInches, double timeoutTime) {
-        backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
-        lookingForTarget = true;
-        robotHeading = priorAngleTarget;
+    public void strafeInches(double strafeInches, double timeoutTime) { //TODO Troubleshoot
+        int backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
+        boolean lookingForTarget = true;
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
-        opMode.pBackDriveController.setOutputRange(MIN_STRAFE_POWER, MAX_STRAFE_POWER);
         opMode.pBackDriveController.setSetpoint(backTargetTicks);
 
         runtime.reset();
-        while (lookingForTarget && opMode.opModeIsActive() && (runtime.seconds() < timeoutTime)) {
-            calculateDrivePowerAuto(false);
-            setDrivePowers();
+        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
+            setStrafePower();
 
             if (!opMode.pBackDriveController.reachedTarget()) {
                 opMode.telemetry.addData("Distance", ticksToInches(opMode.pBackDriveController.getCurrentError()));
-                opMode.telemetry.addData("Current", ticksToInches(backEncoderTicks));
-                opMode.telemetry.addData("angle heading", getCurrentHeading());
+                opMode.telemetry.addData("Current", ticksToInches(backCurrentTicks));
+                opMode.telemetry.addData("Angle Heading", getCurrentHeading());
             } else {
                 stop();
                 lookingForTarget = false;
@@ -153,74 +121,58 @@ public class MM_Drivetrain {
         backPriorEncoderTarget = backTargetTicks;
     }
 
-    private void calculateDrivePowerAuto(boolean straight) {
-        if (straight) {
-            leftEncoderTicks = (leftEncoder.getCurrentPosition());
-            rightEncoderTicks = (rightEncoder.getCurrentPosition());
+    private void setStraightPower() {
+        leftCurrentTicks = (leftEncoder.getCurrentPosition());
+        rightCurrentTicks = (rightEncoder.getCurrentPosition());
 
-            leftDrivePower = opMode.pLeftDriveController.getMinOutput() + opMode.pLeftDriveController.calculatePower(leftEncoderTicks); //* (opMode.flMotorController.getCurrentError()/Math.abs(opMode.flMotorController.getCurrentError()));
-            rightDrivePower = opMode.pRightDriveController.getMinOutput() + opMode.pRightDriveController.calculatePower(rightEncoderTicks); //* (opMode.frMotorController.getCurrentError()/Math.abs(opMode.frMotorController.getCurrentError()));
+        leftDrivePower = opMode.pLeftDriveController.calculatePower(leftCurrentTicks);
+        rightDrivePower = opMode.pRightDriveController.calculatePower(rightCurrentTicks);
 
-            if (opMode.pLeftDriveController.getCurrentError() < 0) {
-                leftDrivePower = leftDrivePower * -1;
-            } if (opMode.pRightDriveController.getCurrentError() < 0) {
-                rightDrivePower = rightDrivePower * -1;
-            }
-            straighten(robotHeading);
+        flPower = leftDrivePower;
+        frPower = rightDrivePower;
+        blPower = leftDrivePower;
+        brPower = rightDrivePower;
 
-            if (rampUp) {
-                rampUp();
-            }
-
-        } else {
-            backEncoderTicks = -backEncoder.getCurrentPosition(); //encoder port 2
-
-            double calculatedPower = opMode.pBackDriveController.getMinOutput() + opMode.pBackDriveController.calculatePower(backEncoderTicks);
-
-            if(opMode.pBackDriveController.getCurrentError() < 0){
-                calculatedPower = -calculatedPower;
-            }
-            flPower = calculatedPower;
-            frPower = -calculatedPower;
-            blPower = -calculatedPower;
-            brPower = calculatedPower;
-
-            straightenStrafe(robotHeading);
-
-            if (rampUp) {
-                rampUpStrafe();
-            }
+        straighten(STRAIGHT_P_COEFFICIENT);
+        if (rampUp) {
+            rampUp();
         }
+        setDrivePowers();
     }
 
-    private void straighten(double startHeading) {
-        calculateRotateError(startHeading);
+    private void setStrafePower() {
+        backCurrentTicks = -backEncoder.getCurrentPosition(); //TODO change to a port that reads the direction of the encoder count correctly
 
-        if (headingError != 0) {
-            rightDrivePower = rightDrivePower + (headingError * STRAIGHT_P_COEFFICIENT * Math.abs(rightDrivePower));
-            leftDrivePower = leftDrivePower - (headingError * STRAIGHT_P_COEFFICIENT * Math.abs(leftDrivePower));
+        double calculatedPower = opMode.pBackDriveController.calculatePower(backCurrentTicks);//removed min output
+
+        flPower = calculatedPower;
+        frPower = -calculatedPower;
+        blPower = -calculatedPower;
+        brPower = calculatedPower;
+
+        straighten(STRAFE_P_COEFFICIENT);
+        if (rampUp) {
+            rampUp();
         }
+        setDrivePowers();
     }
 
-    private void straightenStrafe(double startHeading) {
-        calculateRotateError(startHeading);
+    private void straighten(double pCoefficient) {
+        double headingError = calculateRotateError(priorAngleTarget);
 
         if (headingError != 0) {
-            flPower = flPower + (headingError * ANGLE_P_COEFFICIENT * flPower);
-            frPower = frPower - (headingError * ANGLE_P_COEFFICIENT * frPower);
-            blPower = blPower + (headingError * ANGLE_P_COEFFICIENT * blPower);
-            brPower = brPower - (headingError * ANGLE_P_COEFFICIENT * brPower);
+            flPower = flPower - (headingError * pCoefficient * Math.abs(flPower));
+            frPower = frPower + (headingError * pCoefficient * Math.abs(frPower));
+            blPower = blPower - (headingError * pCoefficient * Math.abs(blPower));
+            brPower = brPower + (headingError * pCoefficient * Math.abs(brPower));
         }
     }
 
     public void driveWithSticks() {
-
         if (opMode.gamepad1.left_trigger > 0) {
-            assignMotorPowers(PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH);
-            slowMode = true;
+            startMotors(PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH);
         } else if (opMode.gamepad1.right_trigger > 0) {
-            assignMotorPowers(PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW);
-            slowMode = true;
+            startMotors(PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW);
         } else {
             double drive = -opMode.gamepad1.left_stick_y;
             double turn = opMode.gamepad1.right_stick_x;
@@ -234,35 +186,184 @@ public class MM_Drivetrain {
         setDrivePowers();
     }
 
-    public void pRotateDegrees(double degrees){//timeout
-        leftEncoderTicks = leftEncoder.getCurrentPosition();
-        rightEncoderTicks = rightEncoder.getCurrentPosition();
-        switchEncoderMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);//TODO Delete?
-        double targetAngle = degrees;
+    public void pRotateDegrees(double targetAngle){ //TODO add timeout proportional to distance (with drives)
+        int leftStartingTicks = leftEncoder.getCurrentPosition();
+        int rightStartingTicks = rightEncoder.getCurrentPosition();
+        int backStartingTicks = backEncoder.getCurrentPosition();
 
-        opMode.pTurnController.setInputRange(Math.abs(getCurrentHeading()), Math.abs(degrees));//TODO get rid of absolute value?
-        opMode.pTurnController.setOutputRange(.12, .7);
+        opMode.pTurnController.setInputRange(getCurrentHeading(), targetAngle);
         opMode.pTurnController.setSetpoint(targetAngle);
         do {
-            double turnPower = opMode.pTurnController.getMinOutput() + opMode.pTurnController.calculatePower(getCurrentHeading());
-            double translatedError = translateAngle(opMode.pTurnController.getCurrentError());
+            double turnPower = Math.abs(opMode.pTurnController.calculatePower(getCurrentHeading()));
 
-            if(translatedError > 0){
-                startMotors(-turnPower, turnPower, -turnPower, turnPower);//TODO Change to counter clockwise and clockwise
-
+            if(translateAngle(opMode.pTurnController.getCurrentError()) > 0){
+                startMotors(-turnPower, turnPower, -turnPower, turnPower);//rotate counter clockwise
             }else {
-                startMotors(turnPower, -turnPower, turnPower, -turnPower);
+                startMotors(turnPower, -turnPower, turnPower, -turnPower);//rotate clockwise
             }
 
             opMode.telemetry.update();
         } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
+
         stop();
-        int rotateDistance = leftEncoder.getCurrentPosition() - leftEncoderTicks;
-        leftPriorEncoderTarget = leftPriorEncoderTarget + rotateDistance;
-        rotateDistance = rightEncoder.getCurrentPosition() - rightEncoderTicks;
-        rightPriorEncoderTarget = rightPriorEncoderTarget + rotateDistance;
-        //TODO Add rotate distance to back
+        leftPriorEncoderTarget = leftPriorEncoderTarget - leftStartingTicks + leftEncoder.getCurrentPosition();
+        rightPriorEncoderTarget = rightPriorEncoderTarget - rightStartingTicks + rightEncoder.getCurrentPosition();
+        backPriorEncoderTarget = backPriorEncoderTarget - backStartingTicks + backEncoder.getCurrentPosition();
         priorAngleTarget = targetAngle;
+    }
+
+    public void driveToCarousel(double duckPosition) {
+        double forwardInches = 42;
+        double targetAngle = 103;
+        double secondTargetAngle = -37;
+        double timeoutTime = 0.90; //default for red 3
+        if (duckPosition == 1 && opMode.alliance == MM_OpMode.RED) {
+            secondTargetAngle = -27;
+        }
+         if (opMode.alliance == MM_OpMode.BLUE) {
+            forwardInches = 44;
+            targetAngle = -100;
+            secondTargetAngle = 20;
+            timeoutTime = 0.75; //default for blue 3
+        }
+
+        pRotateDegrees(targetAngle);
+        driveForwardInches(forwardInches, 3);
+        pRotateDegrees(secondTargetAngle);
+
+        if (duckPosition == 2) {
+            timeoutTime = 0.9;
+        } else if (duckPosition == 1) {
+            timeoutTime = 1.1;
+        }
+
+        runtime.reset();
+        startMotors(-0.2, -0.2, -0.2,-0.2);
+        while (opMode.opModeIsActive() && runtime.seconds() < timeoutTime) {
+        }
+        stop();
+    }
+
+    public void parkFromCarousel() {
+        runtime.reset();
+        startMotors(0.2, 0.2, 0.2,0.2);
+        while (opMode.opModeIsActive() && runtime.seconds() < 1) {
+        }
+        stop();
+    }
+
+    public void driveToHub(double duckPosition) {
+        //needs clean up with other autodrivemethods
+        double forwardInches = -6;
+        double strafeInches = 0;// temp drive until working strafe
+        double rotateDegrees = 90;
+
+        if((opMode.alliance == MM_OpMode.BLUE && opMode.startingPosition == MM_OpMode.WAREHOUSE) || (opMode.alliance == MM_OpMode.RED && opMode.startingPosition == MM_OpMode.STORAGE)) {
+
+            strafeInches = 17;
+            rotateDegrees = -90;
+
+            //determine driving position
+            if(duckPosition == 1) {
+                forwardInches = -8.75;
+            } else if(duckPosition == 2) {
+                forwardInches = -6;
+            }
+        }else if((opMode.alliance == MM_OpMode.BLUE && opMode.startingPosition == MM_OpMode.STORAGE) || (opMode.alliance == MM_OpMode.RED && opMode.startingPosition == MM_OpMode.WAREHOUSE)) {
+
+            forwardInches = -6;
+            strafeInches = 22;
+
+            //determine driving position (MEASURE)
+            if (duckPosition == 1) {
+                forwardInches = -6.75;
+            } else if (duckPosition == 2) {
+                forwardInches = -3.5;
+            }
+        }
+
+        driveForwardInches(12, 5);
+        pRotateDegrees(rotateDegrees);
+        driveForwardInches(strafeInches,5);
+        pRotateDegrees(179);
+        driveForwardInches(forwardInches, 3);
+    }
+
+    public void storagePark(double duckPosition) {
+        if (opMode.spinDucker) {
+            parkFromCarousel();
+        } else {
+            //clean up later with dead encoders
+            double targetHeading;
+            //this variable is to straighten robot out after parking
+            double secondTargetHeading;
+            double forwardInches;
+
+            forwardInches = 50;
+
+            if (opMode.alliance == MM_OpMode.BLUE) {
+                if (opMode.startingPosition == MM_OpMode.STORAGE) {
+                    forwardInches = 47;
+                }
+                targetHeading = -80;
+                if (duckPosition == 1) {
+                    targetHeading = -82.75;
+                } else if (duckPosition == 3) {
+                    targetHeading = -80;
+                }
+                secondTargetHeading = -90;
+            } else {
+                if (opMode.startingPosition == MM_OpMode.WAREHOUSE) {
+                    forwardInches = 47;
+                } else {
+                    forwardInches = 49;
+                }
+
+                targetHeading = 78;
+                secondTargetHeading = 90;
+
+                if (duckPosition == 1) {
+                    targetHeading = 77;
+                } else if (duckPosition == 3) {
+                    targetHeading = 80;
+                }
+            }
+
+            pRotateDegrees(targetHeading);
+            driveForwardInches(forwardInches, 7);
+            pRotateDegrees(secondTargetHeading);
+        }
+    }
+
+    public void warehousePark(){
+        double angle = -105;
+        double driveInches = 18;
+        double motorPowers = 0.3;
+        double rightMotorPowers = 0.3;
+        double leftMotorPowers = 0.32;
+
+        if (opMode.alliance == MM_OpMode.BLUE) {
+            angle = -angle;
+            motorPowers = -motorPowers;
+            rightMotorPowers = 0.32;
+            leftMotorPowers = 0.3;
+         }
+
+        pRotateDegrees(angle);
+        driveForwardInches(driveInches, 4);
+        initOdometryServos(1);
+
+        runtime.reset();
+        startMotors(motorPowers, -motorPowers, -motorPowers, motorPowers);
+        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
+        }
+        stop();
+
+        runtime.reset();
+        startMotors(leftMotorPowers, rightMotorPowers, leftMotorPowers, rightMotorPowers);
+        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
+        }
+        stop();
     }
 
     public void testMotors(){
@@ -285,156 +386,6 @@ public class MM_Drivetrain {
         }
     }
 
-    public void driveToCarousel(boolean redSide, double duckPosition) {
-        double forwardInches = 42;
-        double targetAngle = 103;
-        double secondTargetAngle = -37;
-        double timeoutTime = 0.90; //default for red 3
-        if (duckPosition == 1 && redSide) {
-            secondTargetAngle = -27;
-        }
-         if (!redSide) {
-            forwardInches = 44;
-            targetAngle = -100;
-            secondTargetAngle = 20;
-            timeoutTime = 0.75; //default for blue 3
-        }
-
-        pRotateDegrees(targetAngle);
-        driveForwardToPosition(forwardInches, 3);
-        pRotateDegrees(secondTargetAngle);
-        if (duckPosition == 2) {
-            timeoutTime = 0.9;
-        } else if (duckPosition == 1) {
-            timeoutTime = 1.1;
-        }
-        runtime.reset();
-        startMotors(-0.2, -0.2, -0.2,-0.2);
-        while (opMode.opModeIsActive() && runtime.seconds() < timeoutTime) {
-        }
-        stop();
-    }
-
-    public void parkFromCarousel(boolean redSide) {
-        if (redSide) {
-            runtime.reset();
-            startMotors(0.2, 0.2, 0.2,0.2);
-            while (opMode.opModeIsActive() && runtime.seconds() < 1) {
-            }
-            stop();
-        }
-    }
-
-    public void driveToHub(int alliance, int startingPosition, double duckPosition) {
-        //needs clean up with other autodrivemethods
-        double forwardInches = -6;
-        double strafeInches = 0;// temp drive until working strafe
-        double rotateDegrees = 90;
-
-        if((alliance == BLUE && startingPosition == WAREHOUSE) || (alliance == RED && startingPosition == STORAGE)) {
-
-            strafeInches = 17;
-            rotateDegrees = -90;
-
-            //determine driving position
-            if(duckPosition == 1) {
-                forwardInches = -8.75;
-            } else if(duckPosition == 2) {
-                forwardInches = -6;
-            }
-        }else if((alliance == BLUE && startingPosition == STORAGE) || (alliance == RED && startingPosition == WAREHOUSE)) {
-
-            forwardInches = -6;
-            strafeInches = 22;
-
-            //determine driving position (MEASURE)
-            if (duckPosition == 1) {
-                forwardInches = -6.75;
-            } else if (duckPosition == 2) {
-                forwardInches = -3.5;
-            }
-        }
-
-        driveForwardToPosition(12, 5);
-        pRotateDegrees(rotateDegrees);
-        driveForwardToPosition(strafeInches,5);
-//        strafeRightInchesOld(strafeInches, 5);
-        pRotateDegrees(179);
-        driveForwardToPosition(forwardInches, 3);
-    }
-
-    public void storagePark(boolean blueSide, double duckPosition, boolean storageStart) {
-        //clean up later with dead encoders
-        double targetHeading;
-        //this variable is to straighten robot out after parking
-        double secondTargetHeading;
-        double forwardInches;
-
-        forwardInches = 50;
-
-        if (blueSide) {
-            if (storageStart) {
-                forwardInches = 47;
-            }
-            targetHeading = -80;
-            if (duckPosition == 1) {
-                targetHeading = -82.75;
-            } else if (duckPosition == 3){
-                targetHeading = -80;
-            }
-            secondTargetHeading = -90;
-        } else {
-            if (!storageStart) {
-                forwardInches = 47;
-            } else {
-                forwardInches = 49;
-            }
-
-            targetHeading = 78;
-            secondTargetHeading = 90;
-
-            if (duckPosition == 1) {
-                targetHeading = 77;
-            } else if (duckPosition == 3) {
-                targetHeading = 80;
-            }
-        }
-
-        pRotateDegrees(targetHeading);
-        driveForwardToPosition(forwardInches, 7);
-        pRotateDegrees(secondTargetHeading);
-    }
-
-    public void outOfTheWay(int alliance){
-        double angle = -105;
-        double driveInches = 18;
-        double strafeInches = 16;
-        double motorPowers = 0.3;
-        double rightMotorPowers = 0.3;
-        double leftMotorPowers = 0.32;
-
-        if (alliance == BLUE) {
-            angle = -angle;
-            motorPowers = -motorPowers;
-            rightMotorPowers = 0.32;
-            leftMotorPowers = 0.3;
-         }
-
-
-        pRotateDegrees(angle);
-        driveForwardToPosition(driveInches, 4);
-        initOdometryServos(1);
-        runtime.reset();
-        startMotors(motorPowers, -motorPowers, -motorPowers, motorPowers);
-        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
-        }
-        stop();
-        runtime.reset();
-        startMotors(leftMotorPowers, rightMotorPowers, leftMotorPowers, rightMotorPowers);
-        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
-        }
-        stop();
-    }
     public void odometryTelemetry() {
         opMode.telemetry.addData("Back Current", ticksToInches(backEncoder.getCurrentPosition()));
         opMode.telemetry.addData("Right Current", ticksToInches(rightEncoder.getCurrentPosition()));
@@ -449,17 +400,6 @@ public class MM_Drivetrain {
         leftEncoder.setMode(runMode);
         rightEncoder.setMode(runMode);
         backEncoder.setMode(runMode);
-    }
-
-    //TODO Use these methods for rotating
-    private void rotateClockwise() {
-        assignMotorPowers(0.2, -0.2, 0.2, -0.2);
-        setDrivePowers();
-    }
-
-    private void rotateCounterClockwise() {
-        assignMotorPowers(-0.2, 0.2, -0.2, 0.2);
-        setDrivePowers();
     }
 
     public float getCurrentHeading() {
@@ -477,79 +417,47 @@ public class MM_Drivetrain {
         return angle;
     }
 
-    private void calculateRotateError(double targetHeading) {
-        headingError = targetHeading - getCurrentHeading();
+    private double calculateRotateError(double targetHeading) {
+        double headingError = targetHeading - getCurrentHeading();
 
         if (headingError > 180) {
             headingError -= 360;
         } else if (headingError < -180) {
             headingError += 360;
         }
+        return headingError;
     }
 
     private void stop() {
-        setDriveSame(0);
+    startMotors(0,0,0,0);
     }
 
-    private void rampUp() {
-        rampPrecentage =  rampPrecentage + RAMP_INTERVAL;
-        leftDrivePower = leftDrivePower * rampPrecentage;
-        rightDrivePower = rightDrivePower * rampPrecentage;
+    private void rampUp() { //TODO troubleshoot and optimize
+        rampPercentage =  rampPercentage + RAMP_INTERVAL;
+        flPower = flPower * rampPercentage;
+        frPower = frPower * rampPercentage;
+        blPower = blPower * rampPercentage;
+        brPower = brPower * rampPercentage;
 
-        if (rampPrecentage == 1) {
+        if (rampPercentage >= 1) {
             rampUp = false;
         }
-    }
-
-    private void rampUpStrafe() {
-        rampPrecentage =  rampPrecentage + RAMP_INTERVAL;
-        flPower = flPower * rampPrecentage;
-        frPower = frPower * rampPrecentage;
-        blPower = blPower * rampPrecentage;
-        brPower = brPower * rampPrecentage;
-
-        if (rampPrecentage >= 1) {
-            rampUp = false;
-        }
-    }
-
-
-    private void setDriveSame(double motorPower) {
-        assignMotorPowers(motorPower, motorPower, motorPower, motorPower);
-        setDrivePowers();
-    }
-//TODO Combine assignMotorPowers, setDrivePowers, and startMotors
-    private void assignMotorPowers(double flPower, double frPower, double blPower, double brPower) {
-        this.flPower = flPower;
-        this.frPower = frPower;
-        this.blPower = blPower;
-        this.brPower = brPower;
     }
 
     private void setDrivePowers() {
-
         if (rampUp) {
             rampUp();
-        } else {
-            normalize();
-            handleSlowMode();
         }
-
+        normalize();
+        handleSlowMode();
         startMotors(flPower, frPower, blPower, brPower);
-
     }
 
     private void startMotors(double flPower, double frPower, double blPower, double brPower) {
-        frontRightDrive.setPower(frPower * 1.04);
-        backLeftDrive.setPower(blPower * 0.985);
-        backRightDrive.setPower(brPower * 1.015);
-        frontLeftDrive.setPower(flPower * 0.965);
-
-/*
-        backLeftDrive.setPower(blPower * 0.99);
-        frontRightDrive.setPower(frPower * 1.01);
-        backRightDrive.setPower(brPower * 1.01);
-        frontLeftDrive.setPower(flPower * 0.99);*/
+        frontRightDrive.setPower(frPower);
+        backLeftDrive.setPower(blPower);
+        backRightDrive.setPower(brPower);
+        frontLeftDrive.setPower(flPower);
 
         opMode.telemetry.addData("front left power:", flPower);
         opMode.telemetry.addData("front right power:", frPower);

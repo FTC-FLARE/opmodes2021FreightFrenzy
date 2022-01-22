@@ -10,7 +10,7 @@ public class MM_Ducker {
     private MM_OpMode opMode;
 
     private ElapsedTime runtime = new ElapsedTime();
-    static final double MOTOR_POWER = 1.00;
+    static final double MOTOR_POWER = 0.6;
     private DcMotor DuckerMotor= null;
     private final double TIMEOUT_TIME = 2.75;
 
@@ -25,12 +25,12 @@ public class MM_Ducker {
     }
     //TODO Add ramp up acceleration
 
-    public void autoSpin(int alliance) {
+    public void autoSpin() {
         runtime.reset();
 
-        if (alliance == RED){
+        if (opMode.alliance == RED){
             spinRed();
-        }else if (alliance == BLUE){
+        }else if (opMode.alliance == BLUE){
             spinBlue();
         }
         while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {

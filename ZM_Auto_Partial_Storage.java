@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name="ZM_Auto_Partial_Storage", group="MM")
@@ -24,7 +23,8 @@ public class ZM_Auto_Partial_Storage extends MM_OpMode {
         waitForStart();
         runtime.reset();
 
-        robot.drivetrain.driveForwardInchesOld(24, 4);
+        robot.drivetrain.driveForwardInches(24, 5);
+
         robot.vuforia.deactivateTargets();
         robot.vuforia.deactivateTfod();
     }
