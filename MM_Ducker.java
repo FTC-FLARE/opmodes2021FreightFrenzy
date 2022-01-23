@@ -51,17 +51,11 @@ public class MM_Ducker {
     }
 
     private void spinRed() {
-        rampUpSpin(RED_SIDE);
+        setPower(Range.clip(RED_SIDE * (spinPower + RAMP_INTERVAL), MIN_POWER, MAX_POWER));
     }
 
     private void spinBlue() {
-        rampUpSpin(BLUE_SIDE);
-    }
-    private void rampUpSpin(double allianceSideMultiplier) {
-        spinPower = spinPower + RAMP_INTERVAL;
-        Range.clip(spinPower, MIN_POWER, MAX_POWER);
-        spinPower = spinPower * allianceSideMultiplier;
-        setPower(spinPower);
+        setPower(Range.clip(BLUE_SIDE * (spinPower + RAMP_INTERVAL), MIN_POWER, MAX_POWER));
     }
 
     private void stop() {
