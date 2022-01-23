@@ -418,8 +418,8 @@ public class MM_Drivetrain {
         return angle;
     }
 
-    private double calculateTimeout(double pValue, double error, double min) {
-        return Math.min(min, pValue * error);
+    private double calculateTimeout(double pValue, double distance, double min) {
+        return Math.max(min, Math.abs(pValue * distance));
     }
 
     private double calculateRotateError(double targetHeading) {
