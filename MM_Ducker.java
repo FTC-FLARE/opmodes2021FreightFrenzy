@@ -13,8 +13,6 @@ public class MM_Ducker {
     static final double MAX_POWER = 0.75;
     static final double MIN_POWER = 0.40;
     static final double RAMP_INTERVAL = 0.01;
-    static final double RED_SIDE = -1;
-    static final double BLUE_SIDE = 1;
     private DcMotor DuckerMotor= null;
     private final double TIMEOUT_TIME = 2.75;
 
@@ -30,6 +28,7 @@ public class MM_Ducker {
     public void autoSpin() {
         runtime.reset();
         while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
+            spinPower = spinPower + RAMP_INTERVAL;
             if (opMode.alliance == MM_OpMode.BLUE){
                 spinBlue();
             } else {
@@ -41,6 +40,7 @@ public class MM_Ducker {
     }
 
     public void manualSpin() {
+        spinPower = spinPower + RAMP_INTERVAL;
         if (opMode.gamepad1.right_bumper) {
             spinBlue();
         } else if (opMode.gamepad1.left_bumper) {
@@ -51,11 +51,11 @@ public class MM_Ducker {
     }
 
     private void spinRed() {
-        setPower(Range.clip(RED_SIDE * (spinPower + RAMP_INTERVAL), MIN_POWER, MAX_POWER));
+        setPower(Range.clip(-(spinPower += RAMP_INTERVAL), MIN_POWER, MAX_POWER));
     }
 
     private void spinBlue() {
-        setPower(Range.clip(BLUE_SIDE * (spinPower + RAMP_INTERVAL), MIN_POWER, MAX_POWER));
+        setPower(Range.clip(spinPower += RAMP_INTERVAL, MIN_POWER, MAX_POWER));
     }
 
     private void stop() {
