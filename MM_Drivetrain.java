@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -57,21 +58,22 @@ public class MM_Drivetrain {
     private static final double RAMP_INTERVAL = 0.01;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
-    private static final double MIN_TIMEOUT_TIME = 2;
-    private static final double DRIVING_TIME_COEFFICENT = 0.08;
-    private static final double ANGLE_TIME_COEFFICENT = 0.007;
+    private static final double DRIVING_TIME_COEFFICIENT = 0.08;
+    private static final double ANGLE_TIME_COEFFICIENT = 0.007;
+    private static final int DRIVING = 1;
+    private static final int ROTATING = 2;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
         init();
     }
 
-    public void driveForwardInches(double forwardInches) {
-        int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(forwardInches);
-        int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(forwardInches);
+    public void driveForwardInches(double inches) {
+        int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(inches);
+        int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(inches);
         boolean lookingForTarget = true;
         robotHeading = priorAngleTarget;
-        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, forwardInches);
+        double timeoutTime = calculateTimeoutTime(DRIVING, inches);
 //        rampUp = true;
 
         opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
@@ -100,10 +102,10 @@ public class MM_Drivetrain {
         rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    public void strafeInches(double strafeInches) { //TODO Troubleshoot
-        int backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
+    public void strafeInches(double inches) { //TODO Troubleshoot
+        int backTargetTicks = inchesToTicks(inches) + backPriorEncoderTarget;
         boolean lookingForTarget = true;
-        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, strafeInches);
+        double timeoutTime = calculateTimeoutTime(DRIVING, inches);
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
@@ -197,7 +199,7 @@ public class MM_Drivetrain {
 
         opMode.pTurnController.setInputRange(getCurrentHeading(), targetAngle);
         opMode.pTurnController.setSetpoint(targetAngle);
-        double timeoutTime = calculateTimeoutTime(ANGLE_TIME_COEFFICENT, targetAngle - getCurrentHeading());
+        double timeoutTime = calculateTimeoutTime(ROTATING, targetAngle - getCurrentHeading());
         do {
             double turnPower = Math.abs(opMode.pTurnController.calculatePower(getCurrentHeading()));
 
@@ -422,8 +424,14 @@ public class MM_Drivetrain {
         return angle;
     }
 
-    private double calculateTimeoutTime(double pValue, double error) {
-        return MIN_TIMEOUT_TIME + (pValue * Math.abs(error));
+    private double calculateTimeoutTime(int action, double error) {
+        double time = 0;
+        if (action == DRIVING) {
+            time = Range.clip(DRIVING_TIME_COEFFICIENT * error, 2.5, 6);
+        } else if (action == ROTATING) {
+            time = Range.clip(ANGLE_TIME_COEFFICIENT * error, 1.5, 3.5);
+        }
+        return time;
     }
 
     private double calculateRotateError(double targetHeading) {
