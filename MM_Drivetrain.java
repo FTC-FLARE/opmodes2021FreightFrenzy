@@ -57,17 +57,21 @@ public class MM_Drivetrain {
     private static final double RAMP_INTERVAL = 0.01;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
+    private static final double MIN_TIMEOUT_TIME = 1;
+    private static final double DRIVING_TIME_COEFFICENT = 0.000054395; //at 12 inches timeouttime is 3, at 30 its 6, at 50 its 9.3
+    private static final double ANGLE_TIME_COEFFICENT = 0.035;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
         init();
     }
 
-    public void driveForwardInches(double forwardInches, double timeoutTime) {
+    public void driveForwardInches(double forwardInches) {
         int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(forwardInches);
         int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(forwardInches);
         boolean lookingForTarget = true;
         robotHeading = priorAngleTarget;
+        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, opMode.pLeftDriveController.getCurrentError());
 //        rampUp = true;
 
         opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
@@ -96,14 +100,14 @@ public class MM_Drivetrain {
         rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    public void strafeInches(double strafeInches, double timeoutTime) { //TODO Troubleshoot
+    public void strafeInches(double strafeInches) { //TODO Troubleshoot
         int backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
         boolean lookingForTarget = true;
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
         opMode.pBackDriveController.setSetpoint(backTargetTicks);
-
+        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, opMode.pBackDriveController.getCurrentError());
         runtime.reset();
         while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
             setStrafePower();
@@ -193,6 +197,7 @@ public class MM_Drivetrain {
 
         opMode.pTurnController.setInputRange(getCurrentHeading(), targetAngle);
         opMode.pTurnController.setSetpoint(targetAngle);
+        double timeoutTime = calculateTimeoutTime(ANGLE_TIME_COEFFICENT, opMode.pTurnController.getCurrentError());
         do {
             double turnPower = Math.abs(opMode.pTurnController.calculatePower(getCurrentHeading()));
 
@@ -203,7 +208,7 @@ public class MM_Drivetrain {
             }
 
             opMode.telemetry.update();
-        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
+        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < timeoutTime);
 
         stop();
         leftPriorEncoderTarget = leftPriorEncoderTarget - leftStartingTicks + leftEncoder.getCurrentPosition();
@@ -228,7 +233,7 @@ public class MM_Drivetrain {
         }
 
         pRotateDegrees(targetAngle);
-        driveForwardInches(forwardInches, 3);
+        driveForwardInches(forwardInches);
         pRotateDegrees(secondTargetAngle);
 
         if (duckPosition == 2) {
@@ -282,11 +287,11 @@ public class MM_Drivetrain {
             }
         }
 
-        driveForwardInches(12, 5);
+        driveForwardInches(12);
         pRotateDegrees(rotateDegrees);
-        driveForwardInches(strafeInches,5);
+        driveForwardInches(strafeInches);
         pRotateDegrees(179);
-        driveForwardInches(forwardInches, 3);
+        driveForwardInches(forwardInches);
     }
 
     public void storagePark(double duckPosition) {
@@ -330,7 +335,7 @@ public class MM_Drivetrain {
             }
 
             pRotateDegrees(targetHeading);
-            driveForwardInches(forwardInches, 7);
+            driveForwardInches(forwardInches);
             pRotateDegrees(secondTargetHeading);
         }
     }
@@ -350,7 +355,7 @@ public class MM_Drivetrain {
          }
 
         pRotateDegrees(angle);
-        driveForwardInches(driveInches, 4);
+        driveForwardInches(driveInches);
         initOdometryServos(1);
 
         runtime.reset();
@@ -415,6 +420,10 @@ public class MM_Drivetrain {
             angle += 360;
         }
         return angle;
+    }
+
+    private double calculateTimeoutTime(double pValue, double error) {
+        return MIN_TIMEOUT_TIME + (pValue * Math.abs(error));
     }
 
     private double calculateRotateError(double targetHeading) {

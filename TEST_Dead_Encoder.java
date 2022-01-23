@@ -45,9 +45,9 @@ public class TEST_Dead_Encoder extends MM_OpMode {
         }
         runtime.reset();
 
-        robot.drivetrain.driveForwardInches(driveInches, 7);
+        robot.drivetrain.driveForwardInches(driveInches);
         sleep(2000);
-        robot.drivetrain.driveForwardInches(secondDriveInches, 7);
+        robot.drivetrain.driveForwardInches(secondDriveInches);
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.update();
