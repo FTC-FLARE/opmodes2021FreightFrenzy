@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -58,10 +57,8 @@ public class MM_Drivetrain {
     private static final double RAMP_INTERVAL = 0.01;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
-    private static final double DRIVING_TIME_COEFFICIENT = 0.08;
-    private static final double ANGLE_TIME_COEFFICIENT = 0.007;
-    private static final int DRIVING = 1;
-    private static final int ROTATING = 2;
+    private static final double SECONDS_PER_INCH = 0.08;
+    private static final double SECONDS_PER_DEGREE = 0.02;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -81,7 +78,7 @@ public class MM_Drivetrain {
         opMode.pRightDriveController.setSetpoint(rightTargetTicks);
 
         runtime.reset();
-        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeoutTime(DRIVING_TIME_COEFFICIENT, inches, 2.5))) {
+        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeout(SECONDS_PER_INCH, inches, 2.5))) {
             setStraightPower();
 
             if (!opMode.pLeftDriveController.reachedTarget() && !opMode.pRightDriveController.reachedTarget()) {
@@ -108,7 +105,7 @@ public class MM_Drivetrain {
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
         opMode.pBackDriveController.setSetpoint(backTargetTicks);
         runtime.reset();
-        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeoutTime(DRIVING_TIME_COEFFICIENT, inches, 2.5))) {
+        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeout(SECONDS_PER_INCH, inches, 2.5))) {
             setStrafePower();
 
             if (!opMode.pBackDriveController.reachedTarget()) {
@@ -207,7 +204,7 @@ public class MM_Drivetrain {
             }
 
             opMode.telemetry.update();
-        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < calculateTimeoutTime(ANGLE_TIME_COEFFICIENT, startingError, 2.5));
+        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < calculateTimeout(SECONDS_PER_DEGREE, startingError, 2));
 
         stop();
         leftPriorEncoderTarget = leftPriorEncoderTarget - leftStartingTicks + leftEncoder.getCurrentPosition();
@@ -421,7 +418,7 @@ public class MM_Drivetrain {
         return angle;
     }
 
-    private double calculateTimeoutTime(double pValue, double error, double min) {
+    private double calculateTimeout(double pValue, double error, double min) {
         return Math.min(min, pValue * error);
     }
 
