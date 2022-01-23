@@ -5,20 +5,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 public class MM_Ducker {
-
-    // this gives us access to all opMode information
     private MM_OpMode opMode;
+
+    private DcMotor DuckerMotor= null;
 
     private ElapsedTime runtime = new ElapsedTime();
     static final double MAX_POWER = 0.75;
     static final double MIN_POWER = 0.40;
     static final double RAMP_INTERVAL = 0.01;
-    private DcMotor DuckerMotor= null;
-    private final double TIMEOUT_TIME = 2.75;
-
+    private final double SPIN_TIME = 2.75;
     private double spinPower = 0;
 
-    // Constructor
     public MM_Ducker(MM_OpMode opMode){
         this.opMode = opMode;
         DuckerMotor = opMode.hardwareMap.get(DcMotor.class, "Ducker");
@@ -27,7 +24,7 @@ public class MM_Ducker {
 
     public void autoSpin() {
         runtime.reset();
-        while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
+        while (opMode.opModeIsActive() && runtime.seconds() < SPIN_TIME) {
             spinPower = spinPower + RAMP_INTERVAL;
             if (opMode.alliance == MM_OpMode.BLUE){
                 spinBlue();
@@ -51,7 +48,7 @@ public class MM_Ducker {
     }
 
     private void spinRed() {
-        setPower(Range.clip(-(spinPower += RAMP_INTERVAL), MIN_POWER, MAX_POWER));
+        setPower(-Range.clip(spinPower += RAMP_INTERVAL, MIN_POWER, MAX_POWER));
     }
 
     private void spinBlue() {
