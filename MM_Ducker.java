@@ -10,30 +10,28 @@ public class MM_Ducker {
     private MM_OpMode opMode;
 
     private ElapsedTime runtime = new ElapsedTime();
-    static final double MOTOR_POWER = 0.6;
+    static final double MAX_POWER = 0.75;
+    static final double MIN_POWER = 0.5;
+    static final double RAMP_INTERVAL = 0.01;
     private DcMotor DuckerMotor= null;
     private final double TIMEOUT_TIME = 2.75;
 
-    static final int RED = 1;
-    static final int BLUE = 2;
-
+    private double spinPower = 0;
     // Constructor
     public MM_Ducker(MM_OpMode opMode){
         this.opMode = opMode;
         DuckerMotor = opMode.hardwareMap.get(DcMotor.class, "Ducker");
         DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-    //TODO Add ramp up acceleration
 
     public void autoSpin() {
         runtime.reset();
-
-        if (opMode.alliance == RED){
-            spinRed();
-        }else if (opMode.alliance == BLUE){
-            spinBlue();
-        }
         while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
+            if (opMode.alliance == MM_OpMode.RED){
+                spinRed();
+            }else if (opMode.alliance == MM_OpMode.BLUE){
+                spinBlue();
+            }
             opMode.telemetry.addLine("Spinning Ducker");
         }
         stop();
@@ -49,19 +47,31 @@ public class MM_Ducker {
         }
     }
 
+    private void spinRed() {
+        setPower(-rampUpPower());
+    }
+
+    private void spinBlue() {
+        setPower(rampUpPower());
+    }
+
+    private double rampUpPower() {
+        if (spinPower <= MIN_POWER) {
+            spinPower = MIN_POWER;
+        } else if (spinPower >= MAX_POWER) {
+            spinPower = MAX_POWER;
+        } else {
+            spinPower = spinPower + RAMP_INTERVAL;
+        }
+        return spinPower;
+    }
+
     private void stop() {
         DuckerMotor.setPower(0);
+        spinPower = 0;
     }
 
     private void setPower(double motorPower) {
         DuckerMotor.setPower(motorPower);
-    }
-
-    private void spinRed() {
-        setPower(-MOTOR_POWER);
-    }
-
-    private void spinBlue() {
-        setPower(MOTOR_POWER);
     }
 }
