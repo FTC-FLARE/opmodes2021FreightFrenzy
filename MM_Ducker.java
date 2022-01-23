@@ -30,10 +30,10 @@ public class MM_Ducker {
     public void autoSpin() {
         runtime.reset();
         while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
-            if (opMode.alliance == MM_OpMode.RED){
-                rampUpSpin(RED_SIDE);
-            }else if (opMode.alliance == MM_OpMode.BLUE){
-                rampUpSpin(BLUE_SIDE);
+            if (opMode.alliance == MM_OpMode.BLUE){
+                spinBlue();
+            } else {
+                spinRed();
             }
             opMode.telemetry.addLine("Spinning Ducker");
         }
@@ -42,14 +42,21 @@ public class MM_Ducker {
 
     public void manualSpin() {
         if (opMode.gamepad1.right_bumper) {
-            rampUpSpin(BLUE_SIDE);
+            spinBlue();
         } else if (opMode.gamepad1.left_bumper) {
-            rampUpSpin(RED_SIDE);
+            spinRed();
         } else {
             stop();
         }
     }
 
+    private void spinRed() {
+        rampUpSpin(RED_SIDE);
+    }
+
+    private void spinBlue() {
+        rampUpSpin(BLUE_SIDE);
+    }
     private void rampUpSpin(double allianceSideMultiplier) {
         spinPower = spinPower + RAMP_INTERVAL;
         Range.clip(spinPower, MIN_POWER, MAX_POWER);
@@ -65,11 +72,4 @@ public class MM_Ducker {
     private void setPower(double motorPower) {
         DuckerMotor.setPower(motorPower);
     }
-    /*    private void spinRed() {
-        rampUpSpin(RED_SIDE);
-    }
-
-    private void spinBlue() {
-        rampUpSpin(BLUE_SIDE);
-    }*/
 }
