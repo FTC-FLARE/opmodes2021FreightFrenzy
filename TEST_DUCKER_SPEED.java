@@ -40,8 +40,8 @@ public class TEST_DUCKER_SPEED extends MM_OpMode {
             } else if (gamepad1.b && !isHandled) {
                 rampInterval -= 0.001;
                 isHandled = true;
-            } else if (!gamepad1.b && !gamepad1.a && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.dpad_down && !gamepad1.dpad_up && !isHandled) {
-                isHandled = true;
+            } else if (!gamepad1.b && !gamepad1.a && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.dpad_down && !gamepad1.dpad_up && isHandled) {
+                isHandled = false;
             }
             telemetry.addLine("press 'a' to increase rampInterval");
             telemetry.addLine("press 'b' to decrease rampInterval");
