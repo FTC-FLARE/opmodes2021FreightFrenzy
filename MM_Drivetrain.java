@@ -57,9 +57,9 @@ public class MM_Drivetrain {
     private static final double RAMP_INTERVAL = 0.01;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
-    private static final double MIN_TIMEOUT_TIME = 1;
-    private static final double DRIVING_TIME_COEFFICENT = 0.000054395; //at 12 inches timeouttime is 3, at 30 its 6, at 50 its 9.3
-    private static final double ANGLE_TIME_COEFFICENT = 0.035;
+    private static final double MIN_TIMEOUT_TIME = 2;
+    private static final double DRIVING_TIME_COEFFICENT = 0.08;
+    private static final double ANGLE_TIME_COEFFICENT = 0.007;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -71,7 +71,7 @@ public class MM_Drivetrain {
         int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(forwardInches);
         boolean lookingForTarget = true;
         robotHeading = priorAngleTarget;
-        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, opMode.pLeftDriveController.getCurrentError());
+        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, forwardInches);
 //        rampUp = true;
 
         opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
@@ -103,11 +103,11 @@ public class MM_Drivetrain {
     public void strafeInches(double strafeInches) { //TODO Troubleshoot
         int backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
         boolean lookingForTarget = true;
+        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, strafeInches);
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
         opMode.pBackDriveController.setSetpoint(backTargetTicks);
-        double timeoutTime = calculateTimeoutTime(DRIVING_TIME_COEFFICENT, opMode.pBackDriveController.getCurrentError());
         runtime.reset();
         while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
             setStrafePower();
@@ -197,7 +197,7 @@ public class MM_Drivetrain {
 
         opMode.pTurnController.setInputRange(getCurrentHeading(), targetAngle);
         opMode.pTurnController.setSetpoint(targetAngle);
-        double timeoutTime = calculateTimeoutTime(ANGLE_TIME_COEFFICENT, opMode.pTurnController.getCurrentError());
+        double timeoutTime = calculateTimeoutTime(ANGLE_TIME_COEFFICENT, targetAngle - getCurrentHeading());
         do {
             double turnPower = Math.abs(opMode.pTurnController.calculatePower(getCurrentHeading()));
 
