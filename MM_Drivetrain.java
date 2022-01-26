@@ -87,6 +87,7 @@ public class MM_Drivetrain {
                 opMode.telemetry.addData("Left Current", ticksToInches(leftCurrentTicks));
                 opMode.telemetry.addData("Right Current", ticksToInches(rightCurrentTicks));
                 opMode.telemetry.addData("Angle Heading", getCurrentHeading());
+                opMode.telemetry.addData("Final runtime", runtime.seconds());
             } else {
                 lookingForTarget = false;
             }
@@ -419,6 +420,7 @@ public class MM_Drivetrain {
     }
 
     private double calculateTimeout(double pValue, double distance, double min) {
+        opMode.telemetry.addData("Calculated Time", Math.max(min, Math.abs(pValue * distance)));
         return Math.max(min, Math.abs(pValue * distance));
     }
 

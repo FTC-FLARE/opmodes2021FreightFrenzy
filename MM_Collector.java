@@ -11,7 +11,7 @@ public class MM_Collector {
 
     private ElapsedTime runtime = new ElapsedTime();
 
-    private final double TIMEOUT_TIME = 1;
+    private final double TIMEOUT_TIME = 1.5;
 
     public MM_Collector(MM_OpMode opMode) {
         this.opMode = opMode;
