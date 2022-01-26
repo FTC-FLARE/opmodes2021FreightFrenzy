@@ -58,7 +58,7 @@ public class MM_Drivetrain {
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
     private static final double SECONDS_PER_INCH = 0.08;
-    private static final double SECONDS_PER_DEGREE = 0.02;
+    private static final double SECONDS_PER_DEGREE = 0.05;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -205,7 +205,7 @@ public class MM_Drivetrain {
             }
 
             opMode.telemetry.update();
-        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < calculateTimeout(SECONDS_PER_DEGREE, startingError, 2));
+        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < calculateTimeout(SECONDS_PER_DEGREE, startingError, 3));
 
         stop();
         leftPriorEncoderTarget = leftPriorEncoderTarget - leftStartingTicks + leftEncoder.getCurrentPosition();
