@@ -10,10 +10,10 @@ public class MM_Ducker {
     private DcMotor DuckerMotor= null;
 
     private final ElapsedTime runtime = new ElapsedTime();
-    static final double MAX_POWER = 0.75;
-    static final double MIN_POWER = 0.40;
-    static final double RAMP_INTERVAL = 0.01;
-    private final double SPIN_TIME = 2.75;
+    static final double MAX_POWER = 0.90;
+    static final double MIN_POWER = 0.20;
+    static final double RAMP_INTERVAL = 0.0025;
+    private final double SPIN_TIME = 2;
 
     private double spinPower = MIN_POWER;
 
@@ -58,8 +58,8 @@ public class MM_Ducker {
         DuckerMotor.setPower(0);
         spinPower = MIN_POWER;
     }
-
-    public void manualSpinTEST(double minPower, double maxPower, double rampInterval) {
+}
+/*    public void manualSpinTEST(double minPower, double maxPower, double rampInterval) {
         if (opMode.gamepad1.right_bumper) {
             DuckerMotor.setPower(Range.clip(spinPower += rampInterval, minPower, maxPower));
         } else if (opMode.gamepad1.left_bumper) {
@@ -72,5 +72,4 @@ public class MM_Ducker {
     private void stopTEST(double minPower) {
         DuckerMotor.setPower(0);
         spinPower = minPower;
-    }
-}
+    }*/
