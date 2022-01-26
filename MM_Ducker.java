@@ -1,39 +1,36 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 public class MM_Ducker {
-
-    // this gives us access to all opMode information
     private MM_OpMode opMode;
 
-    private ElapsedTime runtime = new ElapsedTime();
-    static final double MOTOR_POWER = 0.6;
     private DcMotor DuckerMotor= null;
-    private final double TIMEOUT_TIME = 2.75;
 
-    static final int RED = 1;
-    static final int BLUE = 2;
+    private final ElapsedTime runtime = new ElapsedTime();
+    static final double MAX_POWER = 0.90;
+    static final double MIN_POWER = 0.20;
+    static final double RAMP_INTERVAL = 0.0025;
+    private final double SPIN_TIME = 2;
 
-    // Constructor
+    private double spinPower = MIN_POWER;
+
     public MM_Ducker(MM_OpMode opMode){
         this.opMode = opMode;
         DuckerMotor = opMode.hardwareMap.get(DcMotor.class, "Ducker");
         DuckerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-    //TODO Add ramp up acceleration
 
     public void autoSpin() {
         runtime.reset();
-
-        if (opMode.alliance == RED){
-            spinRed();
-        }else if (opMode.alliance == BLUE){
-            spinBlue();
-        }
-        while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
+        while (opMode.opModeIsActive() && runtime.seconds() < SPIN_TIME) {
+            if (opMode.alliance == MM_OpMode.BLUE){
+                spinBlue();
+            } else {
+                spinRed();
+            }
             opMode.telemetry.addLine("Spinning Ducker");
         }
         stop();
@@ -49,19 +46,30 @@ public class MM_Ducker {
         }
     }
 
-    private void stop() {
-        DuckerMotor.setPower(0);
-    }
-
-    private void setPower(double motorPower) {
-        DuckerMotor.setPower(motorPower);
-    }
-
     private void spinRed() {
-        setPower(-MOTOR_POWER);
+        DuckerMotor.setPower(-Range.clip(spinPower += RAMP_INTERVAL, MIN_POWER, MAX_POWER));
     }
 
     private void spinBlue() {
-        setPower(MOTOR_POWER);
+        DuckerMotor.setPower(Range.clip(spinPower += RAMP_INTERVAL, MIN_POWER, MAX_POWER));
+    }
+
+    private void stop() {
+        DuckerMotor.setPower(0);
+        spinPower = MIN_POWER;
     }
 }
+/*    public void manualSpinTEST(double minPower, double maxPower, double rampInterval) {
+        if (opMode.gamepad1.right_bumper) {
+            DuckerMotor.setPower(Range.clip(spinPower += rampInterval, minPower, maxPower));
+        } else if (opMode.gamepad1.left_bumper) {
+            DuckerMotor.setPower(-Range.clip(spinPower += rampInterval, minPower, maxPower));
+        } else {
+            stopTEST(minPower);
+        }
+    }
+
+    private void stopTEST(double minPower) {
+        DuckerMotor.setPower(0);
+        spinPower = minPower;
+    }*/
