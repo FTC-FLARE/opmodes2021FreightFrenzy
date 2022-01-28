@@ -57,6 +57,7 @@ public class MM_Drivetrain {
     private static final double RAMP_INTERVAL = 0.035;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
+    private static final double CORRECTION_COEFFICIENT = 0.000095; //Gain per tick
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -134,10 +135,10 @@ public class MM_Drivetrain {
         blPower = leftDrivePower;
         brPower = rightDrivePower;
 
-        straighten(STRAIGHT_P_COEFFICIENT);
         if (rampUp) {
             rampUp();
         }
+        straighten(STRAIGHT_P_COEFFICIENT);
         setDrivePowers();
     }
 
@@ -155,6 +156,7 @@ public class MM_Drivetrain {
             rampUp();
         }
         straighten(STRAFE_P_COEFFICIENT);
+        encoderCorrect();//just for strafe for now
         setDrivePowers();
     }
 
@@ -166,6 +168,23 @@ public class MM_Drivetrain {
             frPower = frPower + (headingError * pCoefficient * Math.abs(frPower));
             blPower = blPower - (headingError * pCoefficient * Math.abs(blPower));
             brPower = brPower + (headingError * pCoefficient * Math.abs(brPower));
+        }
+    }
+
+    private void encoderCorrect() { //TODO RENAME
+        //TODO maybe use Pcontroller?
+        //biggest problem is calculate power adds the minimum
+        leftCurrentTicks = leftEncoder.getCurrentPosition();
+        rightCurrentTicks = rightEncoder.getCurrentPosition();
+
+        double leftError = leftPriorEncoderTarget - leftCurrentTicks;
+        double rightError =  rightPriorEncoderTarget - rightCurrentTicks;
+
+        if (Math.abs(leftError) > 0 || Math.abs(rightError) > 0) { //modeled after straighten
+            flPower = flPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(flPower));
+            frPower = frPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(frPower));
+            blPower = blPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(blPower));
+            brPower = brPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(brPower));
         }
     }
 
