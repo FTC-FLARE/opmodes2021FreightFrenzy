@@ -36,7 +36,7 @@ public class MM_Drivetrain {
     private double blPower = 0;
     private double brPower = 0;
     private boolean rampUp = false;
-    private double rampPercentage = 0;
+    private double rampPower = 0;
     private double leftDrivePower = 0;
     private double rightDrivePower = 0;
 
@@ -52,9 +52,9 @@ public class MM_Drivetrain {
     private static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
     private static final double TICKS_PER_REVOLUTION = 1440;
     private static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
-    private static final double STRAFE_P_COEFFICIENT = .2; //numerator is gain per degree error
+    private static final double STRAFE_P_COEFFICIENT = .03; //numerator is gain per degree error was .1
     private static final double STRAIGHT_P_COEFFICIENT = .095;
-    private static final double RAMP_INTERVAL = 0.01;
+    private static final double RAMP_INTERVAL = 0.035;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
 
@@ -99,6 +99,7 @@ public class MM_Drivetrain {
     public void strafeInches(double strafeInches, double timeoutTime) { //TODO Troubleshoot
         int backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
         boolean lookingForTarget = true;
+        rampUp = true;
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
@@ -150,10 +151,10 @@ public class MM_Drivetrain {
         blPower = -calculatedPower;
         brPower = calculatedPower;
 
-        straighten(STRAFE_P_COEFFICIENT);
         if (rampUp) {
             rampUp();
         }
+        straighten(STRAFE_P_COEFFICIENT);
         setDrivePowers();
     }
 
@@ -433,21 +434,24 @@ public class MM_Drivetrain {
     }
 
     private void rampUp() { //TODO troubleshoot and optimize
-        rampPercentage =  rampPercentage + RAMP_INTERVAL;
-        flPower = flPower * rampPercentage;
-        frPower = frPower * rampPercentage;
-        blPower = blPower * rampPercentage;
-        brPower = brPower * rampPercentage;
-
-        if (rampPercentage >= 1) {
+        if (rampPower >= Math.abs(flPower)) {
             rampUp = false;
         }
+        rampPower =  rampPower + RAMP_INTERVAL;
+        flPower = rampPower;
+        frPower = -rampPower;
+        blPower = -rampPower;
+        brPower = rampPower;
+        if (flPower < 0) {
+            flPower = -rampPower;
+            frPower = rampPower;
+            blPower = rampPower;
+            brPower = -rampPower;
+        }
+
     }
 
     private void setDrivePowers() {
-        if (rampUp) {
-            rampUp();
-        }
         normalize();
         handleSlowMode();
         startMotors(flPower, frPower, blPower, brPower);
