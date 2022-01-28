@@ -12,7 +12,7 @@ public class MM_Ducker {
     private final ElapsedTime runtime = new ElapsedTime();
     static final double MAX_POWER = 0.90;
     static final double MIN_POWER = 0.20;
-    static final double RAMP_INTERVAL = 0.0025;
+    static final double RAMP_INTERVAL_DUCKS = 0.0025;
     private final double SPIN_TIME = 2;
 
     private double spinPower = MIN_POWER;
@@ -47,11 +47,11 @@ public class MM_Ducker {
     }
 
     private void spinRed() {
-        DuckerMotor.setPower(-Range.clip(spinPower += RAMP_INTERVAL, MIN_POWER, MAX_POWER));
+        DuckerMotor.setPower(-Range.clip(spinPower += RAMP_INTERVAL_DUCKS, MIN_POWER, MAX_POWER));
     }
 
     private void spinBlue() {
-        DuckerMotor.setPower(Range.clip(spinPower += RAMP_INTERVAL, MIN_POWER, MAX_POWER));
+        DuckerMotor.setPower(Range.clip(spinPower += RAMP_INTERVAL_DUCKS, MIN_POWER, MAX_POWER));
     }
 
     private void stop() {
