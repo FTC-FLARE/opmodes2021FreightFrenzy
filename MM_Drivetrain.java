@@ -57,7 +57,7 @@ public class MM_Drivetrain {
     private static final double RAMP_INTERVAL = 0.035;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
-    private static final double CORRECTION_COEFFICIENT = 0.000095; //Gain per tick
+    private static final double CORRECTION_COEFFICIENT = 0.000775; //Gain per tick
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -152,11 +152,12 @@ public class MM_Drivetrain {
         blPower = -calculatedPower;
         brPower = calculatedPower;
 
+        encoderCorrect();//just for strafe for now
+
         if (rampUp) {
             rampUp();
         }
         straighten(STRAFE_P_COEFFICIENT);
-        encoderCorrect();//just for strafe for now
         setDrivePowers();
     }
 
@@ -457,17 +458,17 @@ public class MM_Drivetrain {
             rampUp = false;
         }
         rampPower =  rampPower + RAMP_INTERVAL;
-        flPower = rampPower;
-        frPower = -rampPower;
-        blPower = -rampPower;
-        brPower = rampPower;
         if (flPower < 0) {
             flPower = -rampPower;
             frPower = rampPower;
             blPower = rampPower;
             brPower = -rampPower;
+        } else {
+            flPower = rampPower;
+            frPower = -rampPower;
+            blPower = -rampPower;
+            brPower = rampPower;
         }
-
     }
 
     private void setDrivePowers() {
