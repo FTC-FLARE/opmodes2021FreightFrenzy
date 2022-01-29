@@ -58,6 +58,8 @@ public class MM_Drivetrain {
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
     private static final double CORRECTION_COEFFICIENT = 0.000775; //Gain per tick
+    private static final double LEFT_SIDE = -1;
+    private static final double RIGHT_SIDE = 1;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -146,18 +148,23 @@ public class MM_Drivetrain {
         backCurrentTicks = -backEncoder.getCurrentPosition(); //TODO change to a port that reads the direction of the encoder count correctly
 
         double calculatedPower = opMode.pBackDriveController.calculatePower(backCurrentTicks);//removed min output
-
-        flPower = calculatedPower;
-        frPower = -calculatedPower;
-        blPower = -calculatedPower;
-        brPower = calculatedPower;
-
-        encoderCorrect();//just for strafe for now
-
         if (rampUp) {
             rampUp();
+        } else {
+            flPower = calculatedPower;
+            frPower = -calculatedPower;
+            blPower = -calculatedPower;
+            brPower = calculatedPower;
         }
-        straighten(STRAFE_P_COEFFICIENT);
+
+        flPower = strafeCorrection(flPower, LEFT_SIDE);
+        frPower = strafeCorrection(frPower, RIGHT_SIDE);
+        blPower = strafeCorrection(blPower, LEFT_SIDE);
+        brPower = strafeCorrection(brPower, RIGHT_SIDE);
+
+/*        encoderCorrect();//just for strafe for now
+        straighten(STRAFE_P_COEFFICIENT);*/
+
         setDrivePowers();
     }
 
@@ -173,8 +180,6 @@ public class MM_Drivetrain {
     }
 
     private void encoderCorrect() { //TODO RENAME
-        //TODO maybe use Pcontroller?
-        //biggest problem is calculate power adds the minimum
         leftCurrentTicks = leftEncoder.getCurrentPosition();
         rightCurrentTicks = rightEncoder.getCurrentPosition();
 
@@ -187,6 +192,22 @@ public class MM_Drivetrain {
             blPower = blPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(blPower));
             brPower = brPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(brPower));
         }
+    }
+
+    private double strafeCorrection(double calculatedPower, double wheelSide) {
+        leftCurrentTicks = leftEncoder.getCurrentPosition();
+        rightCurrentTicks = rightEncoder.getCurrentPosition();
+        double headingError = calculateRotateError(priorAngleTarget);
+
+        double leftError = leftPriorEncoderTarget - leftCurrentTicks;
+        double rightError =  rightPriorEncoderTarget - rightCurrentTicks;
+
+        if (wheelSide == LEFT_SIDE) {
+            calculatedPower = calculatedPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower)) - (STRAFE_P_COEFFICIENT * headingError * Math.abs(calculatedPower));
+        } else {
+            calculatedPower = calculatedPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower)) + (STRAFE_P_COEFFICIENT * headingError * Math.abs(calculatedPower));
+        }
+        return calculatedPower;
     }
 
     public void driveWithSticks() {
