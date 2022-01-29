@@ -57,6 +57,8 @@ public class MM_Drivetrain {
     private static final double RAMP_INTERVAL = 0.035;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
+    private static final double SECONDS_PER_INCH = 0.08;
+    private static final double SECONDS_PER_DEGREE = 0.025;
     private static final double CORRECTION_COEFFICIENT = 0.000775; //Gain per tick
     private static final double LEFT_SIDE = -1;
     private static final double RIGHT_SIDE = 1;
@@ -66,9 +68,9 @@ public class MM_Drivetrain {
         init();
     }
 
-    public void driveForwardInches(double forwardInches, double timeoutTime) {
-        int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(forwardInches);
-        int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(forwardInches);
+    public void driveForwardInches(double inches) {
+        int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(inches);
+        int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(inches);
         boolean lookingForTarget = true;
         robotHeading = priorAngleTarget;
 //        rampUp = true;
@@ -79,7 +81,7 @@ public class MM_Drivetrain {
         opMode.pRightDriveController.setSetpoint(rightTargetTicks);
 
         runtime.reset();
-        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
+        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeout(SECONDS_PER_INCH, inches, 2.5))) {
             setStraightPower();
 
             if (!opMode.pLeftDriveController.reachedTarget() && !opMode.pRightDriveController.reachedTarget()) {
@@ -88,6 +90,7 @@ public class MM_Drivetrain {
                 opMode.telemetry.addData("Left Current", ticksToInches(leftCurrentTicks));
                 opMode.telemetry.addData("Right Current", ticksToInches(rightCurrentTicks));
                 opMode.telemetry.addData("Angle Heading", getCurrentHeading());
+                opMode.telemetry.addData("Final runtime", runtime.seconds());
             } else {
                 lookingForTarget = false;
             }
@@ -99,17 +102,16 @@ public class MM_Drivetrain {
         rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    public void strafeInches(double strafeInches, double timeoutTime) { //TODO Troubleshoot
-        int backTargetTicks = inchesToTicks(strafeInches) + backPriorEncoderTarget;
+    public void strafeInches(double inches) { //TODO Troubleshoot
+        int backTargetTicks = inchesToTicks(inches) + backPriorEncoderTarget;
         boolean lookingForTarget = true;
         rampUp = true;
 
         //same for all motors
         opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
         opMode.pBackDriveController.setSetpoint(backTargetTicks);
-
         runtime.reset();
-        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
+        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeout(SECONDS_PER_INCH, inches, 2.5))) {
             setStrafePower();
 
             if (!opMode.pBackDriveController.reachedTarget()) {
@@ -228,13 +230,15 @@ public class MM_Drivetrain {
         setDrivePowers();
     }
 
-    public void pRotateDegrees(double targetAngle){ //TODO add timeout proportional to distance (with drives)
+    public void pRotateDegrees(double targetAngle){ //TODO test odd angles
         int leftStartingTicks = leftEncoder.getCurrentPosition();
         int rightStartingTicks = rightEncoder.getCurrentPosition();
         int backStartingTicks = backEncoder.getCurrentPosition();
+        double timeOut = calculateTimeout(SECONDS_PER_DEGREE, targetAngle - getCurrentHeading(), 2);
 
         opMode.pTurnController.setInputRange(getCurrentHeading(), targetAngle);
         opMode.pTurnController.setSetpoint(targetAngle);
+        runtime.reset();
         do {
             double turnPower = Math.abs(opMode.pTurnController.calculatePower(getCurrentHeading()));
 
@@ -243,9 +247,9 @@ public class MM_Drivetrain {
             }else {
                 startMotors(turnPower, -turnPower, turnPower, -turnPower);//rotate clockwise
             }
-
+            opMode.telemetry.addData("time out time", timeOut);
             opMode.telemetry.update();
-        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget());
+        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < timeOut);
 
         stop();
         leftPriorEncoderTarget = leftPriorEncoderTarget - leftStartingTicks + leftEncoder.getCurrentPosition();
@@ -270,7 +274,7 @@ public class MM_Drivetrain {
         }
 
         pRotateDegrees(targetAngle);
-        driveForwardInches(forwardInches, 3);
+        driveForwardInches(forwardInches);
         pRotateDegrees(secondTargetAngle);
 
         if (duckPosition == 2) {
@@ -324,11 +328,11 @@ public class MM_Drivetrain {
             }
         }
 
-        driveForwardInches(12, 5);
+        driveForwardInches(12);
         pRotateDegrees(rotateDegrees);
-        driveForwardInches(strafeInches,5);
+        driveForwardInches(strafeInches);
         pRotateDegrees(179);
-        driveForwardInches(forwardInches, 3);
+        driveForwardInches(forwardInches);
     }
 
     public void storagePark(double duckPosition) {
@@ -372,7 +376,7 @@ public class MM_Drivetrain {
             }
 
             pRotateDegrees(targetHeading);
-            driveForwardInches(forwardInches, 7);
+            driveForwardInches(forwardInches);
             pRotateDegrees(secondTargetHeading);
         }
     }
@@ -392,7 +396,7 @@ public class MM_Drivetrain {
          }
 
         pRotateDegrees(angle);
-        driveForwardInches(driveInches, 4);
+        driveForwardInches(driveInches);
         initOdometryServos(1);
 
         runtime.reset();
@@ -457,6 +461,11 @@ public class MM_Drivetrain {
             angle += 360;
         }
         return angle;
+    }
+
+    private double calculateTimeout(double pValue, double distance, double min) {
+        opMode.telemetry.addData("Calculated Time", Math.max(min, Math.abs(pValue * distance)));
+        return Math.max(min, Math.abs(pValue * distance));
     }
 
     private double calculateRotateError(double targetHeading) {

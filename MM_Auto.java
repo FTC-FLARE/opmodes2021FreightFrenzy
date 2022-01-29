@@ -69,6 +69,7 @@ public class MM_Auto extends MM_OpMode {
 
         if(startingPosition == WAREHOUSE){
             robot.drivetrain.warehousePark();
+            robot.collector.autoCollect();
         }else if(startingPosition == STORAGE){
             if (spinDucker) {
                 robot.drivetrain.driveToCarousel(duckLocation);

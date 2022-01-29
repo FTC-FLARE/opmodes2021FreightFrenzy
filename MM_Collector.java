@@ -11,7 +11,7 @@ public class MM_Collector {
 
     private ElapsedTime runtime = new ElapsedTime();
 
-    private final double TIMEOUT_TIME = 1;
+    private final double TIMEOUT_TIME = 1.5;
 
     public MM_Collector(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -20,9 +20,9 @@ public class MM_Collector {
 
     public void runCollector() {
         if (opMode.gamepad2.left_bumper) {
-            collect();
-        } else if (opMode.gamepad2.right_bumper) {
             dispense();
+        } else if (opMode.gamepad2.right_bumper) {
+            collect();
         } else {
             stop();
         }
@@ -37,11 +37,11 @@ public class MM_Collector {
     }
 
     private void collect() {
-        collector.setPower(1);
+        collector.setPower(-1);
     }
 
     private void dispense() {
-        collector.setPower(-1);
+        collector.setPower(1);
     }
 
     private void stop() {

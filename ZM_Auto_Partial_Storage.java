@@ -23,7 +23,7 @@ public class ZM_Auto_Partial_Storage extends MM_OpMode {
         waitForStart();
         runtime.reset();
 
-        robot.drivetrain.driveForwardInches(24, 5);
+        robot.drivetrain.driveForwardInches(24);
 
         robot.vuforia.deactivateTargets();
         robot.vuforia.deactivateTfod();
