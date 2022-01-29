@@ -52,14 +52,14 @@ public class MM_Drivetrain {
     private static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
     private static final double TICKS_PER_REVOLUTION = 1440;
     private static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
-    private static final double STRAFE_P_COEFFICIENT = .03; //numerator is gain per degree error was .1
+    private static final double STRAFE_P_COEFFICIENT = .09; //numerator is gain per degree error was .1
     private static final double STRAIGHT_P_COEFFICIENT = .095;
     private static final double RAMP_INTERVAL = 0.035;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
     private static final double SECONDS_PER_INCH = 0.08;
     private static final double SECONDS_PER_DEGREE = 0.025;
-    private static final double CORRECTION_COEFFICIENT = 0.000775; //Gain per tick
+    private static final double CORRECTION_COEFFICIENT = 0.000975; //Gain per tick
     private static final double LEFT_SIDE = -1;
     private static final double RIGHT_SIDE = 1;
 
@@ -142,7 +142,7 @@ public class MM_Drivetrain {
         if (rampUp) {
             rampUp();
         }
-        straighten(STRAIGHT_P_COEFFICIENT);
+        straighten(STRAIGHT_P_COEFFICIENT, leftDrivePower, rightDrivePower);
         setDrivePowers();
     }
 
@@ -150,38 +150,31 @@ public class MM_Drivetrain {
         backCurrentTicks = -backEncoder.getCurrentPosition(); //TODO change to a port that reads the direction of the encoder count correctly
 
         double calculatedPower = opMode.pBackDriveController.calculatePower(backCurrentTicks);//removed min output
+        flPower = calculatedPower;
+        frPower = -calculatedPower;
+        blPower = -calculatedPower;
+        brPower = calculatedPower;
         if (rampUp) {
             rampUp();
-        } else {
-            flPower = calculatedPower;
-            frPower = -calculatedPower;
-            blPower = -calculatedPower;
-            brPower = calculatedPower;
+            calculatedPower = flPower;
         }
-
-        flPower = strafeCorrection(flPower, LEFT_SIDE);
-        frPower = strafeCorrection(frPower, RIGHT_SIDE);
-        blPower = strafeCorrection(blPower, LEFT_SIDE);
-        brPower = strafeCorrection(brPower, RIGHT_SIDE);
-
-/*        encoderCorrect();//just for strafe for now
-        straighten(STRAFE_P_COEFFICIENT);*/
-
+        encoderCorrect(calculatedPower);//just for strafe for now
+        straighten(STRAFE_P_COEFFICIENT, calculatedPower, calculatedPower);
         setDrivePowers();
     }
 
-    private void straighten(double pCoefficient) {
+    private void straighten(double pCoefficient, double leftCalculatedPower, double rightCalculatedPower) {
         double headingError = calculateRotateError(priorAngleTarget);
 
         if (headingError != 0) {
-            flPower = flPower - (headingError * pCoefficient * Math.abs(flPower));
-            frPower = frPower + (headingError * pCoefficient * Math.abs(frPower));
-            blPower = blPower - (headingError * pCoefficient * Math.abs(blPower));
-            brPower = brPower + (headingError * pCoefficient * Math.abs(brPower));
+            flPower = flPower - (headingError * pCoefficient * Math.abs(leftCalculatedPower));
+            frPower = frPower + (headingError * pCoefficient * Math.abs(rightCalculatedPower));
+            blPower = blPower - (headingError * pCoefficient * Math.abs(leftCalculatedPower));
+            brPower = brPower + (headingError * pCoefficient * Math.abs(rightCalculatedPower));
         }
     }
 
-    private void encoderCorrect() { //TODO RENAME
+    private void encoderCorrect(double calculatedPower) { //TODO RENAME
         leftCurrentTicks = leftEncoder.getCurrentPosition();
         rightCurrentTicks = rightEncoder.getCurrentPosition();
 
@@ -189,27 +182,11 @@ public class MM_Drivetrain {
         double rightError =  rightPriorEncoderTarget - rightCurrentTicks;
 
         if (Math.abs(leftError) > 0 || Math.abs(rightError) > 0) { //modeled after straighten
-            flPower = flPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(flPower));
-            frPower = frPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(frPower));
-            blPower = blPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(blPower));
-            brPower = brPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(brPower));
+            flPower = flPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower));
+            frPower = frPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower));
+            blPower = blPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower));
+            brPower = brPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower));
         }
-    }
-
-    private double strafeCorrection(double calculatedPower, double wheelSide) {
-        leftCurrentTicks = leftEncoder.getCurrentPosition();
-        rightCurrentTicks = rightEncoder.getCurrentPosition();
-        double headingError = calculateRotateError(priorAngleTarget);
-
-        double leftError = leftPriorEncoderTarget - leftCurrentTicks;
-        double rightError =  rightPriorEncoderTarget - rightCurrentTicks;
-
-        if (wheelSide == LEFT_SIDE) {
-            calculatedPower = calculatedPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower)) - (STRAFE_P_COEFFICIENT * headingError * Math.abs(calculatedPower));
-        } else {
-            calculatedPower = calculatedPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower)) + (STRAFE_P_COEFFICIENT * headingError * Math.abs(calculatedPower));
-        }
-        return calculatedPower;
     }
 
     public void driveWithSticks() {
