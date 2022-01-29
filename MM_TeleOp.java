@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 @TeleOp(name="TeleOp", group="MM")
 public class MM_TeleOp extends MM_OpMode {
     public MM_Robot robot = new MM_Robot(this);
+    boolean isHandled = false;
+    double rampInterval = 0.037;
 
     @Override
     public void runOpMode() {
@@ -24,7 +26,6 @@ public class MM_TeleOp extends MM_OpMode {
             robot.drivetrain.driveWithSticks();
             robot.slide.runSlide();
             robot.collector.runCollector();
-
             telemetry.update();
         }
     }
