@@ -58,7 +58,7 @@ public class MM_Drivetrain {
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;
     private static final double SECONDS_PER_INCH = 0.08;
-    private static final double SECONDS_PER_DEGREE = 0.05;
+    private static final double SECONDS_PER_DEGREE = 0.025;
 
     public MM_Drivetrain(MM_OpMode opMode) {
         this.opMode = opMode;
@@ -189,14 +189,15 @@ public class MM_Drivetrain {
         setDrivePowers();
     }
 
-    public void pRotateDegrees(double targetAngle){ //TODO add timeout proportional to distance (with drives)
+    public void pRotateDegrees(double targetAngle){ //TODO test odd angles
         int leftStartingTicks = leftEncoder.getCurrentPosition();
         int rightStartingTicks = rightEncoder.getCurrentPosition();
         int backStartingTicks = backEncoder.getCurrentPosition();
+        double timeOut = calculateTimeout(SECONDS_PER_DEGREE, targetAngle - getCurrentHeading(), 2);
 
         opMode.pTurnController.setInputRange(getCurrentHeading(), targetAngle);
         opMode.pTurnController.setSetpoint(targetAngle);
-        double startingError = targetAngle - getCurrentHeading();
+        runtime.reset();
         do {
             double turnPower = Math.abs(opMode.pTurnController.calculatePower(getCurrentHeading()));
 
@@ -205,9 +206,9 @@ public class MM_Drivetrain {
             }else {
                 startMotors(turnPower, -turnPower, turnPower, -turnPower);//rotate clockwise
             }
-
+            opMode.telemetry.addData("time out time", timeOut);
             opMode.telemetry.update();
-        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < calculateTimeout(SECONDS_PER_DEGREE, startingError, 3));
+        } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < timeOut);
 
         stop();
         leftPriorEncoderTarget = leftPriorEncoderTarget - leftStartingTicks + leftEncoder.getCurrentPosition();
