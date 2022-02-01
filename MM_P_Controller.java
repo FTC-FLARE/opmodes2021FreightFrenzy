@@ -42,13 +42,19 @@ public class MM_P_Controller {
             power = power + minOutput;
         }
         opMode.telemetry.addData("input", currentInput);
+        opMode.telemetry.addData("input range", inputRange);
         opMode.telemetry.addData("current error", Math.abs(currentError));
         opMode.telemetry.addData("calculated power", power);
         return power;
     }
     public boolean reachedTarget(){
+        opMode.telemetry.addData("input", getCurrentInput());
+        opMode.telemetry.addData("input range", inputRange);
+        opMode.telemetry.addData("current error", Math.abs(currentError));
+        opMode.telemetry.addData("reached target", Math.abs(currentError / inputRange) * 100);
+        opMode.telemetry.addData("percent threshold", PCT_THRESHOLD);
 //        if ((absError / inputRange) * 100 < PCT_THRESHOLD){
-        if ((Math.abs(currentError / inputRange)) * 100 < PCT_THRESHOLD){
+        if ((Math.abs(currentError / inputRange) * 100) < PCT_THRESHOLD){
             return true;
         }
         return false;

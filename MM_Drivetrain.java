@@ -143,10 +143,13 @@ public class MM_Drivetrain {
                 startMotors(turnPower, -turnPower, turnPower, -turnPower);//rotate clockwise
             }
             opMode.telemetry.addData("time out time", timeOut);
+            opMode.telemetry.addData("reached target", opMode.pTurnController.reachedTarget());
             opMode.telemetry.update();
         } while (opMode.opModeIsActive() && !opMode.pTurnController.reachedTarget() && runtime.seconds() < timeOut);
-
-        stop();
+        if (opMode.pTurnController.reachedTarget()) {
+            stop();
+            opMode.telemetry.update();
+        }
         leftPriorEncoderTarget = leftPriorEncoderTarget - leftStartingTicks + leftEncoder.getCurrentPosition();
         rightPriorEncoderTarget = rightPriorEncoderTarget - rightStartingTicks + rightEncoder.getCurrentPosition();
         backPriorEncoderTarget = backPriorEncoderTarget - backStartingTicks + backEncoder.getCurrentPosition();
@@ -180,9 +183,10 @@ public class MM_Drivetrain {
         if (rampPower <= Math.abs(calculatedPower)) {
             rampPower =  rampPower + RAMP_INTERVAL;
             if (calculatedPower < 0) {
-                rampPower = -rampPower;
+                calculatedPower = -rampPower;
+            } else {
+                calculatedPower = rampPower;
             }
-            calculatedPower = rampPower;
         }
 
         flPower = calculatedPower;
@@ -270,13 +274,11 @@ public class MM_Drivetrain {
     public void driveToHub(double duckPosition) {
         //needs clean up with other autodrivemethods
         double forwardInches = -6;
-        double strafeInches = 0;// temp drive until working strafe
-        double rotateDegrees = 90;
+        double strafeInches = 0;
 
         if((opMode.alliance == MM_OpMode.BLUE && opMode.startingPosition == MM_OpMode.WAREHOUSE) || (opMode.alliance == MM_OpMode.RED && opMode.startingPosition == MM_OpMode.STORAGE)) {
 
-            strafeInches = 17;
-            rotateDegrees = -90;
+            strafeInches = 16;
 
             //determine driving position
             if(duckPosition == 1) {
@@ -287,7 +289,7 @@ public class MM_Drivetrain {
         }else if((opMode.alliance == MM_OpMode.BLUE && opMode.startingPosition == MM_OpMode.STORAGE) || (opMode.alliance == MM_OpMode.RED && opMode.startingPosition == MM_OpMode.WAREHOUSE)) {
 
             forwardInches = -6;
-            strafeInches = 22;
+            strafeInches = -27;
 
             //determine driving position (MEASURE)
             if (duckPosition == 1) {
@@ -298,8 +300,7 @@ public class MM_Drivetrain {
         }
 
         driveForwardInches(12);
-        pRotateDegrees(rotateDegrees);
-        driveForwardInches(strafeInches);
+        strafeInches(strafeInches);
         pRotateDegrees(179);
         driveForwardInches(forwardInches);
     }
