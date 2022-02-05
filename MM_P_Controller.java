@@ -13,7 +13,6 @@ public class MM_P_Controller {
     private double maxOutput = 0;
     private double outputRange = 0;
     private double inputRange = 0;
-    private double absError = 0;
     private double currentError = 0;
     private double currentInput = 0;
 
@@ -48,12 +47,6 @@ public class MM_P_Controller {
         return power;
     }
     public boolean reachedTarget(){
-        opMode.telemetry.addData("input", getCurrentInput());
-        opMode.telemetry.addData("input range", inputRange);
-        opMode.telemetry.addData("current error", Math.abs(currentError));
-        opMode.telemetry.addData("reached target", Math.abs(currentError / inputRange) * 100);
-        opMode.telemetry.addData("percent threshold", PCT_THRESHOLD);
-//        if ((absError / inputRange) * 100 < PCT_THRESHOLD){
         if ((Math.abs(currentError / inputRange) * 100) < PCT_THRESHOLD){
             return true;
         }
@@ -82,8 +75,5 @@ public class MM_P_Controller {
 
     public double getCurrentInput(){
         return currentInput;
-    }
-    public double getMinOutput(){
-        return minOutput;
     }
 }

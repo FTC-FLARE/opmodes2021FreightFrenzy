@@ -66,6 +66,11 @@ public class MM_Drivetrain {
         init();
     }
 
+    public void driveForwardInches(double inches, double angleTarget) { //overloaded method
+        priorAngleTarget = angleTarget;
+        driveForwardInches(inches);
+    }
+
     public void driveForwardInches(double inches) {
         int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(inches);
         int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(inches);
