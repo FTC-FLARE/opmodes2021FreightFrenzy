@@ -108,10 +108,10 @@ public class MM_Robot {
             drivetrain.driveForwardInches(forwardInches);
         } else {
             double angleTarget = -35;
-            forwardInches = -26;
+            forwardInches = -22;
 
             if (duckPosition == 1) {
-                forwardInches = -22;
+                forwardInches = -26;
             } else if (duckPosition == 2) {
                 forwardInches = -24;
             }
