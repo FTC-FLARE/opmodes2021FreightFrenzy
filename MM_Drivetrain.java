@@ -173,9 +173,6 @@ public class MM_Drivetrain {
         blPower = leftDrivePower;
         brPower = rightDrivePower;
 
-        if (rampUp) {
-            rampUpStrafe(leftDrivePower);
-        }
         straighten(STRAIGHT_P_COEFFICIENT, leftDrivePower, rightDrivePower);
         normalize();
         startMotors(flPower, frPower, blPower, brPower);
@@ -205,11 +202,6 @@ public class MM_Drivetrain {
         startMotors(flPower, frPower, blPower, brPower);
     }
 
-    private void rampUpStrafe(double currentPower) { //TODO troubleshoot and optimize
-
-
-    }
-
     private void straighten(double pCoefficient, double leftCalculatedPower, double rightCalculatedPower) {
         double headingError = translateAngle(priorAngleTarget - getCurrentHeading());
 
@@ -234,157 +226,6 @@ public class MM_Drivetrain {
             blPower = blPower + (leftError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower));
             brPower = brPower + (rightError * CORRECTION_COEFFICIENT * Math.abs(calculatedPower));
         }
-    }
-
-    public void driveToCarousel(double duckPosition) {
-        double forwardInches = 42;
-        double targetAngle = 103;
-        double secondTargetAngle = -37;
-        double timeoutTime = 0.90; //default for red 3
-        if (duckPosition == 1 && opMode.alliance == MM_OpMode.RED) {
-            secondTargetAngle = -27;
-        }
-         if (opMode.alliance == MM_OpMode.BLUE) {
-            forwardInches = 44;
-            targetAngle = -100;
-            secondTargetAngle = 20;
-            timeoutTime = 0.75; //default for blue 3
-        }
-
-        pRotateDegrees(targetAngle);
-        driveForwardInches(forwardInches);
-        pRotateDegrees(secondTargetAngle);
-
-        if (duckPosition == 2) {
-            timeoutTime = 0.9;
-        } else if (duckPosition == 1) {
-            timeoutTime = 1.1;
-        }
-
-        runtime.reset();
-        startMotors(-0.2, -0.2, -0.2,-0.2);
-        while (opMode.opModeIsActive() && runtime.seconds() < timeoutTime) {
-        }
-        stop();
-    }
-
-    public void parkFromCarousel() {
-        runtime.reset();
-        startMotors(0.2, 0.2, 0.2,0.2);
-        while (opMode.opModeIsActive() && runtime.seconds() < 1) {
-        }
-        stop();
-    }
-
-    public void driveToHub(double duckPosition) {
-        //needs clean up with other autodrivemethods
-        double forwardInches = -6;
-        double strafeInches = 0;
-
-        if((opMode.alliance == MM_OpMode.BLUE && opMode.startingPosition == MM_OpMode.WAREHOUSE) || (opMode.alliance == MM_OpMode.RED && opMode.startingPosition == MM_OpMode.STORAGE)) {
-
-            strafeInches = 16;
-
-            //determine driving position
-            if(duckPosition == 1) {
-                forwardInches = -8.75;
-            } else if(duckPosition == 2) {
-                forwardInches = -6;
-            }
-        }else if((opMode.alliance == MM_OpMode.BLUE && opMode.startingPosition == MM_OpMode.STORAGE) || (opMode.alliance == MM_OpMode.RED && opMode.startingPosition == MM_OpMode.WAREHOUSE)) {
-
-            forwardInches = -6;
-            strafeInches = -27;
-
-            //determine driving position (MEASURE)
-            if (duckPosition == 1) {
-                forwardInches = -6.75;
-            } else if (duckPosition == 2) {
-                forwardInches = -3.5;
-            }
-        }
-
-        driveForwardInches(12);
-        strafeInches(strafeInches);
-        pRotateDegrees(179);
-        driveForwardInches(forwardInches);
-    }
-
-    public void storagePark(double duckPosition) {
-        if (opMode.spinDucker) {
-            parkFromCarousel();
-        } else {
-            //clean up later with dead encoders
-            double targetHeading;
-            //this variable is to straighten robot out after parking
-            double secondTargetHeading;
-            double forwardInches;
-
-            forwardInches = 50;
-
-            if (opMode.alliance == MM_OpMode.BLUE) {
-                if (opMode.startingPosition == MM_OpMode.STORAGE) {
-                    forwardInches = 47;
-                }
-                targetHeading = -80;
-                if (duckPosition == 1) {
-                    targetHeading = -82.75;
-                } else if (duckPosition == 3) {
-                    targetHeading = -80;
-                }
-                secondTargetHeading = -90;
-            } else {
-                if (opMode.startingPosition == MM_OpMode.WAREHOUSE) {
-                    forwardInches = 47;
-                } else {
-                    forwardInches = 49;
-                }
-
-                targetHeading = 78;
-                secondTargetHeading = 90;
-
-                if (duckPosition == 1) {
-                    targetHeading = 77;
-                } else if (duckPosition == 3) {
-                    targetHeading = 80;
-                }
-            }
-
-            pRotateDegrees(targetHeading);
-            driveForwardInches(forwardInches);
-            pRotateDegrees(secondTargetHeading);
-        }
-    }
-
-    public void warehousePark() {
-        double angle = -105;
-        double driveInches = 18;
-        double motorPowers = 0.3;
-        double rightMotorPowers = 0.3;
-        double leftMotorPowers = 0.32;
-
-        if (opMode.alliance == MM_OpMode.BLUE) {
-            angle = -angle;
-            motorPowers = -motorPowers;
-            rightMotorPowers = 0.32;
-            leftMotorPowers = 0.3;
-        }
-
-        pRotateDegrees(angle);
-        driveForwardInches(driveInches);
-        initOdometryServos(1);
-
-        runtime.reset();
-        startMotors(motorPowers, -motorPowers, -motorPowers, motorPowers);
-        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
-        }
-        stop();
-
-        runtime.reset();
-        startMotors(leftMotorPowers, rightMotorPowers, leftMotorPowers, rightMotorPowers);
-        while (opMode.opModeIsActive() && runtime.seconds() < 3) {
-        }
-        stop();
     }
 
     public void driveWithSticks() {
