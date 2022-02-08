@@ -10,9 +10,9 @@ public class MM_Robot {
     public MM_Vuforia vuforia;
 
     static final double MIN_DRIVE_SPEED = 0.12;
-    static final double MAX_DRIVE_SPEED = 0.6;
+    static final double MAX_DRIVE_SPEED = 0.7;
     static final double MIN_STRAFE_POWER = 0.22;
-    static final double MAX_STRAFE_POWER = .8;
+    static final double MAX_STRAFE_POWER = 0.8;
     static final double MIN_ROTATE_POWER = 0.12;
     static final double MAX_ROTATE_POWER = 0.7;
 

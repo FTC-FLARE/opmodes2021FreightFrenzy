@@ -171,6 +171,8 @@ public class MM_Slide {
 
     public void autoCollectPosition(double duckPosition) {
         //needs cleaning
+        transporter.scoreFreight();
+        opMode.sleep(1500);
         if (duckPosition == 1) {
             arm.setTargetPosition(TransportPosition.LEVEL1_PART_1.ticks);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -194,6 +196,12 @@ public class MM_Slide {
         if (isTriggeredMRtouch(bottomStop)) {
             engageShock(true);
         }
+    }
+
+    public void goToPositionAuto(int duckPosition, boolean scoreFreight) {
+        transporter.scoreFreight();
+        opMode.sleep(1500);
+        goToPositionAuto(duckPosition);
     }
 
     public void goToPositionAuto(int duckPosition) {
@@ -233,8 +241,6 @@ public class MM_Slide {
                 while (opMode.opModeIsActive() && arm.isBusy()) {
                 }
             }
-            transporter.scoreFreight();
-            opMode.sleep(1500);
         }
     }
 

@@ -105,7 +105,11 @@ public class MM_Drivetrain {
         rightPriorEncoderTarget = rightTargetTicks;
     }
 
-    public void strafeInches(double inches) { //TODO Troubleshoot
+    public void strafeInches(double inches) {
+        strafeInches(inches, calculateTimeout(SECONDS_PER_INCH, inches, 2.5));
+    }
+
+    public void strafeInches(double inches, double timeoutTime) { //TODO Troubleshoot
         int backTargetTicks = inchesToTicks(inches) + backPriorEncoderTarget;
         boolean lookingForTarget = true;
 
@@ -114,7 +118,7 @@ public class MM_Drivetrain {
         opMode.pBackDriveController.setSetpoint(backTargetTicks);
         rampPower = 0;
         runtime.reset();
-        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeout(SECONDS_PER_INCH, inches, 2.5))) {
+        while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
             setStrafePower();
 
             if (!opMode.pBackDriveController.reachedTarget()) {

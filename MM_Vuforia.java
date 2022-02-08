@@ -59,7 +59,7 @@ public class MM_Vuforia {
         int duckPosition = 0;
         runtime.reset();
 
-        while ((runtime.seconds() < 1.5) && duckLeftPixel < 0) {
+        while ((runtime.seconds() < 0.5) && duckLeftPixel < 0) {
             if (tfod != null) {
                 List<Recognition> tfodRecognitions = tfod.getRecognitions();
                 if (!tfodRecognitions.isEmpty()) {
