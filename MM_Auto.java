@@ -59,20 +59,21 @@ public class MM_Auto extends MM_OpMode {
             telemetry.update();
         }
         //*************************************** DRIVER HIT PLAY **************************************************
-        int duckLocation = robot.vuforia.findDuckPosition();
+        scorePosition = robot.vuforia.findDuckPosition();
 
         sleep(sleepTime); //driver-selected sleep time
 
-        robot.scoreOnHub(duckLocation);
+        robot.scoreOnHub();
 
         if(startingPosition == WAREHOUSE){
             robot.warehousePark();
             robot.collector.autoCollect();
+            scorePosition = 3;
         }else if(startingPosition == STORAGE){
             if (spinDucker) {
-                robot.goDuck(duckLocation);
+                robot.goDuck();
             }
-            robot.storagePark(duckLocation);
+            robot.storagePark();
         }
 
         robot.vuforia.deactivateTargets();

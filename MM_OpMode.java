@@ -18,6 +18,7 @@ public abstract class MM_OpMode extends LinearOpMode {
     public int startingPosition = WAREHOUSE;
     public int finishPosition = OOTW;
     public boolean spinDucker = false;
+    public int scorePosition = 3;
 
     public MM_Robot robot = new MM_Robot(this);
     public MM_P_Controller pTurnController = new MM_P_Controller(this, 1, .015);

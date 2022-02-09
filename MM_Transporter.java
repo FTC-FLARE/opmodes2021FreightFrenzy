@@ -56,8 +56,21 @@ public class MM_Transporter {
         opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
     }
 
+    public void controlFlipAuto() { //TODO check encoder counts in strafe methods
+        if ((slide.getSlidePosition() < TRANSPORT_FLIP || seesBox(transportDown)))  {
+            transport.setPosition(COLLECT_POSITION);
+        }
+
+        opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
+        opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
+    }
+
     public void scoreFreight() {
         transport.setPosition(SCORE_POSITION);
+    }
+
+    public void carryFreight() {
+        transport.setPosition(CARRY_POSITION);
     }
 
     public boolean seesBox(DistanceSensor distanceSensor) {

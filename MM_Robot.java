@@ -39,12 +39,12 @@ public class MM_Robot {
         }
     }
 
-    public void goDuck(double duckPosition) {
+    public void goDuck() {
         double forwardInches = 42;
         double targetAngle = 103;
         double secondTargetAngle = -37;
         double timeoutTime = 0.90; //default for red 3
-        if (duckPosition == 1 && opMode.alliance == MM_OpMode.RED) {
+        if (opMode.scorePosition == 1 && opMode.alliance == MM_OpMode.RED) {
             secondTargetAngle = -27;
         }
         if (opMode.alliance == MM_OpMode.BLUE) {
@@ -58,9 +58,9 @@ public class MM_Robot {
         drivetrain.driveForwardInches(forwardInches);
         drivetrain.pRotateDegrees(secondTargetAngle);
 
-        if (duckPosition == 2) {
+        if (opMode.scorePosition == 2) {
             timeoutTime = 0.9;
-        } else if (duckPosition == 1) {
+        } else if (opMode.scorePosition == 1) {
             timeoutTime = 1.1;
         }
 
@@ -76,7 +76,7 @@ public class MM_Robot {
         drivetrain.driveForwardInches(6);
     }
 
-    public void scoreOnHub(int duckPosition) {
+    public void scoreOnHub() {
         double forwardInches = -6;
         double strafeInches = 0;
         if (opMode.startingPosition == MM_OpMode.STORAGE) {
@@ -85,9 +85,9 @@ public class MM_Robot {
                 strafeInches = 16;
 
                 //determine driving position
-                if(duckPosition == 1) {
+                if(opMode.scorePosition == 1) {
                     forwardInches = -8.75;
-                } else if(duckPosition == 2) {
+                } else if(opMode.scorePosition == 2) {
                     forwardInches = -6;
                 }
             } else {
@@ -96,9 +96,9 @@ public class MM_Robot {
                 strafeInches = -27;
 
                 //determine driving position (MEASURE)
-                if (duckPosition == 1) {
+                if (opMode.scorePosition == 1) {
                     forwardInches = -6.75;
-                } else if (duckPosition == 2) {
+                } else if (opMode.scorePosition == 2) {
                     forwardInches = -3.5;
                 }
             }
@@ -110,9 +110,9 @@ public class MM_Robot {
             double angleTarget = -35;
             forwardInches = -22;
 
-            if (duckPosition == 1) {
+            if (opMode.scorePosition == 1) {
                 forwardInches = -26;
-            } else if (duckPosition == 2) {
+            } else if (opMode.scorePosition == 2) {
                 forwardInches = -24;
             }
 
@@ -122,11 +122,11 @@ public class MM_Robot {
 
             drivetrain.driveForwardInches(forwardInches, angleTarget);
         }
-        slide.goToPositionAuto(duckPosition);
-        slide.autoCollectPosition(duckPosition);
+        slide.runSlideAndScoreFreight();
+        slide.autoCollectPosition();//this returns without moving
     }
 
-    public void storagePark(double duckPosition) {
+    public void storagePark() {
         if (opMode.spinDucker) {
             parkFromCarousel();
         } else {
@@ -143,9 +143,9 @@ public class MM_Robot {
                     forwardInches = 47;
                 }
                 targetHeading = -80;
-                if (duckPosition == 1) {
+                if (opMode.scorePosition == 1) {
                     targetHeading = -82.75;
-                } else if (duckPosition == 3) {
+                } else if (opMode.scorePosition == 3) {
                     targetHeading = -80;
                 }
                 secondTargetHeading = -90;
@@ -159,9 +159,9 @@ public class MM_Robot {
                 targetHeading = 78;
                 secondTargetHeading = 90;
 
-                if (duckPosition == 1) {
+                if (opMode.scorePosition == 1) {
                     targetHeading = 77;
-                } else if (duckPosition == 3) {
+                } else if (opMode.scorePosition == 3) {
                     targetHeading = 80;
                 }
             }
@@ -185,4 +185,5 @@ public class MM_Robot {
         drivetrain.strafeInches(strafeInches);
         drivetrain.driveForwardInches(48);
     }
+
 }

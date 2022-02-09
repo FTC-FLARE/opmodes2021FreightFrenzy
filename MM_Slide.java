@@ -42,6 +42,7 @@ public class MM_Slide {
 
     private final double UP_POWER = 1;
     private final double DOWN_POWER = 0.65;
+    private final double AUTO_DOWN_POWER = -0.65;
 
     static final int NOT_LEVEL_1 = 0;
     static final int MOVING_TO_FLIP_POSITION = 1;
@@ -169,11 +170,9 @@ public class MM_Slide {
         }
     }
 
-    public void autoCollectPosition(double duckPosition) {
+    public void autoCollectPosition() {
         //needs cleaning
-        transporter.scoreFreight();
-        opMode.sleep(1500);
-        if (duckPosition == 1) {
+        if (opMode.scorePosition == 1) {
             arm.setTargetPosition(TransportPosition.LEVEL1_PART_1.ticks);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             arm.setPower(UP_POWER);
@@ -198,19 +197,39 @@ public class MM_Slide {
         }
     }
 
-    public void goToPositionAuto(int duckPosition, boolean scoreFreight) {
-        transporter.scoreFreight();
-        opMode.sleep(1500);
-        goToPositionAuto(duckPosition);
+    public void lowerSlideAndStrafe() {
+        transporter.carryFreight();
+        if (opMode.scorePosition == 1) {
+            arm.setTargetPosition(MM_Slide.TransportPosition.LEVEL1_PART_1.ticks);
+            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            arm.setPower(UP_POWER);
+            setHeadedUp();
+            while (arm.isBusy()) {
+            }
+        }// this may be checked before moving
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm.setPower(AUTO_DOWN_POWER);
+
+        boolean done = false;
+        while (opMode.opModeIsActive() && !done) {
+            transporter.controlFlipAuto();
+            if (isTriggeredMRtouch(bottomStop)) {
+                arm.setPower(0);
+                engageShock(true);
+            }
+            if (isTriggeredMRtouch(bottomStop)) {
+                done = true;
+            }
+        }
     }
 
-    public void goToPositionAuto(int duckPosition) {
-        int position = TransportPosition.LEVEL3.ticks;
+    public void runSlideAndScoreFreight() {
+        int armTarget = TransportPosition.LEVEL3.ticks;
 
-        if (duckPosition == 1) {
-            position = TransportPosition.LEVEL1_PART_1.ticks;
-        } else if (duckPosition == 2) {
-            position = TransportPosition.LEVEL2.ticks;
+        if (opMode.scorePosition == 1) {
+            armTarget = TransportPosition.LEVEL1_PART_1.ticks;
+        } else if (opMode.scorePosition == 2) {
+            armTarget = TransportPosition.LEVEL2.ticks;
         }
 
         if (isTriggered(topStop)) {
@@ -218,7 +237,7 @@ public class MM_Slide {
             arm.setPower(0);
 
         } else {
-            arm.setTargetPosition(position);
+            arm.setTargetPosition(armTarget);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             setHeadedUp();
 
@@ -235,12 +254,14 @@ public class MM_Slide {
                 opMode.telemetry.update();
             }
 
-            if (duckPosition == 1) {
+            if (opMode.scorePosition == 1) {
                 arm.setTargetPosition(TransportPosition.LEVEL1_PART_2.ticks);
                 arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 while (opMode.opModeIsActive() && arm.isBusy()) {
                 }
             }
+            transporter.scoreFreight();
+            opMode.sleep(1500);
         }
     }
 
