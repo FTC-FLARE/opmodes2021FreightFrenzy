@@ -36,15 +36,15 @@ public class MM_Collector {
         stop();
     }
 
-    private void collect() {
+    public void collect() {
         collector.setPower(-1);
     }
 
-    private void dispense() {
+    public void dispense() {
         collector.setPower(1);
     }
 
-    private void stop() {
+    public void stop() {
         collector.setPower(0);
     }
 }

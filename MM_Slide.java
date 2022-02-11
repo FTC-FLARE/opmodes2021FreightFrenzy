@@ -203,7 +203,6 @@ public class MM_Slide {
     }
 
     public void startLowering() {
-        transporter.carryFreight();
         if (opMode.scorePosition == 1) {
             moveToLevel1Part1();
         }
@@ -250,6 +249,7 @@ public class MM_Slide {
             }
             transporter.scoreFreight();
             opMode.sleep(1500);
+            transporter.carryFreight();
         }
     }
 
