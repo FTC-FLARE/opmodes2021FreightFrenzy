@@ -67,9 +67,8 @@ public class MM_Auto extends MM_OpMode {
 
         if(startingPosition == WAREHOUSE){
             robot.warehousePark();
-            robot.collector.autoCollect();
-            scorePosition = 3;
         }else if(startingPosition == STORAGE){
+            //make sure to run down slide first
             if (spinDucker) {
                 robot.goDuck();
             }

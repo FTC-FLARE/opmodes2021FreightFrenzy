@@ -127,7 +127,6 @@ public class MM_Robot {
             drivetrain.driveForwardInches(forwardInches, angleTarget);
         }
         slide.runSlideAndScoreFreight();
-        slide.autoCollectPosition();//this returns without moving
     }
 
     public void storagePark() {
@@ -186,8 +185,11 @@ public class MM_Robot {
         }
 
         drivetrain.pRotateDegrees(angle);
-        drivetrain.strafeInches(strafeInches);
-        drivetrain.driveForwardInches(48);
+        strafeAndLowerSlide(strafeInches, 2.4);
+        collector.collect();
+        drivetrain.driveForwardInches(48); // may need to be changed
+        opMode.sleep(2000);
+        collector.stop();
     }
 
     public void strafeAndLowerSlide(double inches, double timeoutTime) {
