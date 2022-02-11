@@ -110,13 +110,9 @@ public class MM_Drivetrain {
     }
 
     public void strafeInches(double inches, double timeoutTime) { //TODO Troubleshoot
-        int backTargetTicks = inchesToTicks(inches) + backPriorEncoderTarget;
         boolean lookingForTarget = true;
-
         //same for all motors
-        opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
-        opMode.pBackDriveController.setSetpoint(backTargetTicks);
-        rampPower = 0;
+        prepareToStrafe(inches);
         runtime.reset();
         while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < timeoutTime)) {
             setStrafePower();
@@ -131,8 +127,17 @@ public class MM_Drivetrain {
             }
             opMode.telemetry.update();
         }
-        backPriorEncoderTarget = backTargetTicks;
     }
+
+    public void prepareToStrafe(double inches) {
+        int backTargetTicks = inchesToTicks(inches) + backPriorEncoderTarget;
+
+        opMode.pBackDriveController.setInputRange(backPriorEncoderTarget, backTargetTicks);
+        opMode.pBackDriveController.setSetpoint(backTargetTicks);
+        backPriorEncoderTarget = backTargetTicks;
+        rampPower = 0;
+    }
+
 
     public void pRotateDegrees(double targetAngle){ //TODO test odd angles
         int leftStartingTicks = leftEncoder.getCurrentPosition();
@@ -182,7 +187,7 @@ public class MM_Drivetrain {
         startMotors(flPower, frPower, blPower, brPower);
     }
 
-    private void setStrafePower() {
+    public void setStrafePower() {
         backCurrentTicks = -backEncoder.getCurrentPosition(); //TODO change to a port that reads the direction of the encoder count correctly
 
         double calculatedPower = opMode.pBackDriveController.calculatePower(backCurrentTicks);//removed min output
@@ -314,7 +319,7 @@ public class MM_Drivetrain {
         return Math.max(min, Math.abs(pValue * distance));
     }
 
-    private void stop() {
+    public void stop() {
         startMotors(0,0,0,0);
     }
 

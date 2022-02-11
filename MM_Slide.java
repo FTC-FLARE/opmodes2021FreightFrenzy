@@ -173,12 +173,7 @@ public class MM_Slide {
     public void autoCollectPosition() {
         //needs cleaning
         if (opMode.scorePosition == 1) {
-            arm.setTargetPosition(TransportPosition.LEVEL1_PART_1.ticks);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm.setPower(UP_POWER);
-            setHeadedUp();
-            while (arm.isBusy()) {
-            }
+            moveToLevel1Part1();
         }
         arm.setTargetPosition(TransportPosition.COLLECT.ticks);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -197,30 +192,23 @@ public class MM_Slide {
         }
     }
 
-    public void lowerSlideAndStrafe() {
+    public boolean reachedPosition() {
+        transporter.controlFlipAuto();
+        if (isTriggeredMRtouch(bottomStop)) {
+            arm.setPower(0);
+            engageShock(true);
+            return true;
+        }
+        return false;
+    }
+
+    public void startLowering() {
         transporter.carryFreight();
         if (opMode.scorePosition == 1) {
-            arm.setTargetPosition(MM_Slide.TransportPosition.LEVEL1_PART_1.ticks);
-            arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            arm.setPower(UP_POWER);
-            setHeadedUp();
-            while (arm.isBusy()) {
-            }
-        }// this may be checked before moving
+            moveToLevel1Part1();
+        }
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         arm.setPower(AUTO_DOWN_POWER);
-
-        boolean done = false;
-        while (opMode.opModeIsActive() && !done) {
-            transporter.controlFlipAuto();
-            if (isTriggeredMRtouch(bottomStop)) {
-                arm.setPower(0);
-                engageShock(true);
-            }
-            if (isTriggeredMRtouch(bottomStop)) {
-                done = true;
-            }
-        }
     }
 
     public void runSlideAndScoreFreight() {
@@ -262,6 +250,15 @@ public class MM_Slide {
             }
             transporter.scoreFreight();
             opMode.sleep(1500);
+        }
+    }
+
+    private void moveToLevel1Part1() { //only if you are going down
+        arm.setTargetPosition(MM_Slide.TransportPosition.LEVEL1_PART_1.ticks);
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm.setPower(UP_POWER);
+        setHeadedUp();
+        while (arm.isBusy()) {
         }
     }
 

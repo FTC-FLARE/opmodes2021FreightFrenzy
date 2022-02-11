@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 public class MM_Robot {
     private MM_OpMode opMode;
 
@@ -8,6 +10,8 @@ public class MM_Robot {
     public MM_Slide slide;
     public MM_Ducker ducker;
     public MM_Vuforia vuforia;
+
+    private ElapsedTime runtime = new ElapsedTime();
 
     static final double MIN_DRIVE_SPEED = 0.12;
     static final double MAX_DRIVE_SPEED = 0.7;
@@ -186,4 +190,25 @@ public class MM_Robot {
         drivetrain.driveForwardInches(48);
     }
 
+    public void strafeAndLowerSlide(double inches, double timeoutTime) {
+        boolean slideDone = false;
+        boolean strafeDone = false;
+        slide.startLowering();
+        drivetrain.prepareToStrafe(inches);
+
+        runtime.reset();
+        while (opMode.opModeIsActive() && (!slideDone || !strafeDone)) {
+            if (!slideDone) {
+                slideDone = slide.reachedPosition();
+            }
+            if (!strafeDone) {
+                if (runtime.seconds() < timeoutTime) {
+                    drivetrain.setStrafePower();
+                } else {
+                    strafeDone = true;
+                    drivetrain.stop();
+                }
+            }
+        }
+    }
 }
