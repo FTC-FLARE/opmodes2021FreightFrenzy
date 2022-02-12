@@ -28,11 +28,8 @@ public class MM_Collector {
         }
     }
 
-    public void autoCollect() {
-        collect();
-        runtime.reset();
-        while (opMode.opModeIsActive() && runtime.seconds() < TIMEOUT_TIME) {
-        }
+    public void autoStop() {
+        opMode.sleep(1500);
         stop();
     }
 

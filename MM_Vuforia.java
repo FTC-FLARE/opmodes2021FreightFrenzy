@@ -116,7 +116,7 @@ public class MM_Vuforia {
 
     private void vuforiaInit() {
         // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
-        webcam = opMode.hardwareMap.get(WebcamName.class, "Webcam 1");
+        webcam = opMode.hardwareMap.get(WebcamName.class, "BackCam");
         int cameraMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);

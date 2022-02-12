@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 public abstract class MM_OpMode extends LinearOpMode {
 
-    static double DRIVE_P_COEFFICIENT = 0.000095;
+    static double DRIVE_P_COEFFICIENT = 0.000079;
     static double STRAFE_P_COEFFICIENT = 0.000155;
     static final int RED = 1;
     static final int BLUE = 2;
