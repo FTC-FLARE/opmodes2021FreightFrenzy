@@ -175,22 +175,65 @@ public class MM_Robot {
         }
     }
 
-    public void warehousePark() {
-        double angle = 90;
-        double strafeInches = 40;
+    public void warehouseCollect() {
+        double angle = 88.35;
+        double straightInches = 7;
+        double strafeInches = -40;
 
         if (opMode.alliance == MM_OpMode.BLUE) {
             angle = -angle;
             strafeInches = -strafeInches;
         }
+        if (opMode.scorePosition == 1) {
+            straightInches = 9;
+        } else if (opMode.scorePosition == 2) {
+            straightInches = 8.5;
+        }
 
         drivetrain.pRotateDegrees(angle);
+        drivetrain.driveForwardInches(straightInches);
         strafeAndLowerSlide(strafeInches, 2.4);
         collector.collect();
-        drivetrain.driveForwardInches(48); // may need to be changed
-        opMode.sleep(2000);
+        drivetrain.driveForwardInches(39); // may need to be changed
         collector.stop();
     }
+
+    public void ScoreAndPark() {
+        double secondAngle = 88.35;
+        double firstStrafeInches = 12;
+        double secondStrafeInches = 32;
+        double firstAngle = 29.5;
+        //better way to do this
+        if (opMode.scorePosition == 1) {
+                firstAngle = 26;
+        } else if (opMode.scorePosition == 2) {
+                firstAngle = 29;
+        }
+
+        if (opMode.alliance == MM_OpMode.BLUE) {
+            secondAngle = -secondAngle;
+            firstStrafeInches = -firstStrafeInches;
+            secondStrafeInches = secondStrafeInches;
+            firstAngle = -firstAngle;
+            if (opMode.scorePosition == 1) {
+                firstAngle = -26;
+            } else if (opMode.scorePosition == 2) {
+                firstAngle = -29;
+            }
+        }
+
+        opMode.scorePosition = 3;
+        drivetrain.driveForwardInches(-40);
+        drivetrain.strafeInches(firstStrafeInches);
+        drivetrain.driveForwardInches(-12, firstAngle);
+        slide.runSlideAndScoreFreight();
+        drivetrain.pRotateDegrees(secondAngle);
+        strafeAndLowerSlide(secondStrafeInches, 2.3);
+        collector.collect();
+        drivetrain.driveForwardInches(39);
+        collector.autoStop();
+    }
+
 
     public void strafeAndLowerSlide(double inches, double timeoutTime) {
         boolean slideDone = false;

@@ -24,11 +24,11 @@ public class MM_Auto extends MM_OpMode {
             }else if(gamepad1.a && startingPosition == STORAGE && !isHandled){
                 startingPosition = WAREHOUSE;
                 isHandled = true;
-            }else if(gamepad1.b && finishPosition == OOTW && !isHandled){
+            }else if(gamepad1.b && finishPosition == CSP && !isHandled){
                 finishPosition = PARK;
                 isHandled = true;
             }else if(gamepad1.b && finishPosition == PARK && !isHandled){
-                finishPosition = OOTW;
+                finishPosition = CSP;
                 isHandled = true;
             }else if(gamepad1.y && !spinDucker && !isHandled){
                 spinDucker = true;
@@ -55,7 +55,7 @@ public class MM_Auto extends MM_OpMode {
             telemetry.addLine();
             telemetry.addData("sleep time", sleepTime);
             telemetry.addData(alliance == RED ? "Red" : "Blue", startingPosition == WAREHOUSE ? "Warehouse" : "Storage");
-            telemetry.addData(finishPosition == OOTW ? "get out of the way" : "park", spinDucker ? "spin ducker" : "");
+            telemetry.addData(finishPosition == CSP ? "collect, score, and Park" : "park", spinDucker ? "spin ducker" : "");
             telemetry.update();
         }
         //*************************************** DRIVER HIT PLAY **************************************************
@@ -66,7 +66,8 @@ public class MM_Auto extends MM_OpMode {
         robot.scoreOnHub();
 
         if(startingPosition == WAREHOUSE){
-            robot.warehousePark();
+            robot.warehouseCollect();
+            robot.ScoreAndPark();
         }else if(startingPosition == STORAGE){
             //make sure to run down slide first
             if (spinDucker) {

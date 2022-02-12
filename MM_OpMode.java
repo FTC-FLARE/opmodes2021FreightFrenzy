@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 public abstract class MM_OpMode extends LinearOpMode {
 
@@ -11,12 +10,12 @@ public abstract class MM_OpMode extends LinearOpMode {
     static final int BLUE = 2;
     static final int WAREHOUSE = 1;
     static final int STORAGE = 2;
-    static final int OOTW = 1;
+    static final int CSP = 1;
     static final int PARK = 2;
     public long sleepTime = 0;
     public int alliance = RED;
     public int startingPosition = WAREHOUSE;
-    public int finishPosition = OOTW;
+    public int finishPosition = CSP;
     public boolean spinDucker = false;
     public int scorePosition = 3;
 
