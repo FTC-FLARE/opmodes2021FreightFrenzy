@@ -53,7 +53,7 @@ public class MM_Drivetrain {
     private static final double TICKS_PER_REVOLUTION = 1440;
     private static final double TICKS_PER_INCH = (TICKS_PER_REVOLUTION / WHEEL_CIRCUMFERENCE);  // 306.5499506
     private static final double STRAFE_P_COEFFICIENT = .09; //numerator is gain per degree error was .1
-    private static final double STRAIGHT_P_COEFFICIENT = .085;
+    private static final double STRAIGHT_P_COEFFICIENT = .0775;
     private static final double RAMP_INTERVAL = 0.035;
     private static final double PIN_POWER_HIGH = 0.39;
     private static final double PIN_POWER_LOW = 0.35;

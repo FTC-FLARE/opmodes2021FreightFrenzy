@@ -13,7 +13,7 @@ public class MM_Slide {
         LEVEL1_PART_1(1700),
         LEVEL1_PART_2(1230),
         LEVEL2(2780),
-        LEVEL3(4100),
+        LEVEL3(4150),
         MAX(4670);
 
         public final int ticks;
