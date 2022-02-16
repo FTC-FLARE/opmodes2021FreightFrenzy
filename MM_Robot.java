@@ -111,17 +111,25 @@ public class MM_Robot {
             drivetrain.pRotateDegrees(179);
             drivetrain.driveForwardInches(forwardInches);
         } else {
-            double angleTarget = -35;
-            forwardInches = -22;
-
-            if (opMode.scorePosition == 1) {
-                forwardInches = -26;
-            } else if (opMode.scorePosition == 2) {
-                forwardInches = -24;
-            }
+            double angleTarget = 31.5;
+            forwardInches = -20.5;
 
             if (opMode.alliance == MM_OpMode.RED) {
-                angleTarget = 35;
+                if (opMode.scorePosition == 1) {
+                    angleTarget = 32;
+                    forwardInches = -25;
+                }//2 is same as 3
+
+            } else {
+                angleTarget = -32.5;
+                forwardInches = -22.25;
+                if (opMode.scorePosition == 1) {
+                    forwardInches = -26;
+                    angleTarget = -33.5;
+                } else if (opMode.scorePosition == 2) {
+                    forwardInches = -24;
+                    angleTarget = -33.75;
+                }
             }
 
             drivetrain.driveForwardInches(forwardInches, angleTarget);
@@ -183,11 +191,12 @@ public class MM_Robot {
         if (opMode.alliance == MM_OpMode.BLUE) {
             angle = -angle;
             strafeInches = -strafeInches;
+            straightInches = 5.5;
         }
         if (opMode.scorePosition == 1) {
             straightInches = 9;
         } else if (opMode.scorePosition == 2) {
-            straightInches = 8.5;
+            straightInches = 8;
         }
 
         drivetrain.pRotateDegrees(angle);
@@ -195,7 +204,7 @@ public class MM_Robot {
         strafeAndLowerSlide(strafeInches, 2.4);
         collector.collect();
         drivetrain.driveForwardInches(39); // may need to be changed
-        collector.stop();
+        collector.autoStop();
     }
 
     public void ScoreAndPark() {
@@ -203,18 +212,24 @@ public class MM_Robot {
         double firstStrafeInches = 12;
         double secondStrafeInches = 32;
         double firstAngle = 29.5;
+        double firstForwardInches = -12;
+        double secondForwardInches = 46;
         //better way to do this
-        if (opMode.scorePosition == 1) {
+        if (opMode.alliance == MM_OpMode.RED) {
+            firstForwardInches = -15.25;
+            if (opMode.scorePosition == 1) {
                 firstAngle = 26;
-        } else if (opMode.scorePosition == 2) {
+                firstForwardInches = -14.25;
+            } else if (opMode.scorePosition == 2) {
                 firstAngle = 29;
-        }
-
-        if (opMode.alliance == MM_OpMode.BLUE) {
+                firstForwardInches = -13;
+            }
+        } else {
             secondAngle = -secondAngle;
             firstStrafeInches = -firstStrafeInches;
-            secondStrafeInches = secondStrafeInches;
+            secondStrafeInches = -secondStrafeInches;
             firstAngle = -firstAngle;
+            secondForwardInches = 39;
             if (opMode.scorePosition == 1) {
                 firstAngle = -26;
             } else if (opMode.scorePosition == 2) {
@@ -225,12 +240,12 @@ public class MM_Robot {
         opMode.scorePosition = 3;
         drivetrain.driveForwardInches(-40);
         drivetrain.strafeInches(firstStrafeInches);
-        drivetrain.driveForwardInches(-12, firstAngle);
+        drivetrain.driveForwardInches(firstForwardInches, firstAngle);
         slide.runSlideAndScoreFreight();
         drivetrain.pRotateDegrees(secondAngle);
         strafeAndLowerSlide(secondStrafeInches, 2.3);
         collector.collect();
-        drivetrain.driveForwardInches(39);
+        drivetrain.driveForwardInches(secondForwardInches);
         collector.autoStop();
     }
 
