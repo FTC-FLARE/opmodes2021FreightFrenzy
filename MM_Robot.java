@@ -203,7 +203,7 @@ public class MM_Robot {
         drivetrain.driveForwardInches(straightInches);
         strafeAndLowerSlide(strafeInches, 2.4);
         collector.collect();
-        drivetrain.driveForwardInches(39); // may need to be changed
+        drivetrain.driveForwardInches(opMode.distanceToCollect);
         collector.autoStop();
     }
 
@@ -238,7 +238,7 @@ public class MM_Robot {
         }
 
         opMode.scorePosition = 3;
-        drivetrain.driveForwardInches(-40);
+        drivetrain.driveForwardInches(-opMode.distanceToCollect - 1);
         drivetrain.strafeInches(firstStrafeInches);
         drivetrain.driveForwardInches(firstForwardInches, firstAngle);
         slide.runSlideAndScoreFreight();

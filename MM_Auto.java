@@ -44,16 +44,24 @@ public class MM_Auto extends MM_OpMode {
             }else if(gamepad1.dpad_down && sleepTime > 0 && !isHandled){
                 sleepTime -= 1000;
                 isHandled = true;
-            }else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.y){
+            }else if (gamepad1.dpad_right && !isHandled) {
+                distanceToCollect += 1;
+                isHandled = true;
+            }else if (gamepad1.dpad_left && !isHandled) {
+                distanceToCollect -= 1;
+                isHandled = true;
+            }else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y){
                 isHandled = false;
             }
             telemetry.addLine("right or left bumper to change alliance");
             telemetry.addLine("press 'a' to change starting position");
             telemetry.addLine("press 'b' to change finish position");
             telemetry.addLine("press d-pad up or down to change sleep time");
+            telemetry.addLine("press d-pad right or left to change collect distance");
             telemetry.addLine("press 'y' to turn ducker on or off");
             telemetry.addLine();
             telemetry.addData("sleep time", sleepTime);
+            telemetry.addData("collect distance", distanceToCollect);
             telemetry.addData(alliance == RED ? "Red" : "Blue", startingPosition == WAREHOUSE ? "Warehouse" : "Storage");
             telemetry.addData(finishPosition == CSP ? "collect, score, and Park" : "park", spinDucker ? "spin ducker" : "");
             telemetry.update();
