@@ -44,72 +44,54 @@ public class MM_Robot {
     }
 
     public void goDuck() {
-        double forwardInches = 42;
-        double targetAngle = 103;
-        double secondTargetAngle = -37;
-        double timeoutTime = 0.90; //default for red 3
-        if (opMode.scorePosition == 1 && opMode.alliance == MM_OpMode.RED) {
-            secondTargetAngle = -27;
-        }
-        if (opMode.alliance == MM_OpMode.BLUE) {
-            forwardInches = 44;
-            targetAngle = -100;
-            secondTargetAngle = 20;
-            timeoutTime = 0.75; //default for blue 3
+        double strafeInches = 36;
+        double targetAngle = 152;
+        double forwardInches = -15;
+        if (opMode.alliance == MM_OpMode.RED) {
+
+        } else {
+            forwardInches = -15;
+            targetAngle = -152;
+            strafeInches = -strafeInches;
+            if (opMode.scorePosition == 1) {
+                targetAngle = -150;
+                forwardInches = -19;
+            } else if (opMode.scorePosition == 2) {
+                targetAngle = -150;
+                forwardInches =  -17;
+            }
         }
 
+        drivetrain.pRotateDegrees(0);
+        strafeAndLowerSlide(-36, 2.5);
         drivetrain.pRotateDegrees(targetAngle);
         drivetrain.driveForwardInches(forwardInches);
-        drivetrain.pRotateDegrees(secondTargetAngle);
-
-        if (opMode.scorePosition == 2) {
-            timeoutTime = 0.9;
-        } else if (opMode.scorePosition == 1) {
-            timeoutTime = 1.1;
-        }
-
-/*        runtime.reset(); //TODO either use encoders or drive using time method
-        drivetrain.startMotors(-0.2, -0.2, -0.2,-0.2);
-        while (opMode.opModeIsActive() && runtime.seconds() < timeoutTime) {
-        }
-        stop();*/
         ducker.autoSpin();
     }
 
     public void parkFromCarousel() {
-        drivetrain.driveForwardInches(6);
+        double angleTarget = -175;
+        if (opMode.alliance == MM_OpMode.BLUE) {
+            angleTarget = -angleTarget;
+        }
+        drivetrain.driveForwardInches(25.5, angleTarget);
     }
 
     public void scoreOnHub() {
         double forwardInches = -6;
-        double strafeInches = 0;
         if (opMode.startingPosition == MM_OpMode.STORAGE) {
+            double angleTarget = -34;
             if(opMode.alliance == MM_OpMode.RED) {
-
-                strafeInches = 16;
-
-                //determine driving position
-                if(opMode.scorePosition == 1) {
-                    forwardInches = -8.75;
-                } else if(opMode.scorePosition == 2) {
-                    forwardInches = -6;
-                }
             } else {
-
-                forwardInches = -6;
-                strafeInches = -27;
-
-                //determine driving position (MEASURE)
+                angleTarget = 34;
+                forwardInches = -21;
                 if (opMode.scorePosition == 1) {
-                    forwardInches = -6.75;
+                    forwardInches = -25.5;
                 } else if (opMode.scorePosition == 2) {
-                    forwardInches = -3.5;
+                    forwardInches = -24;
                 }
             }
-            drivetrain.driveForwardInches(12);
-            drivetrain.strafeInches(strafeInches);
-            drivetrain.pRotateDegrees(179);
-            drivetrain.driveForwardInches(forwardInches);
+            drivetrain.driveForwardInches(forwardInches, angleTarget);
         } else {
             double angleTarget = 31.5;
             forwardInches = -20.5;
@@ -208,14 +190,17 @@ public class MM_Robot {
         drivetrain.driveForwardInches(opMode.distanceToCollect);
         runtime.reset();
         while (opMode.opModeIsActive() && !opMode.freightCollected && opMode.distanceToCollect < 47) {
-            collector.collect();
             collector.autoStop();
-            drivetrain.driveForwardInches(-2);
-            drivetrain.driveForwardInches(4);
-            opMode.distanceToCollect += 2;
+            if (!opMode.freightCollected) {
+                collector.dispense();
+                opMode.sleep(150);
+                collector.collect();
+                drivetrain.driveForwardInches(-2);
+                drivetrain.driveForwardInches(4);
+                opMode.distanceToCollect += 2;
+            }
         }
         handleScoreAgain();
-        collector.autoStop();
     }
 
     public void ScoreAndPark() {
