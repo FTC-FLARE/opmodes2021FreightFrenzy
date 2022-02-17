@@ -1,46 +1,39 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-// Any additional import statements will go here
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.Servo;
 
-public class MM_Capper {
-    // this gives us access to all opMode information
+public class  MM_Capper {
+
     private LinearOpMode opMode;
 
-/*
-    declare private class variables for all hardware and states the object “has” - Ex:
-        private DcMotor leftDrive = null;
-        private DcMotor rightDrive = null;
-*/
+    private CRServo primary = null;
+    private Servo secondary = null;
+    private DigitalChannel topCapperStop;
 
-/*
-    Declare any other class variables & constants – Ex:
-        static final double WHEEL_DIAMETER_INCHES = 4.0;
-*/
-
-
-    // Constructor
     public MM_Capper(LinearOpMode opMode){
         this.opMode = opMode;
 
-/*
-        initialize hardware from the configuration data - Ex:
-            leftDrive = opMode.hardwareMap.get(DcMotor.class, "left_drive");
-            rightDrive  = opMode.hardwareMap.get(DcMotor.class, "right_drive");
-*/
-
-/*
-        do any other initialization that needs to happen - Ex:
-            leftDrive.setDirection(DcMotor.Direction.REVERSE);
-            rightDrive.setDirection(DcMotor.Direction.FORWARD);
-*/
+        primary = opMode.hardwareMap.get(CRServo.class, "primaryCapper");
+        secondary = opMode.hardwareMap.get(Servo.class,"secondaryCapper");
+        topCapperStop = opMode.hardwareMap.get(DigitalChannel.class,"topCapperStop");
     }
-
-/*
-    write methods for what the object “does” – private or public - Ex:
-        public void setMotorPower(double leftPower, double rightPower) {
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
+    public void runCapper(){
+        if(-opMode.gamepad2.right_stick_y > 0.1){
+            secondary.setPosition(1);
+        }else if(-opMode.gamepad2.right_stick_y < -0.1){
+            secondary.setPosition(0);
         }
-*/
+
+        if(!topCapperStop.getState() && -opMode.gamepad2.left_stick_y < 0.1) {
+            primary.setPower(0);
+        }else{
+            primary.setPower(-opMode.gamepad2.left_stick_y / 2);
+        }
+
+        opMode.telemetry.addData("capper power", opMode.gamepad2.left_stick_y);
+
+    }
 }

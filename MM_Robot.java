@@ -10,6 +10,7 @@ public class MM_Robot {
     public MM_Slide slide;
     public MM_Ducker ducker;
     public MM_Vuforia vuforia;
+    public MM_Capper capper;
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -30,6 +31,7 @@ public class MM_Robot {
         collector = new MM_Collector(opMode);
         slide = new MM_Slide(opMode);
         ducker = new MM_Ducker(opMode);
+        capper = new MM_Capper(opMode);
         if (opMode.getClass() == MM_TeleOp.class) {
             drivetrain.initOdometryServos(1);
         } else {
