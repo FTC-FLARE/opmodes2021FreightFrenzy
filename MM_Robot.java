@@ -135,6 +135,7 @@ public class MM_Robot {
             drivetrain.driveForwardInches(forwardInches, angleTarget);
         }
         slide.runSlideAndScoreFreight();
+        opMode.freightCollected = false;
     }
 
     public void storagePark() {
@@ -186,7 +187,7 @@ public class MM_Robot {
     public void warehouseCollect() {
         double angle = 88.35;
         double straightInches = 7;
-        double strafeInches = -40;
+        double strafeInches = 40;
 
         if (opMode.alliance == MM_OpMode.BLUE) {
             angle = -angle;
@@ -202,51 +203,66 @@ public class MM_Robot {
         drivetrain.pRotateDegrees(angle);
         drivetrain.driveForwardInches(straightInches);
         strafeAndLowerSlide(strafeInches, 2.4);
+        collector.setFreightCollected();
         collector.collect();
         drivetrain.driveForwardInches(opMode.distanceToCollect);
+        runtime.reset();
+        while (opMode.opModeIsActive() && !opMode.freightCollected && opMode.distanceToCollect < 47) {
+            collector.collect();
+            collector.autoStop();
+            drivetrain.driveForwardInches(-2);
+            drivetrain.driveForwardInches(4);
+            opMode.distanceToCollect += 2;
+        }
+        handleScoreAgain();
         collector.autoStop();
     }
 
     public void ScoreAndPark() {
-        double secondAngle = 88.35;
-        double firstStrafeInches = 12;
-        double secondStrafeInches = 32;
-        double firstAngle = 29.5;
-        double firstForwardInches = -12;
-        double secondForwardInches = 46;
-        //better way to do this
-        if (opMode.alliance == MM_OpMode.RED) {
-            firstForwardInches = -15.25;
-            if (opMode.scorePosition == 1) {
-                firstAngle = 26;
-                firstForwardInches = -14.25;
-            } else if (opMode.scorePosition == 2) {
-                firstAngle = 29;
-                firstForwardInches = -13;
+        if (opMode.scoreAgain) {
+            double secondAngle = 88.35;
+            double firstStrafeInches = -12;
+            double secondStrafeInches = 32;
+            double firstAngle = 29.5;
+            double firstForwardInches = -12;
+            double secondForwardInches = 46;
+            //better way to do this
+            if (opMode.alliance == MM_OpMode.RED) {
+                firstForwardInches = -15.25;
+                if (opMode.scorePosition == 1) {
+                    firstAngle = 26;
+                    firstForwardInches = -14.25;
+                } else if (opMode.scorePosition == 2) {
+                    firstAngle = 29;
+                    firstForwardInches = -13;
+                }
+            } else {
+                secondAngle = -secondAngle;
+                firstStrafeInches = -firstStrafeInches;
+                secondStrafeInches = -secondStrafeInches;
+                firstAngle = -firstAngle;
+                secondForwardInches = 39;
+                if (opMode.scorePosition == 1) {
+                    firstAngle = -26;
+                } else if (opMode.scorePosition == 2) {
+                    firstAngle = -29;
+                }
             }
-        } else {
-            secondAngle = -secondAngle;
-            firstStrafeInches = -firstStrafeInches;
-            secondStrafeInches = -secondStrafeInches;
-            firstAngle = -firstAngle;
-            secondForwardInches = 39;
-            if (opMode.scorePosition == 1) {
-                firstAngle = -26;
-            } else if (opMode.scorePosition == 2) {
-                firstAngle = -29;
-            }
-        }
 
-        opMode.scorePosition = 3;
-        drivetrain.driveForwardInches(-opMode.distanceToCollect - 1);
-        drivetrain.strafeInches(firstStrafeInches);
-        drivetrain.driveForwardInches(firstForwardInches, firstAngle);
-        slide.runSlideAndScoreFreight();
-        drivetrain.pRotateDegrees(secondAngle);
-        strafeAndLowerSlide(secondStrafeInches, 2.3);
-        collector.collect();
-        drivetrain.driveForwardInches(secondForwardInches);
-        collector.autoStop();
+            opMode.scorePosition = 3;
+            drivetrain.driveForwardInches(-opMode.distanceToCollect - 1);
+            drivetrain.strafeInches(firstStrafeInches);
+            drivetrain.driveForwardInches(firstForwardInches, firstAngle);
+            slide.runSlideAndScoreFreight();
+            drivetrain.pRotateDegrees(secondAngle);
+            strafeAndLowerSlide(secondStrafeInches, 2.3);
+            collector.setFreightCollected();
+            collector.collect();
+            drivetrain.driveForwardInches(secondForwardInches);
+            collector.autoStop();
+        } else {
+            collector.stop();
+        }
     }
 
 
@@ -269,6 +285,14 @@ public class MM_Robot {
                     drivetrain.stop();
                 }
             }
+        }
+    }
+
+    private void handleScoreAgain() {
+        if (runtime.seconds() < 5) {
+            opMode.scoreAgain = true;
+        } else {
+            opMode.scoreAgain = false;
         }
     }
 }

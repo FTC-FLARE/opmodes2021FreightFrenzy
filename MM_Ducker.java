@@ -13,7 +13,7 @@ public class MM_Ducker {
     static final double MAX_POWER = 0.90;
     static final double MIN_POWER = 0.20;
     static final double RAMP_INTERVAL_TELEOP = 0.044;
-    static final double RAMP_INTERVAL_AUTO = 0.0025;
+    static final double RAMP_INTERVAL_AUTO = 0.0024;
     private final double SPIN_TIME = 2;
 
     private double spinPower = MIN_POWER;
