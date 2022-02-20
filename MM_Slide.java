@@ -5,6 +5,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import javax.lang.model.util.ElementScanner6;
 
 public class MM_Slide {
 
@@ -25,6 +28,7 @@ public class MM_Slide {
 
     private MM_OpMode opMode;
 
+    private ElapsedTime runtime = new ElapsedTime();
     private MM_Transporter transporter = null;
     //    private DigitalChannel bottomStop = null;
     private AnalogInput bottomStop = null;
@@ -37,6 +41,7 @@ public class MM_Slide {
     private int level1Progress = NOT_LEVEL_1;
     private boolean manualSlide = false;
     private boolean isHandled = false;
+    private boolean isHandledTime = false;
     private boolean headedUp = false;
     private boolean shockAbsorberEngaged = true;
 
@@ -195,9 +200,15 @@ public class MM_Slide {
     public boolean reachedPosition() {
         transporter.controlFlipAuto();
         if (isTriggeredMRtouch(bottomStop)) {
-            arm.setPower(0);
-            engageShock(true);
-            return true;
+            if (!isHandledTime) {
+                runtime.reset();
+                isHandledTime = true;
+            }
+            if (runtime.seconds() > 0.08) {
+                arm.setPower(0);
+                engageShock(true);
+                return true;
+            }
         }
         return false;
     }

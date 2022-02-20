@@ -89,7 +89,15 @@ public class MM_Vuforia {
         tfod.deactivate();
     }
 
-    public boolean targetFound() {
+    public void assignVuforiaLocation() {
+        if (targetFound()) {
+            opMode.robot.xLocation = getX();
+            opMode.robot.yLocation = getY();
+            opMode.robot.robotHeading = getHeading(); //******need to transform to intrinsic based on alliance
+        }
+    }
+
+    private boolean targetFound() {
 
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {

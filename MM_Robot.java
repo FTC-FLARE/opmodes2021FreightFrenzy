@@ -21,6 +21,10 @@ public class MM_Robot {
     static final double MIN_ROTATE_POWER = 0.12;
     static final double MAX_ROTATE_POWER = 0.7;
 
+     public double xLocation = 0;
+     public double yLocation = 0;
+     public double robotHeading = 0;
+
     // Constructor
     public MM_Robot(MM_OpMode opMode){
         this.opMode = opMode;
@@ -30,8 +34,8 @@ public class MM_Robot {
         drivetrain = new MM_Drivetrain(opMode);
         collector = new MM_Collector(opMode);
         slide = new MM_Slide(opMode);
-        ducker = new MM_Ducker(opMode);
-        capper = new MM_Capper(opMode);
+        ducker = new MM_Ducker(opMode);/*
+        capper = new MM_Capper(opMode);*/
         if (opMode.getClass() == MM_TeleOp.class) {
             drivetrain.initOdometryServos(1);
         } else {
@@ -108,11 +112,11 @@ public class MM_Robot {
                 angleTarget = -32.5;
                 forwardInches = -22.25;
                 if (opMode.scorePosition == 1) {
-                    forwardInches = -25.75;
+                    forwardInches = -26;
                     angleTarget = -33.5;
                 } else if (opMode.scorePosition == 2) {
                     forwardInches = -24;
-                    angleTarget = -33.75;
+                    angleTarget = -35;
                 }
             }
 
@@ -171,7 +175,7 @@ public class MM_Robot {
     public void warehouseCollect() {
         double angle = 88.35;
         double straightInches = 7;
-        double strafeInches = 40;
+        double strafeInches = 42;
 
         if (opMode.alliance == MM_OpMode.BLUE) {
             angle = -angle;

@@ -26,7 +26,7 @@ public class MM_TeleOp extends MM_OpMode {
             robot.drivetrain.driveWithSticks();
             robot.slide.runSlide();
             robot.collector.runCollector();
-            robot.capper.runCapper();
+/*            robot.capper.runCapper();*/
             telemetry.update();
         }
     }

@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class  MM_Capper {
 
+/*
     private LinearOpMode opMode;
 
     private CRServo primary = null;
@@ -36,4 +37,6 @@ public class  MM_Capper {
         opMode.telemetry.addData("capper power", opMode.gamepad2.left_stick_y);
 
     }
+}
+*/
 }
