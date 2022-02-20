@@ -15,7 +15,7 @@ public class MM_Transporter {
     private DistanceSensor transportDown = null;
     private DistanceSensor transportUp = null;
 
-    private final double TRANSPORT_FLIP = 1550;
+    private final double TRANSPORT_FLIP = 1775;
 
     // .6 works for current servo (why?)- a change in servo may require a different setting
     private final double COLLECT_POSITION = .6;

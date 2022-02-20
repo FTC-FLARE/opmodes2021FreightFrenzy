@@ -10,8 +10,8 @@ public class MM_Slide {
 
     enum TransportPosition {
         COLLECT(0),
-        LEVEL1_PART_1(1700),
-        LEVEL1_PART_2(1230),
+        LEVEL1_PART_1(1875),
+        LEVEL1_PART_2(1275),
         LEVEL2(2780),
         LEVEL3(4150),
         MAX(4670);

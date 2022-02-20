@@ -38,6 +38,7 @@ public class MM_Collector {
             isHandled = false;
         }
         opMode.telemetry.addData("Collect Power", "%.2f", collectPower);
+        opMode.telemetry.addData("color sensor", freightDetector.getDistance(DistanceUnit.CM));
 
         if (opMode.gamepad2.left_bumper) {
             dispense();
@@ -49,7 +50,7 @@ public class MM_Collector {
     }
 
     public void autoStop() {
-        if (!opMode.freightCollected) {
+        if (!opMode.freightCollected && !collectedFreight()) {
             runtime.reset();
             boolean freightCollected = false;
             while (!freightCollected && runtime.seconds() < TIMEOUT_TIME) {
@@ -63,11 +64,11 @@ public class MM_Collector {
     }
 
     public void collect() {
-        collector.setPower(-collectPower);
+        collector.setPower(-1);
     }
 
     public void dispense() {
-        collector.setPower(collectPower);
+        collector.setPower(1);
     }
 
     public void stop() {

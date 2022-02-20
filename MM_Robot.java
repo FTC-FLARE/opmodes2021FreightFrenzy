@@ -86,7 +86,7 @@ public class MM_Robot {
                 angleTarget = 34;
                 forwardInches = -21;
                 if (opMode.scorePosition == 1) {
-                    forwardInches = -25.5;
+                    forwardInches = -25.25;
                 } else if (opMode.scorePosition == 2) {
                     forwardInches = -24;
                 }
@@ -99,14 +99,14 @@ public class MM_Robot {
             if (opMode.alliance == MM_OpMode.RED) {
                 if (opMode.scorePosition == 1) {
                     angleTarget = 32;
-                    forwardInches = -25;
+                    forwardInches = -24.75;
                 }//2 is same as 3
 
             } else {
                 angleTarget = -32.5;
                 forwardInches = -22.25;
                 if (opMode.scorePosition == 1) {
-                    forwardInches = -26;
+                    forwardInches = -25.75;
                     angleTarget = -33.5;
                 } else if (opMode.scorePosition == 2) {
                     forwardInches = -24;
@@ -193,10 +193,9 @@ public class MM_Robot {
             collector.autoStop();
             if (!opMode.freightCollected) {
                 collector.dispense();
-                opMode.sleep(150);
+                opMode.sleep(400);
                 collector.collect();
-                drivetrain.driveForwardInches(-2);
-                drivetrain.driveForwardInches(4);
+                drivetrain.driveForwardInches(2);
                 opMode.distanceToCollect += 2;
             }
         }
