@@ -11,7 +11,7 @@ public class MM_Auto extends MM_OpMode {
     @Override
     public void runOpMode() {
         initializeOpmode();
-        while (!isStarted()){
+        while (!isStarted() && opModeIsActive()){
             if(gamepad1.right_bumper && alliance == RED && !isHandled){
                 alliance = BLUE;
                 isHandled = true;

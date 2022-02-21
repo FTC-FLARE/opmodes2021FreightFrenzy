@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
@@ -37,9 +35,9 @@ public class MM_Vuforia {
     private WebcamName webcam = null;
     private ElapsedTime runtime = new ElapsedTime();
 
-    private OpenGLMatrix lastLocation   = null;
+    private OpenGLMatrix targetLocation = null;
     private VuforiaLocalizer vLocalizer = null;
-    private VuforiaTrackables targets   = null ;
+    private VuforiaTrackables targets = null;
     private List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
 
     private TFObjectDetector tfod;
@@ -71,7 +69,7 @@ public class MM_Vuforia {
             }
         }
 
-        if  (duckLeftPixel < 0) {
+        if (duckLeftPixel < 0) {
             duckPosition = 3;
         } else if (duckLeftPixel > 220) {
             duckPosition = 2;
@@ -89,20 +87,14 @@ public class MM_Vuforia {
         tfod.deactivate();
     }
 
-    public void assignVuforiaLocation() {
-        if (targetFound()) {
-            opMode.robot.xLocation = getX();
-            opMode.robot.yLocation = getY();
-            opMode.robot.robotHeading = getHeading(); //******need to transform to intrinsic based on alliance
-        }
-    }
-
-    private boolean targetFound() {
+    public boolean targetFound() {
 
         for (VuforiaTrackable trackable : allTrackables) {
-            if (((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible()) {
-                OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getRobotLocation();
-                lastLocation = robotLocationTransform;
+            if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
+                targetLocation = ((VuforiaTrackableDefaultListener) trackable.getListener()).getVuforiaCameraFromTarget();
+                assignX();
+                assignY();
+                assignHeading();
                 opMode.telemetry.addData("Image Found", trackable.getName());
                 return true;
             }
@@ -110,16 +102,16 @@ public class MM_Vuforia {
         return false;
     }
 
-    public double getX() {
-        return lastLocation.getTranslation().get(0) / MM_PER_INCH;
+    private void assignX() {
+        opMode.robot.xVuforiaDis = targetLocation.getTranslation().get(0) / MM_PER_INCH;
     }
 
-    public double getY() {
-        return lastLocation.getTranslation().get(1) / MM_PER_INCH;
-    }
+    private void assignY() {
+        opMode.robot.yVuforiaDis = targetLocation.getTranslation().get(2) / MM_PER_INCH;
+    }//
 
-    public double getHeading() {
-        return Orientation.getOrientation(lastLocation, EXTRINSIC, XYZ, DEGREES).thirdAngle;
+    private void assignHeading() {
+        opMode.robot.vuforiaHeading = Math.toDegrees(Math.asin(opMode.robot.xVuforiaDis/ Math.hypot(opMode.robot.xVuforiaDis, opMode.robot.yVuforiaDis)));
     }
 
     private void vuforiaInit() {
@@ -141,18 +133,18 @@ public class MM_Vuforia {
         allTrackables.addAll(targets);
 
         // Name and locate each trackable object
-        assignTargetPosition(0, "Blue Storage",       -HALF_FIELD, ONE_AND_HALF_TILE, MM_TARGET_HEIGHT, 90, 0, 90);
-        assignTargetPosition(1, "Blue Alliance Wall", HALF_TILE, HALF_FIELD, MM_TARGET_HEIGHT, 90, 0, 0);
-        assignTargetPosition(2, "Red Storage",        -HALF_FIELD, -ONE_AND_HALF_TILE, MM_TARGET_HEIGHT, 90, 0, 90);
-        assignTargetPosition(3, "Red Alliance Wall", HALF_TILE,  -HALF_FIELD, MM_TARGET_HEIGHT, 90, 0, 180);
+        allTrackables.get(0).setName("Blue Storage");
+        allTrackables.get(1).setName("Blue Alliance Wall");
+        allTrackables.get(2).setName("Red Storage");
+        allTrackables.get(3).setName("Red Alliance Wall");
 
-        final float CAMERA_FORWARD_DISPLACEMENT  = 9.0f * MM_PER_INCH;   // eg: Enter the forward distance from the center of the robot to the camera lens
+        final float CAMERA_FORWARD_DISPLACEMENT = 9.0f * MM_PER_INCH;   // eg: Enter the forward distance from the center of the robot to the camera lens
         final float CAMERA_VERTICAL_DISPLACEMENT = 10.0f * MM_PER_INCH;   // eg: Camera is 6 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT     = 4.3f * MM_PER_INCH;   // eg: Enter the left distance from the center of the robot to the camera lens
+        final float CAMERA_LEFT_DISPLACEMENT = 4.3f * MM_PER_INCH;   // eg: Enter the left distance from the center of the robot to the camera lens
 
         OpenGLMatrix cameraLocationOnRobot = OpenGLMatrix
                 .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XZY, DEGREES, 90, 90, 0));
+                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XZY, DEGREES, 90, 90, 0)); //****8whats this???
 
         /**  Let all the trackable listeners know where the camera is.  */
         for (VuforiaTrackable trackable : allTrackables) {
@@ -170,19 +162,13 @@ public class MM_Vuforia {
         tfodParameters.inputSize = 320;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vLocalizer);
 
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, new String[] {"ball", "block", "Duck"});
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, new String[]{"ball", "block", "Duck"});
         if (tfod != null) {
             tfod.activate();
             tfod.setZoom(1, 16.0 / 9.0);
         }
     }
 
-    private void assignTargetPosition(int targetIndex, String targetName, float dx, float dy, float dz, float rx, float ry, float rz) {
-        VuforiaTrackable aTarget = targets.get(targetIndex);
-        aTarget.setName(targetName);
-        aTarget.setLocation(OpenGLMatrix.translation(dx, dy, dz)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, rx, ry, rz)));
-    }
 }
 
 /*

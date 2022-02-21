@@ -20,10 +20,12 @@ public class MM_Robot {
     static final double MAX_STRAFE_POWER = 0.8;
     static final double MIN_ROTATE_POWER = 0.12;
     static final double MAX_ROTATE_POWER = 0.7;
+    private static final double VUFORIA_SEARCH_TIME = 1;
 
-     public double xLocation = 0;
-     public double yLocation = 0;
-     public double robotHeading = 0;
+     public double xVuforiaDis = 0;
+     public double yVuforiaDis = 0;
+     public double vuforiaHeading = 0;
+     public boolean vuforiaTargetFound = false; //TODO make private after testing
 
     // Constructor
     public MM_Robot(MM_OpMode opMode){
@@ -283,6 +285,28 @@ public class MM_Robot {
             opMode.scoreAgain = true;
         } else {
             opMode.scoreAgain = false;
+        }
+    }
+
+    public void searchForVuforia() { //TODO TEST 1st
+        runtime.reset();
+        while (opMode.opModeIsActive() && runtime.seconds() < VUFORIA_SEARCH_TIME && !vuforiaTargetFound) {
+            vuforiaTargetFound = vuforia.targetFound();
+        }
+        if (vuforiaTargetFound) {
+            drivetrain.fixEncoderPriorTargets();
+            opMode.telemetry.addData("X Distance", "%5.1f inches", xVuforiaDis);
+            opMode.telemetry.addData("Y Distance", "%5.1f inches", yVuforiaDis);
+            opMode.telemetry.addData("Bearing to Target", "%3.0f Degrees", vuforiaHeading);
+            //handle anything else to correct
+        }
+    }
+
+    public void driveToVuforiaTarget() {//testing purposes TODO Test 2nd
+        searchForVuforia();
+        if (vuforiaTargetFound) {
+            drivetrain.strafeInches(xVuforiaDis);
+            drivetrain.driveForwardInches(yVuforiaDis);
         }
     }
 }

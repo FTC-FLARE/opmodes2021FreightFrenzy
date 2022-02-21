@@ -319,6 +319,12 @@ public class MM_Drivetrain {
         return Math.max(min, Math.abs(pValue * distance));
     }
 
+    public void fixEncoderPriorTargets() {
+        backPriorEncoderTarget = backEncoder.getCurrentPosition();
+        leftPriorEncoderTarget = leftEncoder.getCurrentPosition();
+        rightPriorEncoderTarget = rightEncoder.getCurrentPosition();
+    }
+
     public void stop() {
         startMotors(0,0,0,0);
     }
