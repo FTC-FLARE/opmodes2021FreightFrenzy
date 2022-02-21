@@ -12,6 +12,8 @@ public abstract class MM_OpMode extends LinearOpMode {
     static final int STORAGE = 2;
     static final int CSP = 1;
     static final int PARK = 2;
+    static final int VUFORIA = 1;
+    static final int TFOD = 2;
     public long sleepTime = 0;
     public int alliance = RED;
     public int startingPosition = WAREHOUSE;

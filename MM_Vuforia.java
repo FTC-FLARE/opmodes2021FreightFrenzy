@@ -1,15 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.SwitchableCamera;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
@@ -32,7 +28,8 @@ public class MM_Vuforia {
     private static final float ONE_AND_HALF_TILE = 36 * MM_PER_INCH;
 
     //declare webcam & instance variables
-    private WebcamName webcam = null;
+    private WebcamName frontCam, backCam = null;
+    private SwitchableCamera switchableCamera = null;
     private ElapsedTime runtime = new ElapsedTime();
 
     private OpenGLMatrix targetLocation = null;
@@ -79,6 +76,18 @@ public class MM_Vuforia {
         return duckPosition;
     }
 
+    public void switchCameraMode(int mode) {
+        if (mode == MM_OpMode.VUFORIA) {
+            deactivateTfod();
+            targets.activate();
+            switchableCamera.setActiveCamera(frontCam);
+        } else {
+            deactivateTargets();
+            tfod.activate();
+            switchableCamera.setActiveCamera(backCam);
+        }
+    }
+
     public void deactivateTargets() {
         targets.deactivate();
     }
@@ -92,9 +101,9 @@ public class MM_Vuforia {
         for (VuforiaTrackable trackable : allTrackables) {
             if (((VuforiaTrackableDefaultListener) trackable.getListener()).isVisible()) {
                 targetLocation = ((VuforiaTrackableDefaultListener) trackable.getListener()).getVuforiaCameraFromTarget();
-                assignX();
-                assignY();
-                assignHeading();
+                opMode.telemetry.addData("X Distance", "%5.1f inches", getX());
+                opMode.telemetry.addData("Y Distance", "%5.1f inches", getY());
+                opMode.telemetry.addData("Bearing to Target", "%3.0f Degrees", getHeading());
                 opMode.telemetry.addData("Image Found", trackable.getName());
                 return true;
             }
@@ -102,31 +111,35 @@ public class MM_Vuforia {
         return false;
     }
 
-    private void assignX() {
-        opMode.robot.xVuforiaDis = targetLocation.getTranslation().get(0) / MM_PER_INCH;
+    public double getX() {
+        return targetLocation.getTranslation().get(0) / MM_PER_INCH;
     }
 
-    private void assignY() {
-        opMode.robot.yVuforiaDis = targetLocation.getTranslation().get(2) / MM_PER_INCH;
+    public double getY() {
+        return targetLocation.getTranslation().get(2) / MM_PER_INCH;
     }//
 
-    private void assignHeading() {
-        opMode.robot.vuforiaHeading = Math.toDegrees(Math.asin(opMode.robot.xVuforiaDis/ Math.hypot(opMode.robot.xVuforiaDis, opMode.robot.yVuforiaDis)));
+    public double getHeading() {
+        return Math.toDegrees(Math.asin(getX()/ Math.hypot(getX(), getY())));
     }
 
     private void vuforiaInit() {
-        // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
-        webcam = opMode.hardwareMap.get(WebcamName.class, "BackCam");
         int cameraMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
-
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+        // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
+        frontCam = opMode.hardwareMap.get(WebcamName.class, "FrontCam");
+        backCam = opMode.hardwareMap.get(WebcamName.class, "BackCam");
+
 //         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = webcam;  // We indicate which camera we wish to use.
+        parameters.cameraName = backCam;  // We indicate which camera we wish to use.
         parameters.useExtendedTracking = false;  // Turn off Extended tracking.  Set this true if you want Vuforia to track beyond the target.
+        parameters.cameraName = ClassFactory.getInstance().getCameraManager().nameForSwitchableCamera(frontCam, backCam);
 
         vLocalizer = ClassFactory.getInstance().createVuforia(parameters);  //  Instantiate the Vuforia engine
+        switchableCamera = (SwitchableCamera) vLocalizer.getCamera();
+        switchableCamera.setActiveCamera(backCam);
 
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
         targets = vLocalizer.loadTrackablesFromAsset("FreightFrenzy");
@@ -138,19 +151,8 @@ public class MM_Vuforia {
         allTrackables.get(2).setName("Red Storage");
         allTrackables.get(3).setName("Red Alliance Wall");
 
-        final float CAMERA_FORWARD_DISPLACEMENT = 9.0f * MM_PER_INCH;   // eg: Enter the forward distance from the center of the robot to the camera lens
-        final float CAMERA_VERTICAL_DISPLACEMENT = 10.0f * MM_PER_INCH;   // eg: Camera is 6 Inches above ground
-        final float CAMERA_LEFT_DISPLACEMENT = 4.3f * MM_PER_INCH;   // eg: Enter the left distance from the center of the robot to the camera lens
-
-        OpenGLMatrix cameraLocationOnRobot = OpenGLMatrix
-                .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XZY, DEGREES, 90, 90, 0)); //****8whats this???
 
         /**  Let all the trackable listeners know where the camera is.  */
-        for (VuforiaTrackable trackable : allTrackables) {
-            ((VuforiaTrackableDefaultListener) trackable.getListener()).setCameraLocationOnRobot(parameters.cameraName, cameraLocationOnRobot);
-        }
-        targets.activate();
     }
 
     private void tfodInit() {

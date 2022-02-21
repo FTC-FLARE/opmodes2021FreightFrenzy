@@ -22,9 +22,6 @@ public class MM_Robot {
     static final double MAX_ROTATE_POWER = 0.7;
     private static final double VUFORIA_SEARCH_TIME = 1;
 
-     public double xVuforiaDis = 0;
-     public double yVuforiaDis = 0;
-     public double vuforiaHeading = 0;
      public boolean vuforiaTargetFound = false; //TODO make private after testing
 
     // Constructor
@@ -289,15 +286,13 @@ public class MM_Robot {
     }
 
     public void searchForVuforia() { //TODO TEST 1st
+        vuforia.switchCameraMode(MM_OpMode.VUFORIA);
         runtime.reset();
         while (opMode.opModeIsActive() && runtime.seconds() < VUFORIA_SEARCH_TIME && !vuforiaTargetFound) {
             vuforiaTargetFound = vuforia.targetFound();
         }
         if (vuforiaTargetFound) {
             drivetrain.fixEncoderPriorTargets();
-            opMode.telemetry.addData("X Distance", "%5.1f inches", xVuforiaDis);
-            opMode.telemetry.addData("Y Distance", "%5.1f inches", yVuforiaDis);
-            opMode.telemetry.addData("Bearing to Target", "%3.0f Degrees", vuforiaHeading);
             //handle anything else to correct
         }
     }
@@ -305,8 +300,8 @@ public class MM_Robot {
     public void driveToVuforiaTarget() {//testing purposes TODO Test 2nd
         searchForVuforia();
         if (vuforiaTargetFound) {
-            drivetrain.strafeInches(xVuforiaDis);
-            drivetrain.driveForwardInches(yVuforiaDis);
+            drivetrain.strafeInches(vuforia.getX());
+            drivetrain.driveForwardInches(vuforia.getY() - 5);
         }
     }
 }
