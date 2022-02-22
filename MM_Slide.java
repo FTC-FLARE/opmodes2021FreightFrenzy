@@ -29,7 +29,7 @@ public class MM_Slide {
     private MM_OpMode opMode;
 
     private ElapsedTime runtime = new ElapsedTime();
-    private MM_Transporter transporter = null;
+    public MM_Transporter transporter = null;
     //    private DigitalChannel bottomStop = null;
     private AnalogInput bottomStop = null;
     private DigitalChannel topStop = null;
@@ -47,7 +47,8 @@ public class MM_Slide {
 
     private final double UP_POWER = 1;
     private final double DOWN_POWER = 0.65;
-    private final double AUTO_DOWN_POWER = -0.65;
+    private final double AUTO_DOWN_POWER = -0.60;
+    private final double AUTO_FIX_POWER = 0.1;
 
     static final int NOT_LEVEL_1 = 0;
     static final int MOVING_TO_FLIP_POSITION = 1;
@@ -175,28 +176,6 @@ public class MM_Slide {
         }
     }
 
-    public void autoCollectPosition() {
-        //needs cleaning
-        if (opMode.scorePosition == 1) {
-            moveToLevel1Part1();
-        }
-        arm.setTargetPosition(TransportPosition.COLLECT.ticks);
-        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        setHeadedUp();
-        if (headedUp) {
-            engageShock(false);
-            arm.setPower(UP_POWER);
-        } else {
-            arm.setPower(DOWN_POWER);
-        }
-        while (opMode.opModeIsActive() && arm.isBusy()) {
-            transporter.controlFlip();
-        }
-        if (isTriggeredMRtouch(bottomStop)) {
-            engageShock(true);
-        }
-    }
-
     public boolean reachedPosition() {
         transporter.controlFlipAuto();
         if (isTriggeredMRtouch(bottomStop)) {
@@ -204,13 +183,39 @@ public class MM_Slide {
                 runtime.reset();
                 isHandledTime = true;
             }
-            if (runtime.seconds() > 0.08) {
+            if (runtime.seconds() > 0.00) {
                 arm.setPower(0);
                 engageShock(true);
+                arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 return true;
             }
         }
         return false;
+    }
+
+    public void fixPosition() {
+        arm.setTargetPosition(TransportPosition.COLLECT.ticks);
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        arm.setPower(Math.abs(AUTO_DOWN_POWER));
+        while (arm.isBusy()) {
+            if (isTriggeredMRtouch(bottomStop)) {
+                arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                engageShock(true);
+            }
+        }
+    }
+
+    public void fixSensor() {
+        if (!isTriggeredMRtouch(bottomStop)) {
+            arm.setPower(AUTO_FIX_POWER);
+            runtime.reset();
+            while (!isTriggeredMRtouch(bottomStop) && opMode.opModeIsActive() && runtime.seconds() < 1.5) {
+            }
+            arm.setPower(0);
+            if (isTriggeredMRtouch(bottomStop)) {
+                engageShock(true);
+            }
+        }
     }
 
     public void startLowering() {
@@ -221,7 +226,7 @@ public class MM_Slide {
         arm.setPower(AUTO_DOWN_POWER);
     }
 
-    public void runSlideAndScoreFreight() {
+    public void runSlideToScore() {
         int armTarget = TransportPosition.LEVEL3.ticks;
 
         if (opMode.scorePosition == 1) {
@@ -258,9 +263,6 @@ public class MM_Slide {
                 while (opMode.opModeIsActive() && arm.isBusy()) {
                 }
             }
-            transporter.scoreFreight();
-            opMode.sleep(1500);
-            transporter.carryFreight();
         }
     }
 
@@ -321,6 +323,10 @@ public class MM_Slide {
         }
     }
 
+    public void stop() {
+        arm.setPower(0);
+    }
+
     private void init() {
         arm = opMode.hardwareMap.get(DcMotor.class, "arm");
         arm.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -338,3 +344,26 @@ public class MM_Slide {
 
     }
 }
+/*
+    public void autoCollectPosition() {
+        //needs cleaning
+        if (opMode.scorePosition == 1) {
+            moveToLevel1Part1();
+        }
+        arm.setTargetPosition(TransportPosition.COLLECT.ticks);
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setHeadedUp();
+        if (headedUp) {
+            engageShock(false);
+            arm.setPower(UP_POWER);
+        } else {
+            arm.setPower(DOWN_POWER);
+        }
+        while (opMode.opModeIsActive() && arm.isBusy()) {
+            transporter.controlFlip();
+        }
+        if (isTriggeredMRtouch(bottomStop)) {
+            engageShock(true);
+        }
+    }
+*/

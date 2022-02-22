@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class MM_Transporter {
     // this gives us access to all opMode information
-    private LinearOpMode opMode;
+    private MM_OpMode opMode;
     private MM_Slide slide;
 
     private Servo transport = null;
@@ -24,7 +24,7 @@ public class MM_Transporter {
     private final double SCORE_POSITION = 0;
 
     // Constructor
-    public MM_Transporter(LinearOpMode opMode, MM_Slide slide) {
+    public MM_Transporter(MM_OpMode opMode, MM_Slide slide) {
         this.opMode = opMode;
         this.slide = slide;
 
@@ -73,6 +73,11 @@ public class MM_Transporter {
         transport.setPosition(CARRY_POSITION);
     }
 
+    public void autoScore() {
+        scoreFreight();
+        opMode.sleep(1500);
+        carryFreight();
+    }
     public boolean seesBox(DistanceSensor distanceSensor) {
 
         double checkDistance = 5;

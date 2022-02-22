@@ -269,6 +269,26 @@ public class MM_Drivetrain {
         opMode.telemetry.addData("back right power:",  brPower);
     }
 
+    public void strafe(int direction) {
+        double power = 0.25 * direction;
+        flPower = power;
+        frPower = -power;
+        blPower = -power;
+        brPower = power;
+        straighten(STRAFE_P_COEFFICIENT, power, power);
+        startMotors(flPower, frPower, blPower, brPower);
+    }
+
+    public void drive(int direction) {
+        double power = 0.175 * direction;
+        flPower = power;
+        frPower = power;
+        blPower = power;
+        brPower = power;
+        straighten(STRAIGHT_P_COEFFICIENT, power, power);
+        startMotors(flPower, frPower, blPower, brPower);
+    }
+
     private void handleSlowMode() {
         if (opMode.gamepad1.a & !slowModeIsHandled) {
             slowMode = !slowMode;

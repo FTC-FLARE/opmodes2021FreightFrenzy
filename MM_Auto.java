@@ -1,17 +1,19 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Autonomous(name="MM_Auto", group="MM")
 public class MM_Auto extends MM_OpMode {
     private MM_Robot robot = new MM_Robot(this);
 
     private boolean isHandled = false;
+    private ElapsedTime runtime = new ElapsedTime();
 
     @Override
     public void runOpMode() {
         initializeOpmode();
-        while (!isStarted() && opModeIsActive()){
+        while (!isStarted()){
             if(gamepad1.right_bumper && alliance == RED && !isHandled){
                 alliance = BLUE;
                 isHandled = true;
@@ -71,7 +73,8 @@ public class MM_Auto extends MM_OpMode {
 
         sleep(sleepTime); //driver-selected sleep time
 
-        robot.scoreOnHub();
+        robot.driveToHub();
+        scoreFreight();
 
         if(startingPosition == WAREHOUSE){
             robot.warehouseCollect();
@@ -96,5 +99,23 @@ public class MM_Auto extends MM_OpMode {
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+    }
+
+    private void scoreFreight(){
+        robot.slide.transporter.scoreFreight();
+        if (startingPosition == WAREHOUSE){
+            sleep(1500);
+        } else {
+            runtime.reset();
+            robot.vuforia.switchCameraMode(VUFORIA);
+            if (runtime.seconds() < 1.5) {
+                double timeDifference = 1.5 - runtime.seconds();
+                runtime.reset();
+                while (runtime.seconds() < timeDifference){
+                }
+            }
+            telemetry.addData("switched Camera", true);
+        }
+        robot.slide.transporter.carryFreight();
     }
 }
