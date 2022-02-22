@@ -7,8 +7,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import javax.lang.model.util.ElementScanner6;
-
 public class MM_Slide {
 
     enum TransportPosition {
@@ -176,8 +174,17 @@ public class MM_Slide {
         }
     }
 
-    public boolean reachedPosition() {
-        transporter.controlFlipAuto();
+    public boolean reachedPositionUp() {
+        transporter.controlFlipAutoUp();
+        if (transporter.seesBox) {
+            arm.setPower(0);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean reachedPositionDown() {
+        transporter.controlFlipAutoDown();
         if (isTriggeredMRtouch(bottomStop)) {
             if (!isHandledTime) {
                 runtime.reset();
@@ -216,6 +223,11 @@ public class MM_Slide {
                 engageShock(true);
             }
         }
+    }
+
+    public void startRaising() {
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm.setPower(UP_POWER);
     }
 
     public void startLowering() {

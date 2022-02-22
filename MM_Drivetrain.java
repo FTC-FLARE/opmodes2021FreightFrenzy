@@ -138,6 +138,26 @@ public class MM_Drivetrain {
         rampPower = 0;
     }
 
+    public void prepareToDrive(double inches, double angleTarget) {
+        priorAngleTarget = angleTarget;
+        int leftTargetTicks = inchesToTicks(inches) + leftPriorEncoderTarget;
+        int rightTargetTicks = inchesToTicks(inches) + rightPriorEncoderTarget;
+
+        opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
+        opMode.pRightDriveController.setInputRange(rightPriorEncoderTarget, rightTargetTicks);
+        opMode.pLeftDriveController.setSetpoint(leftTargetTicks);
+        opMode.pRightDriveController.setSetpoint(rightTargetTicks);
+        rampPower = 0;
+    }
+
+    public boolean reachedTargetDrive() {
+        setStraightPower();
+
+        if (opMode.pLeftDriveController.reachedTarget() && opMode.pRightDriveController.reachedTarget()) {
+            return true;
+        }
+        return false;
+    }
 
     public void pRotateDegrees(double targetAngle){ //TODO test odd angles
         int leftStartingTicks = leftEncoder.getCurrentPosition();

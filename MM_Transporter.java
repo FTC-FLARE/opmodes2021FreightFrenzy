@@ -23,6 +23,8 @@ public class MM_Transporter {
     private final double CARRY_POSITION = .4;
     private final double SCORE_POSITION = 0;
 
+    public boolean seesBox = false;
+
     // Constructor
     public MM_Transporter(MM_OpMode opMode, MM_Slide slide) {
         this.opMode = opMode;
@@ -56,13 +58,19 @@ public class MM_Transporter {
         opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
     }
 
-    public void controlFlipAuto() { //TODO check encoder counts in strafe methods
+    public void controlFlipAutoDown() { //TODO check encoder counts in strafe methods
         if ((slide.getSlidePosition() < TRANSPORT_FLIP || seesBox(transportDown)))  {
             transport.setPosition(COLLECT_POSITION);
         }
 
         opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
+    }
+    public void controlFlipAutoUp() {
+        if ((slide.getSlidePosition() > TRANSPORT_FLIP || seesBox(transportUp))) {
+            transport.setPosition(CARRY_POSITION);
+
+        }
     }
 
     public void scoreFreight() {
@@ -86,8 +94,10 @@ public class MM_Transporter {
         }
 
         if (distanceSensor.getDistance(DistanceUnit.CM) < checkDistance) {
+            seesBox = true;
             return true;
         }
+        seesBox = false;
         return false;
     }
 }

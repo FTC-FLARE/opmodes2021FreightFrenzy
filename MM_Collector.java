@@ -76,8 +76,8 @@ public class MM_Collector {
     }
 
     public boolean collectedFreight() {
-        if (freightDetector.getDistance(DistanceUnit.CM) > 1) {
-            opMode.sleep(200);
+        if (freightDetector.getDistance(DistanceUnit.CM) > 5.7) {
+            opMode.sleep(300);
             return true;
         } else {
             return false;

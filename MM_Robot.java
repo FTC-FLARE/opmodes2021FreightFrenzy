@@ -182,7 +182,7 @@ public class MM_Robot {
 
     public void warehouseCollect() {
         double angle = 88.35;
-        double secondAngle = 92.5;
+        double secondAngle = 94;
         double straightInches = 7;
         double strafeInches = 42;
 
@@ -205,15 +205,19 @@ public class MM_Robot {
         collector.collect();
         drivetrain.driveForwardInches(opMode.distanceToCollect);
         runtime.reset();
-        while (opMode.opModeIsActive() && !opMode.freightCollected && opMode.distanceToCollect < 47) {
+        while (opMode.opModeIsActive() && !opMode.freightCollected && opMode.distanceToCollect < 46) {
             collector.autoStop();
             if (!opMode.freightCollected) {
                 collector.dispense();
+                collector.setFreightCollected();
                 opMode.sleep(400);
                 collector.collect();
+                collector.setFreightCollected();
                 drivetrain.driveForwardInches(2);
+                collector.setFreightCollected();
                 opMode.distanceToCollect += 2;
                 drivetrain.pRotateDegrees(secondAngle);
+                collector.setFreightCollected();
                 drivetrain.pRotateDegrees(angle);
             }
         }
@@ -280,7 +284,7 @@ public class MM_Robot {
         runtime.reset();
         while (opMode.opModeIsActive() && (!slideDone || !strafeDone)) {
             if (runtime.seconds() < 3.2 && !slideDone) {
-                slideDone = slide.reachedPosition();
+                slideDone = slide.reachedPositionDown();
             } else {
                 slideDone = true;
                 slide.fixPosition();
@@ -294,9 +298,29 @@ public class MM_Robot {
                     drivetrain.stop();
                 }
             }
-            opMode.sleep(10);
+            opMode.sleep(15);
         }
         slide.fixSensor();
+    }
+
+    public void driveAndRaiseSlide(double inches, double angleTarget) {
+        boolean slideDone = false;
+        boolean driveDone = false;
+        slide.startRaising();
+        drivetrain.prepareToDrive(inches, angleTarget);
+
+        runtime.reset();
+        while (opMode.opModeIsActive() && (!slideDone || !driveDone)) {
+            if (runtime.seconds() < 2.5 && !slideDone) {
+                slideDone = slide.reachedPositionUp();
+            } else {
+                slideDone = true;
+                slide.stop();
+            }
+            if (!driveDone) {
+                driveDone = drivetrain.reachedTargetDrive();
+            }
+        }
     }
 
     private void handleScoreAgain() {
@@ -333,7 +357,7 @@ public class MM_Robot {
             direction = -direction;
         }
         runtime.reset();
-        while (!vuforia.targetFound() & runtime.seconds() < 3) {
+        while (!vuforia.targetFound() && runtime.seconds() < 3) {
             drivetrain.strafe(direction);
             vuforiaTargetFound = vuforia.targetFound();
         }
