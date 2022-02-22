@@ -20,6 +20,8 @@ public class MM_Robot {
     static final double MAX_STRAFE_POWER = 0.8;
     static final double MIN_ROTATE_POWER = 0.12;
     static final double MAX_ROTATE_POWER = 0.7;
+    static final int LEFT = -1;
+    static final int RIGHT = 1;
     private static final double VUFORIA_SEARCH_TIME = 2;
 
      public boolean vuforiaTargetFound = false; //TODO make private after testing
@@ -331,30 +333,10 @@ public class MM_Robot {
         }
     }
 
-    public void searchForVuforia() { //TODO TEST 1st
-        vuforia.switchCameraMode(MM_OpMode.VUFORIA);
-        runtime.reset();
-        while (opMode.opModeIsActive() && runtime.seconds() < VUFORIA_SEARCH_TIME && !vuforiaTargetFound) {
-            vuforiaTargetFound = vuforia.targetFound();
-        }
-        if (vuforiaTargetFound) {
-            drivetrain.fixEncoderPriorTargets();
-            //handle anything else to correct
-        }
-    }
-
-    public void driveToVuforiaTarget() {//testing purposes TODO Test 2nd
-        searchForVuforia();
-        if (vuforiaTargetFound) {
-            drivetrain.strafeInches(vuforia.getX());
-            drivetrain.driveForwardInches(vuforia.getY() - 5);
-        }
-    }
-
     public void alignWithTargetDucker() {
-        int direction = 1;
+        int direction = RIGHT;
         if (opMode.alliance == MM_OpMode.BLUE) {
-            direction = -direction;
+            direction = LEFT;
         }
         runtime.reset();
         while (!vuforia.targetFound() && runtime.seconds() < 3) {
@@ -365,29 +347,30 @@ public class MM_Robot {
             drivetrain.stop();
             while (opMode.opModeIsActive() && (Math.abs(vuforia.getX()) > 0.75) && vuforia.targetFound()) {
                 if (vuforia.getX() > 0) {
-                    direction = 1;
+                    direction = RIGHT;
                 } else {
-                    direction = -1;
+                    direction = LEFT;
                 }
                 drivetrain.strafe(direction);
             }
             drivetrain.stop();
             while (opMode.opModeIsActive() && (Math.abs(vuforia.getY() - 10)) > 1 && vuforia.targetFound()) {
                 if (vuforia.getY() - 10 > 0) {
-                    direction = 1;
+                    direction = RIGHT;
                 } else {
-                    direction = -1;
+                    direction = LEFT;
                 }
                 drivetrain.drive(direction);
             }
             drivetrain.stop();
+            drivetrain.fixEncoderPriorTargets();
         }
     }
 
     public void alignWithTargetPark() {
-        int direction = -1;
+        int direction = LEFT;
         if (opMode.alliance == MM_OpMode.BLUE) {
-            direction = -direction;
+            direction = RIGHT;
         }
         if (opMode.scorePosition == 1) {
             direction = -direction;
@@ -399,9 +382,9 @@ public class MM_Robot {
         }
         while (opMode.opModeIsActive() && (Math.abs(vuforia.getX()) - 5) > 0.75 && vuforia.targetFound()) {
             if ((vuforia.getX() - 5) > 0) {
-                direction = 1;
+                direction = RIGHT;
             } else {
-                direction = -1;
+                direction = LEFT;
             }
             drivetrain.strafe(direction);
         }
