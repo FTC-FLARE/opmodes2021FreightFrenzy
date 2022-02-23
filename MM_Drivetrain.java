@@ -72,16 +72,8 @@ public class MM_Drivetrain {
     }
 
     public void driveForwardInches(double inches) {
-        int leftTargetTicks = leftPriorEncoderTarget + inchesToTicks(inches);
-        int rightTargetTicks = rightPriorEncoderTarget + inchesToTicks(inches);
         boolean lookingForTarget = true;
-        robotHeading = priorAngleTarget;
-//        rampUp = true;
-
-        opMode.pLeftDriveController.setInputRange(leftPriorEncoderTarget, leftTargetTicks);
-        opMode.pLeftDriveController.setSetpoint(leftTargetTicks);
-        opMode.pRightDriveController.setInputRange(rightPriorEncoderTarget, rightTargetTicks);
-        opMode.pRightDriveController.setSetpoint(rightTargetTicks);
+        prepareToDrive(inches, priorAngleTarget);
 
         runtime.reset();
         while (opMode.opModeIsActive() && lookingForTarget && (runtime.seconds() < calculateTimeout(SECONDS_PER_INCH, inches, 2.5))) {
@@ -100,9 +92,6 @@ public class MM_Drivetrain {
             opMode.telemetry.update();
         }
         stop();
-
-        leftPriorEncoderTarget = leftTargetTicks;
-        rightPriorEncoderTarget = rightTargetTicks;
     }
 
     public void strafeInches(double inches) {
@@ -136,6 +125,7 @@ public class MM_Drivetrain {
         opMode.pBackDriveController.setSetpoint(backTargetTicks);
         backPriorEncoderTarget = backTargetTicks;
         rampPower = 0;
+
     }
 
     public void prepareToDrive(double inches, double angleTarget) {
@@ -147,13 +137,15 @@ public class MM_Drivetrain {
         opMode.pRightDriveController.setInputRange(rightPriorEncoderTarget, rightTargetTicks);
         opMode.pLeftDriveController.setSetpoint(leftTargetTicks);
         opMode.pRightDriveController.setSetpoint(rightTargetTicks);
+        leftPriorEncoderTarget = leftTargetTicks;
+        rightPriorEncoderTarget = rightTargetTicks;
         rampPower = 0;
     }
 
     public boolean reachedTargetDrive() {
         setStraightPower();
 
-        if (opMode.pLeftDriveController.reachedTarget() && opMode.pRightDriveController.reachedTarget()) {
+        if (opMode.pLeftDriveController.reachedTarget() || opMode.pRightDriveController.reachedTarget()) {
             return true;
         }
         return false;

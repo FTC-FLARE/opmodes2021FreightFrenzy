@@ -27,19 +27,6 @@ public class MM_Collector {
     }
 
     public void runCollector() {
-        // adjust collector power - probably temporary for testing
-        if(opMode.gamepad1.dpad_up && !isHandled){
-            collectPower += .05;
-            isHandled = true;
-        }else if(opMode.gamepad1.dpad_down && !isHandled){
-            collectPower -= .05;
-            isHandled = true;
-        } else if(isHandled && !opMode.gamepad1.dpad_up && !opMode.gamepad1.dpad_down){
-            isHandled = false;
-        }
-        opMode.telemetry.addData("Collect Power", "%.2f", collectPower);
-        opMode.telemetry.addData("color sensor", freightDetector.getDistance(DistanceUnit.CM));
-
         if (opMode.gamepad2.left_bumper) {
             dispense();
         } else if (opMode.gamepad2.right_bumper) {
@@ -76,7 +63,8 @@ public class MM_Collector {
     }
 
     public boolean collectedFreight() {
-        if (freightDetector.getDistance(DistanceUnit.CM) > 5.7) {
+        opMode.telemetry.addData("Distance (cm)", "%.3f", freightDetector.getDistance(DistanceUnit.CM));
+        if (freightDetector.getDistance(DistanceUnit.CM) > 1) {
             opMode.sleep(300);
             return true;
         } else {

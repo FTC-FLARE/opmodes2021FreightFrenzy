@@ -94,8 +94,8 @@ public class MM_Robot {
 
     public void driveToHub() {
         double forwardInches = -6;
+        double angleTarget = -34;
         if (opMode.startingPosition == MM_OpMode.STORAGE) {
-            double angleTarget = -34;
             if(opMode.alliance == MM_OpMode.RED) {
             } else {
                 angleTarget = 34;
@@ -106,9 +106,8 @@ public class MM_Robot {
                     forwardInches = -22.5;
                 }
             }
-            drivetrain.driveForwardInches(forwardInches, angleTarget);
         } else {
-            double angleTarget = 31.5;
+            angleTarget = 31.5;
             forwardInches = -20.5;
 
             if (opMode.alliance == MM_OpMode.RED) {
@@ -128,9 +127,8 @@ public class MM_Robot {
                     angleTarget = -35;
                 }
             }
-
-            drivetrain.driveForwardInches(forwardInches, angleTarget);
         }
+        driveAndRaiseSlide(forwardInches, angleTarget);
         slide.runSlideToScore();
         opMode.freightCollected = false;
     }
@@ -260,7 +258,7 @@ public class MM_Robot {
             opMode.scorePosition = 3;
             drivetrain.driveForwardInches(-opMode.distanceToCollect - 1);
             drivetrain.strafeInches(firstStrafeInches);
-            drivetrain.driveForwardInches(firstForwardInches, firstAngle);
+            driveAndRaiseSlide(firstForwardInches, firstAngle);
             slide.runSlideToScore();
             slide.transporter.autoScore();
             drivetrain.pRotateDegrees(secondAngle);
@@ -284,7 +282,7 @@ public class MM_Robot {
 
         runtime.reset();
         while (opMode.opModeIsActive() && (!slideDone || !strafeDone)) {
-            if (runtime.seconds() < 3.2 && !slideDone) {
+            if (runtime.seconds() < 3.1 && !slideDone) {
                 slideDone = slide.reachedPositionDown();
             } else {
                 slideDone = true;
@@ -312,7 +310,7 @@ public class MM_Robot {
 
         runtime.reset();
         while (opMode.opModeIsActive() && (!slideDone || !driveDone)) {
-            if (runtime.seconds() < 2.5 && !slideDone) {
+            if (runtime.seconds() < 2 && !slideDone) {
                 slideDone = slide.reachedPositionUp();
             } else {
                 slideDone = true;
@@ -322,6 +320,7 @@ public class MM_Robot {
                 driveDone = drivetrain.reachedTargetDrive();
                 if (driveDone) {
                     drivetrain.stop();
+                    driveDone = true;
                 }
             }
         }
