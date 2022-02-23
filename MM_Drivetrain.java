@@ -430,12 +430,13 @@ public class MM_Drivetrain {
         }
     }
 
-    public void initializeGyro() {
+    public void initializeGyroAndEncoders() {
         BNO055IMU.Parameters gyroParameters = new BNO055IMU.Parameters();
         gyroParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         gyroParameters.calibrationDataFile = "BNO055IMUCalibration.json";
 
         gyro = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         gyro.initialize(gyroParameters);
+        fixEncoderPriorTargets();
     }
 }

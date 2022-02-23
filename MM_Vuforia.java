@@ -105,7 +105,9 @@ public class MM_Vuforia {
                 opMode.telemetry.addData("Y Distance", "%5.1f inches", getY());
                 opMode.telemetry.addData("Bearing to Target", "%3.0f Degrees", getHeading());
                 opMode.telemetry.addData("Image Found", trackable.getName());
-                return true;
+                if (targetLocation != null) {
+                    return true;
+                }
             }
         }
         return false;

@@ -42,7 +42,6 @@ public class MM_Robot {
         } else {
             drivetrain.initOdometryServos(0);
             vuforia = new MM_Vuforia(opMode);
-            drivetrain.initializeGyro();
             opMode.pTurnController.setOutputRange(MIN_ROTATE_POWER, MAX_ROTATE_POWER);
             opMode.pLeftDriveController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
             opMode.pRightDriveController.setOutputRange(MIN_DRIVE_SPEED, MAX_DRIVE_SPEED);
@@ -321,6 +320,9 @@ public class MM_Robot {
             }
             if (!driveDone) {
                 driveDone = drivetrain.reachedTargetDrive();
+                if (driveDone) {
+                    drivetrain.stop();
+                }
             }
         }
     }
@@ -339,30 +341,41 @@ public class MM_Robot {
             direction = LEFT;
         }
         runtime.reset();
-        while (!vuforia.targetFound() && runtime.seconds() < 3) {
+        while (opMode.opModeIsActive() && !vuforiaTargetFound && runtime.seconds() < 3) {
             drivetrain.strafe(direction);
             vuforiaTargetFound = vuforia.targetFound();
         }
-        if (!vuforia.targetFound()){
-            drivetrain.stop();
-            while (opMode.opModeIsActive() && (Math.abs(vuforia.getX()) > 0.75) && vuforia.targetFound()) {
-                if (vuforia.getX() > 0) {
-                    direction = RIGHT;
-                } else {
-                    direction = LEFT;
+        if (vuforiaTargetFound){
+            boolean strafeDone = false;
+            boolean driveDone = false;
+            while (opMode.opModeIsActive() && (!strafeDone || !driveDone)) {
+                drivetrain.stop();
+                drivetrain.fixEncoderPriorTargets();
+                while (opMode.opModeIsActive() && (Math.abs(vuforia.getX()) > 0.75) && vuforia.targetFound()) {
+                    if (vuforia.getX() > 0) {
+                        direction = RIGHT;
+                    } else {
+                        direction = LEFT;
+                    }
+                    drivetrain.strafe(direction);
                 }
-                drivetrain.strafe(direction);
-            }
-            drivetrain.stop();
-            while (opMode.opModeIsActive() && (Math.abs(vuforia.getY() - 10)) > 1 && vuforia.targetFound()) {
-                if (vuforia.getY() - 10 > 0) {
-                    direction = RIGHT;
-                } else {
-                    direction = LEFT;
+                drivetrain.stop();
+                while (opMode.opModeIsActive() && (Math.abs(vuforia.getY() - 10)) > 1 && vuforia.targetFound()) {
+                    if (vuforia.getY() - 10 > 0) {
+                        direction = RIGHT;
+                    } else {
+                        direction = LEFT;
+                    }
+                    drivetrain.drive(direction);
                 }
-                drivetrain.drive(direction);
+                drivetrain.stop();
+                if (vuforia.getX() < 0.75 && vuforia.getX() > -0.75) {
+                    strafeDone = true;
+                }
+                if (vuforia.getY() < 11 && vuforia.getY() > 9) {
+                    driveDone = true;
+                }
             }
-            drivetrain.stop();
             drivetrain.fixEncoderPriorTargets();
         }
     }
@@ -389,6 +402,6 @@ public class MM_Robot {
             drivetrain.strafe(direction);
         }
         drivetrain.stop();
-        drivetrain.driveForwardInches(5);
+        drivetrain.driveForwardInches(8);
     }
 }

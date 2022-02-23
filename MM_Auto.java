@@ -8,12 +8,14 @@ public class MM_Auto extends MM_OpMode {
     private MM_Robot robot = new MM_Robot(this);
 
     private boolean isHandled = false;
+    private boolean xIsPressed = false;
+
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
     public void runOpMode() {
         initializeOpmode();
-        while (!isStarted()){
+        while (!isStarted() && !isStopRequested()){
             if(gamepad1.right_bumper && alliance == RED && !isHandled){
                 alliance = BLUE;
                 isHandled = true;
@@ -52,7 +54,12 @@ public class MM_Auto extends MM_OpMode {
             }else if (gamepad1.dpad_left && !isHandled) {
                 distanceToCollect -= 1;
                 isHandled = true;
-            }else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y){
+            }else if (gamepad1.x && !isHandled) {
+                telemetry.addLine("Initializing Gyro");
+                telemetry.update();
+                robot.drivetrain.initializeGyroAndEncoders();
+                xIsPressed = true;
+            } else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y && !gamepad1.x){
                 isHandled = false;
             }
             telemetry.addLine("right or left bumper to change alliance");
@@ -61,6 +68,12 @@ public class MM_Auto extends MM_OpMode {
             telemetry.addLine("press d-pad up or down to change sleep time");
             telemetry.addLine("press d-pad right or left to change collect distance");
             telemetry.addLine("press 'y' to turn ducker on or off");
+            if (!xIsPressed) {
+                telemetry.addLine("************NEED TO FINISH INITIALIZATION************");
+                telemetry.addLine("press 'x' after your robot is positioned correctly");
+            } else {
+                telemetry.addLine("robot is fully initialized!");
+            }
             telemetry.addLine();
             telemetry.addData("sleep time", sleepTime);
             telemetry.addData("collect distance", distanceToCollect);
@@ -69,6 +82,9 @@ public class MM_Auto extends MM_OpMode {
             telemetry.update();
         }
         //*************************************** DRIVER HIT PLAY **************************************************
+        if (!xIsPressed) {
+            robot.drivetrain.initializeGyroAndEncoders();
+        }
         scorePosition = robot.vuforia.findDuckPosition();
 
         sleep(sleepTime); //driver-selected sleep time

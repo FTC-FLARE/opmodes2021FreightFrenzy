@@ -176,7 +176,7 @@ public class MM_Slide {
 
     public boolean reachedPositionUp() {
         transporter.controlFlipAutoUp();
-        if (transporter.seesBox) {
+        if (transporter.seesBox || getSlidePosition() > 1775) {
             arm.setPower(0);
             return true;
         }
@@ -204,7 +204,7 @@ public class MM_Slide {
         arm.setTargetPosition(TransportPosition.COLLECT.ticks);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         arm.setPower(Math.abs(AUTO_DOWN_POWER));
-        while (arm.isBusy()) {
+        while (arm.isBusy() && opMode.opModeIsActive()) {
             if (isTriggeredMRtouch(bottomStop)) {
                 arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 engageShock(true);
@@ -226,6 +226,7 @@ public class MM_Slide {
     }
 
     public void startRaising() {
+        engageShock(false);
         arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         arm.setPower(UP_POWER);
     }
@@ -283,7 +284,7 @@ public class MM_Slide {
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         arm.setPower(UP_POWER);
         setHeadedUp();
-        while (arm.isBusy()) {
+        while (arm.isBusy() && opMode.opModeIsActive()) {
         }
     }
 
