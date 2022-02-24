@@ -50,7 +50,7 @@ public class MM_Transporter {
             transport.setPosition(CARRY_POSITION);
 
         } else if (slide.getLevel1Progress() < MM_Slide.MOVING_TO_SCORE_POSITION   // cont'd
-                && (seesBox(transportDown) || (slide.getSlidePosition() < TRANSPORT_FLIP))) {
+                && (seesBox(transportDown) || (slide.getSlidePosition() < TRANSPORT_FLIP)) && (!opMode.robot.slideRaised)) {
             transport.setPosition(COLLECT_POSITION);
         }
 

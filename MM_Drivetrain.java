@@ -250,20 +250,15 @@ public class MM_Drivetrain {
     }
 
     public void driveWithSticks() {
-        if (opMode.gamepad1.left_trigger > 0) {
-            startMotors(PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH);
-        } else if (opMode.gamepad1.right_trigger > 0) {
-            startMotors(PIN_POWER_HIGH, PIN_POWER_LOW, PIN_POWER_HIGH, PIN_POWER_LOW);
-        } else {
-            double drive = -opMode.gamepad1.left_stick_y;
-            double turn = opMode.gamepad1.right_stick_x;
-            double strafe = opMode.gamepad1.left_stick_x;
+        double drive = -opMode.gamepad1.left_stick_y;
+        double turn = opMode.gamepad1.right_stick_x;
+        double strafe = opMode.gamepad1.left_stick_x;
 
-            flPower = drive + turn + strafe;
-            frPower = drive - turn - strafe;
-            blPower = drive + turn - strafe;
-            brPower = drive - turn + strafe;
-        }
+        flPower = drive + turn + strafe;
+        frPower = drive - turn - strafe;
+        blPower = drive + turn - strafe;
+        brPower = drive - turn + strafe;
+
         normalize();
         handleSlowMode();
         startMotors(flPower, frPower, blPower, brPower);
@@ -302,10 +297,10 @@ public class MM_Drivetrain {
     }
 
     private void handleSlowMode() {
-        if (opMode.gamepad1.a & !slowModeIsHandled) {
+        if (opMode.gamepad1.right_trigger > 0.2 & !slowModeIsHandled) {
             slowMode = !slowMode;
             slowModeIsHandled = true;
-        } else if (!opMode.gamepad1.a & slowModeIsHandled) {
+        } else if (opMode.gamepad1.right_trigger < 0.2 & slowModeIsHandled) {
             slowModeIsHandled = false;
         }
 

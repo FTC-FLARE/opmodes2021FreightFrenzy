@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -15,6 +19,13 @@ public class MM_Auto extends MM_OpMode {
     @Override
     public void runOpMode() {
         initializeOpmode();
+        int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
+        final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+        relativeLayout.post(new Runnable() {
+            public void run() {
+                relativeLayout.setBackgroundColor(Color.RED);
+            }
+        });
         while (!isStarted() && !isStopRequested()){
             if(gamepad1.right_bumper && alliance == RED && !isHandled){
                 alliance = BLUE;
@@ -25,9 +36,11 @@ public class MM_Auto extends MM_OpMode {
             }else if(gamepad1.a && startingPosition == WAREHOUSE && !isHandled){
                 startingPosition = STORAGE;
                 isHandled = true;
+                spinDucker = true;
             }else if(gamepad1.a && startingPosition == STORAGE && !isHandled){
                 startingPosition = WAREHOUSE;
                 isHandled = true;
+                spinDucker = false;
             }else if(gamepad1.b && finishPosition == CSP && !isHandled){
                 finishPosition = PARK;
                 isHandled = true;
@@ -62,23 +75,37 @@ public class MM_Auto extends MM_OpMode {
             } else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y && !gamepad1.x){
                 isHandled = false;
             }
-            telemetry.addLine("right or left bumper to change alliance");
-            telemetry.addLine("press 'a' to change starting position");
-            telemetry.addLine("press 'b' to change finish position");
-            telemetry.addLine("press d-pad up or down to change sleep time");
-            telemetry.addLine("press d-pad right or left to change collect distance");
-            telemetry.addLine("press 'y' to turn ducker on or off");
+
             if (!xIsPressed) {
-                telemetry.addLine("************NEED TO FINISH INITIALIZATION************");
                 telemetry.addLine("press 'x' after your robot is positioned correctly");
+                telemetry.addLine();
+                telemetry.addLine("************************");
+                telemetry.addLine("************************");
+                telemetry.addLine("DONT START ROBOT");
+                telemetry.addLine("************************");
+                telemetry.addLine("************************");
+                telemetry.addLine();
+                telemetry.addLine("************************");
+                telemetry.addLine("************************");
+                telemetry.addLine("NEED TO FINISH INITIALIZATION");
+                telemetry.addLine("************************");
+                telemetry.addLine("************************");
+
             } else {
                 telemetry.addLine("robot is fully initialized!");
+                telemetry.addLine();
+                telemetry.addLine("Right or left bumper to change alliance");
+                telemetry.addLine("Press 'a' to change starting position");
+                telemetry.addLine("Press 'b' to change finish position");
+                telemetry.addLine("Press d-pad up or down to change sleep time");
+                telemetry.addLine("Press d-pad right or left to change collect distance");
+                telemetry.addLine("Press 'y' to turn ducker on or off");
+                telemetry.addLine();
+                telemetry.addData("Sleep time", sleepTime);
+                telemetry.addData("Collect distance", distanceToCollect);
+                telemetry.addData(alliance == RED ? "Red" : "Blue", startingPosition == WAREHOUSE ? "Warehouse" : "Storage");
+                telemetry.addData(finishPosition == CSP ? "collect, score, and Park" : "park", spinDucker ? "spin ducker" : "");
             }
-            telemetry.addLine();
-            telemetry.addData("sleep time", sleepTime);
-            telemetry.addData("collect distance", distanceToCollect);
-            telemetry.addData(alliance == RED ? "Red" : "Blue", startingPosition == WAREHOUSE ? "Warehouse" : "Storage");
-            telemetry.addData(finishPosition == CSP ? "collect, score, and Park" : "park", spinDucker ? "spin ducker" : "");
             telemetry.update();
         }
         //*************************************** DRIVER HIT PLAY **************************************************

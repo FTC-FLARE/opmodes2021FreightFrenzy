@@ -37,11 +37,10 @@ public class MM_Collector {
     }
 
     public void autoStop() {
-        if (!opMode.freightCollected && !collectedFreight()) {
+        if (!opMode.freightCollected) {
             runtime.reset();
-            boolean freightCollected = false;
-            while (!freightCollected && runtime.seconds() < TIMEOUT_TIME) {
-                freightCollected = collectedFreight();
+            while (!opMode.freightCollected && runtime.seconds() < TIMEOUT_TIME) {
+                setFreightCollected();
             }
             setFreightCollected();
         }
@@ -62,18 +61,10 @@ public class MM_Collector {
         collector.setPower(0);
     }
 
-    public boolean collectedFreight() {
-        opMode.telemetry.addData("Distance (cm)", "%.3f", freightDetector.getDistance(DistanceUnit.CM));
-        if (freightDetector.getDistance(DistanceUnit.CM) > 1) {
-            opMode.sleep(300);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public void setFreightCollected() {
-        if (collectedFreight()) {
+        if ((freightDetector.getDistance(DistanceUnit.CM) > 1)) {
+            opMode.telemetry.addData("Distance (cm)", "%.3f", freightDetector.getDistance(DistanceUnit.CM));
+            opMode.sleep(300);
             opMode.freightCollected = true;
         } else {
             opMode.freightCollected = false;
