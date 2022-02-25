@@ -27,6 +27,7 @@ public class MM_Collector {
     }
 
     public void runCollector() {
+        setFreightCollected();
         if (opMode.gamepad2.left_bumper) {
             dispense();
         } else if (opMode.gamepad2.right_bumper) {

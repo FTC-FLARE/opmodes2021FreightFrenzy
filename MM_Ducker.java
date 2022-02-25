@@ -11,13 +11,16 @@ public class MM_Ducker {
 
     private final ElapsedTime runtime = new ElapsedTime();
     static final double MAX_POWER = 0.90;
+    static final double TEST_MAX = 0.85;
     static final double MIN_POWER = 0.20;
+    static final double TEST_MIN = 0.75;
     static final double RAMP_INTERVAL_TELEOP = 0.044;
     static final double RAMP_INTERVAL_AUTO = 0.0024;
-    private final double SPIN_TIME = 2;
+    private final double SPIN_TIME = 4;
 
     private double spinPower = MIN_POWER;
     private double rampInterval = 0;
+    private boolean maxHit = false;
 
     public MM_Ducker(MM_OpMode opMode){
         this.opMode = opMode;
@@ -32,7 +35,7 @@ public class MM_Ducker {
             if (opMode.alliance == MM_OpMode.BLUE){
                 spinBlue();
             } else {
-                spinRed();
+                spinRedTest();
             }
             opMode.telemetry.addLine("Spinning Ducker");
         }
@@ -47,6 +50,7 @@ public class MM_Ducker {
             spinRed();
         } else {
             stop();
+            maxHit = false;
         }
     }
 
@@ -61,6 +65,10 @@ public class MM_Ducker {
     private void stop() {
         DuckerMotor.setPower(0);
         spinPower = MIN_POWER;
+    }
+
+    private void spinRedTest() {
+        DuckerMotor.setPower(-0.7);
     }
 }
 /*    public void manualSpinTEST(double minPower, double maxPower, double rampInterval) {

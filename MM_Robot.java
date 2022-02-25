@@ -24,7 +24,7 @@ public class MM_Robot {
     static final int RIGHT = 1;
     private static final double VUFORIA_SEARCH_TIME = 2;
 
-    private boolean vuforiaTargetFound = false; //TODO make private after testing
+    public boolean vuforiaTargetFound = false; //TODO make private after testing
     private int collectorCycle = 0;
     public boolean slideRaised = false;
 
@@ -52,16 +52,16 @@ public class MM_Robot {
     }
 
     public void goDuck() {
-        double strafeInches = 36;
+        double strafeInches = 27;
+        double forwardInches = -26.5;
         double targetAngle = -90;
-        double secondTargetAngle = 160;
+        double secondTargetAngle = 152;
         double correctTargetAngle = 171;
-        if (opMode.alliance == MM_OpMode.RED) {
-
-        } else {
-            strafeInches = -strafeInches;
+        if (opMode.alliance == MM_OpMode.BLUE) {
+            strafeInches = -36;
+            forwardInches = -21;
             targetAngle = -targetAngle;
-            secondTargetAngle = -secondTargetAngle;
+            secondTargetAngle = -160;
             correctTargetAngle = -correctTargetAngle;
         }
 
@@ -71,11 +71,11 @@ public class MM_Robot {
         alignWithTargetDucker();
         if (vuforia.targetFound()) {
             drivetrain.pRotateDegrees(secondTargetAngle);
-            drivetrain.driveForwardInches(-21);
+            drivetrain.driveForwardInches(forwardInches);
             ducker.autoSpin();;
         } else {
             drivetrain.pRotateDegrees(correctTargetAngle);
-            drivetrain.driveForwardInches(-35);
+            drivetrain.driveForwardInches(-35); // havent tested for red
             ducker.autoSpin();
         }
     }
@@ -96,10 +96,17 @@ public class MM_Robot {
     }
 
     public void driveToHub() {
-        double forwardInches = -6;
-        double angleTarget = -34;
+        double forwardInches = -22;
+        double angleTarget = -32;
         if (opMode.startingPosition == MM_OpMode.STORAGE) {
             if(opMode.alliance == MM_OpMode.RED) {
+                if (opMode.scorePosition == 2) {
+                    forwardInches = -24;
+                    angleTarget = -33;
+                } else if (opMode.scorePosition == 1) {
+                    forwardInches = -26;
+                    angleTarget = -34;
+                }
             } else {
                 angleTarget = 34;
                 forwardInches = -21;
@@ -359,13 +366,21 @@ public class MM_Robot {
             vuforiaTargetFound = vuforia.targetFound();
         }
         if (vuforiaTargetFound){
+            double xTarget = 0;
+            double xThreshold = 0.75;
+            double yTarget = 10;
+            if (opMode.alliance == MM_OpMode.RED) {
+                xTarget = 4;
+                xThreshold = 1;
+                yTarget = 16;
+            }
             boolean strafeDone = false;
             boolean driveDone = false;
             while (opMode.opModeIsActive() && (!strafeDone || !driveDone)) {
                 drivetrain.stop();
                 drivetrain.fixEncoderPriorTargets();
-                while (opMode.opModeIsActive() && (Math.abs(vuforia.getX()) > 0.75) && vuforia.targetFound()) {
-                    if (vuforia.getX() > 0) {
+                while (opMode.opModeIsActive() && (Math.abs(vuforia.getX() - xTarget) > xThreshold) && vuforia.targetFound()) {
+                    if (vuforia.getX() > xTarget) {
                         direction = RIGHT;
                     } else {
                         direction = LEFT;
@@ -373,8 +388,8 @@ public class MM_Robot {
                     drivetrain.strafe(direction);
                 }
                 drivetrain.stop();
-                while (opMode.opModeIsActive() && (Math.abs(vuforia.getY() - 10)) > 1 && vuforia.targetFound()) {
-                    if (vuforia.getY() - 10 > 0) {
+                while (opMode.opModeIsActive() && (Math.abs(vuforia.getY() - yTarget)) > 1 && vuforia.targetFound()) {
+                    if (vuforia.getY() > yTarget) {
                         direction = RIGHT;
                     } else {
                         direction = LEFT;
@@ -382,10 +397,10 @@ public class MM_Robot {
                     drivetrain.drive(direction);
                 }
                 drivetrain.stop();
-                if (vuforia.getX() < 0.75 && vuforia.getX() > -0.75) {
+                if (Math.abs(vuforia.getX() - xTarget) < xThreshold) {
                     strafeDone = true;
                 }
-                if (vuforia.getY() < 11 && vuforia.getY() > 9) {
+                if (Math.abs(vuforia.getY() - yTarget) < 1) {
                     driveDone = true;
                 }
             }
@@ -418,6 +433,6 @@ public class MM_Robot {
         }
         drivetrain.stop();
         drivetrain.pRotateDegrees(angleTarget);
-        drivetrain.driveForwardInches(-8);
+        drivetrain.driveForwardInches(-10);
     }
 }
