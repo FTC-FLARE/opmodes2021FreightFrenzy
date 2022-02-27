@@ -175,8 +175,17 @@ public class MM_Slide {
     }
 
     public boolean reachedPositionUp() {
-        transporter.controlFlipAutoUp();
+        transporter.controlFlipAutoUp(false);
         if (transporter.seesBox || getSlidePosition() > 1775) {
+            arm.setPower(0);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean reachedPositionUp2() {
+        transporter.controlFlipAutoUp(false);
+        if (getSlidePosition() > 2780) {
             arm.setPower(0);
             return true;
         }
@@ -265,7 +274,7 @@ public class MM_Slide {
             }
 
             while (opMode.opModeIsActive() && arm.isBusy()) {
-                transporter.controlFlip();
+                transporter.carryFreight();
                 opMode.telemetry.addData("slide moving - encoder count", arm.getCurrentPosition());
                 opMode.telemetry.update();
             }

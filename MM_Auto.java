@@ -150,7 +150,8 @@ public class MM_Auto extends MM_OpMode {
             sleep(1500);
         } else {
             runtime.reset();
-            robot.vuforia.switchCameraMode(VUFORIA);
+            robot.vuforia.switchCamera(VUFORIA);
+            currentCameraMode = VUFORIA;
             if (runtime.seconds() < 1.5) {
                 double timeDifference = 1.5 - runtime.seconds();
                 runtime.reset();

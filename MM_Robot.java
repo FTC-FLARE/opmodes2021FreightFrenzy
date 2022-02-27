@@ -75,7 +75,7 @@ public class MM_Robot {
             ducker.autoSpin();;
         } else {
             drivetrain.pRotateDegrees(correctTargetAngle);
-            drivetrain.driveForwardInches(-35); // havent tested for red
+            drivetrain.driveForwardInches(-35); // havent tested for red0
             ducker.autoSpin();
         }
     }
@@ -101,7 +101,7 @@ public class MM_Robot {
         if (opMode.startingPosition == MM_OpMode.STORAGE) {
             if(opMode.alliance == MM_OpMode.RED) {
                 if (opMode.scorePosition == 2) {
-                    forwardInches = -24;
+                    forwardInches = -23;
                     angleTarget = -33;
                 } else if (opMode.scorePosition == 1) {
                     forwardInches = -26;
@@ -320,6 +320,37 @@ public class MM_Robot {
         slide.fixSensor();
     }
 
+    public void driveAndLowerSlide(double inches, double angleTarget) {
+        boolean slideDone = false;
+        boolean driveDone = false;
+        slide.startLowering();
+        slideRaised = false;
+        drivetrain.prepareToDrive(inches, angleTarget);
+
+        runtime.reset();
+        while (opMode.opModeIsActive() && (!slideDone || !driveDone)) {
+            if (runtime.seconds() < 3.1 && !slideDone) {
+                slideDone = slide.reachedPositionDown();
+            } else {
+                slideDone = true;
+                slide.fixPosition();
+            }
+
+            if (!driveDone) {
+                if (runtime.seconds() < 2.8 && !driveDone) {
+                    drivetrain.reachedTargetDrive();
+                } else {
+                    driveDone = true;
+                    drivetrain.stop();
+                }
+            } else {
+                driveDone = true;
+            }
+            opMode.sleep(15);
+        }
+        slide.fixSensor();
+    }
+
     public void driveAndRaiseSlide(double inches, double angleTarget) {
         boolean slideDone = false;
         boolean driveDone = false;
@@ -327,22 +358,43 @@ public class MM_Robot {
         drivetrain.prepareToDrive(inches, angleTarget);
 
         runtime.reset();
-        while (opMode.opModeIsActive() && (!slideDone || !driveDone)) {
-            if (runtime.seconds() < 2 && !slideDone) {
-                slideDone = slide.reachedPositionUp();
-            } else {
-                slideDone = true;
-                slide.stop();
-                slideRaised = true;
-            }
-            if (runtime.seconds() < 2.8 && !driveDone) {
-                driveDone = drivetrain.reachedTargetDrive();
-                if (driveDone) {
-                    drivetrain.stop();
+        if (opMode.scorePosition == 2 || opMode.scorePosition == 3) {
+            while (opMode.opModeIsActive() && (!slideDone || !driveDone)) {
+                if (runtime.seconds() < 4 && !slideDone) {
+                    slideDone = slide.reachedPositionUp2();
+                } else {
+                    slideDone = true;
+                    slide.stop();
+                    slideRaised = true;
+                }
+                if (runtime.seconds() < 2.8 && !driveDone) {
+                    driveDone = drivetrain.reachedTargetDrive();
+                    if (driveDone) {
+                        drivetrain.stop();
+                        driveDone = true;
+                    }
+                } else {
                     driveDone = true;
                 }
-            } else {
-                driveDone = true;
+            }
+        } else {
+            while (opMode.opModeIsActive() && (!slideDone || !driveDone)) {
+                if (runtime.seconds() < 2 && !slideDone) {
+                    slideDone = slide.reachedPositionUp();
+                } else {
+                    slideDone = true;
+                    slide.stop();
+                    slideRaised = true;
+                }
+                if (runtime.seconds() < 2.8 && !driveDone) {
+                    driveDone = drivetrain.reachedTargetDrive();
+                    if (driveDone) {
+                        drivetrain.stop();
+                        driveDone = true;
+                    }
+                } else {
+                    driveDone = true;
+                }
             }
         }
     }

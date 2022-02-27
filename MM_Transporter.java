@@ -66,11 +66,15 @@ public class MM_Transporter {
         opMode.telemetry.addData("transport up", transportUp.getDistance(DistanceUnit.CM));
         opMode.telemetry.addData("transport down", transportDown.getDistance(DistanceUnit.CM));
     }
-    public void controlFlipAutoUp() {
-        if ((slide.getSlidePosition() > TRANSPORT_FLIP || seesBox(transportUp))) {
-            transport.setPosition(CARRY_POSITION);
-
+    public void controlFlipAutoUp(boolean slideRaised) {
+        if (!slideRaised) {
+            if ((slide.getSlidePosition() > TRANSPORT_FLIP || seesBox(transportUp))) {
+                transport.setPosition(CARRY_POSITION);
+            }
+        } else {
+            carryFreight();
         }
+
     }
 
     public void scoreFreight() {

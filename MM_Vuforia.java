@@ -76,16 +76,58 @@ public class MM_Vuforia {
         return duckPosition;
     }
 
-    public void switchCameraMode(int mode) {
-        if (mode == MM_OpMode.VUFORIA) {
+    public boolean checkTfod() {
+        if (tfod != null) {
+            List<Recognition> tfodRecognitions = tfod.getRecognitions();
+            if (!tfodRecognitions.isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public double duckLeftPixel() {
+        if (tfod != null) {
+            List<Recognition> tfodRecognitions = tfod.getRecognitions();
+            if (!tfodRecognitions.isEmpty()) {
+                Recognition recognition = tfodRecognitions.get(0);
+                opMode.telemetry.addData("Duck Found left:", "%.03f", Math.abs(recognition.getLeft()));
+                return Math.abs(recognition.getLeft());
+            }
+        }
+        return -10;
+    }
+
+    public double duckRightPixel() {
+        if (tfod != null) {
+            List<Recognition> tfodRecognitions = tfod.getRecognitions();
+            if (!tfodRecognitions.isEmpty()) {
+                Recognition recognition = tfodRecognitions.get(0);
+                opMode.telemetry.addData("Duck Found right:", "%.03f", Math.abs(recognition.getRight()));
+                opMode.telemetry.update();
+                return Math.abs(recognition.getRight());
+            }
+        }
+        return -10;
+    }
+
+    public void switchCamera(int mode) {
+        switchCamera();
+        activateMode(mode);
+    }
+
+    public void activateMode(int mode) {
+        if (mode == MM_OpMode.VUFORIA && opMode.currentCameraMode == MM_OpMode.TFOD) {
             deactivateTfod();
             targets.activate();
-            switchableCamera.setActiveCamera(frontCam);
-        } else {
+        } else if (opMode.currentCameraMode == MM_OpMode.VUFORIA) {
             deactivateTargets();
             tfod.activate();
-            switchableCamera.setActiveCamera(backCam);
         }
+    }
+
+    public void switchCamera() {
+        switchableCamera.setActiveCamera(frontCam);
     }
 
     public void deactivateTargets() {
@@ -143,6 +185,7 @@ public class MM_Vuforia {
         switchableCamera = (SwitchableCamera) vLocalizer.getCamera();
         switchableCamera.setActiveCamera(backCam);
 
+
         // For convenience, gather together all the trackable objects in one easily-iterable collection */
         targets = vLocalizer.loadTrackablesFromAsset("FreightFrenzy");
         allTrackables.addAll(targets);
@@ -161,7 +204,7 @@ public class MM_Vuforia {
         int tfodMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minResultConfidence = 0.8f;
+        tfodParameters.minResultConfidence = 0.625f;
         tfodParameters.isModelTensorFlow2 = true;
         tfodParameters.inputSize = 320;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vLocalizer);

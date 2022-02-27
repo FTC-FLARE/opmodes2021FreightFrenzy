@@ -14,6 +14,7 @@ public abstract class MM_OpMode extends LinearOpMode {
     static final int PARK = 2;
     static final int VUFORIA = 1;
     static final int TFOD = 2;
+    static final int FRONT_CAM = 1;
     public long sleepTime = 0;
     public int alliance = RED;
     public int startingPosition = WAREHOUSE;
@@ -23,6 +24,7 @@ public abstract class MM_OpMode extends LinearOpMode {
     public int distanceToCollect = 40;
     public boolean freightCollected = true;
     public boolean scoreAgain = false;
+    public int currentCameraMode = TFOD;
 
     public MM_Robot robot = new MM_Robot(this);
     public MM_P_Controller pTurnController = new MM_P_Controller(this, 1, .015);
