@@ -434,13 +434,18 @@ public class MM_Robot {
             } else {
                 collector.stop();
             }
-        } else if (scoreDuck && totalTime.seconds() < 24.5) {
-            opMode.scorePosition = 2;
-            driveAndRaiseSlide(duckScoreDrive, targetDriveAngle);
-            slide.runSlideToScore();
-            collector.stop();
-            slide.transporter.autoScore();
-            drivetrain.fixEncoderPriorTargets();
+        } else {
+            if (totalTime.seconds() < 24) {
+                collectionError = true;
+                scoreDuck = false;
+            } else if (scoreDuck) {
+               opMode.scorePosition = 2;
+               driveAndRaiseSlide(duckScoreDrive, targetDriveAngle);
+               slide.runSlideToScore();
+               collector.stop();
+               slide.transporter.autoScore();
+               drivetrain.fixEncoderPriorTargets();
+           }
         }
     }
 
