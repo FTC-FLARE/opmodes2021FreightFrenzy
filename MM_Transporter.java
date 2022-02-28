@@ -87,7 +87,12 @@ public class MM_Transporter {
 
     public void autoScore() {
         scoreFreight();
-        opMode.sleep(1500);
+        if (opMode.robot.scoreDuck) {
+            opMode.sleep(1000);
+        } else {
+            opMode.sleep(1500);
+        }
+
         carryFreight();
     }
     public boolean seesBox(DistanceSensor distanceSensor) {
@@ -104,5 +109,6 @@ public class MM_Transporter {
         seesBox = false;
         return false;
     }
+
 }
 

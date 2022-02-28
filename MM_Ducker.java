@@ -33,9 +33,17 @@ public class MM_Ducker {
         runtime.reset();
         while (opMode.opModeIsActive() && runtime.seconds() < SPIN_TIME) {
             if (opMode.alliance == MM_OpMode.BLUE){
-                spinBlue();
+                if (opMode.finishPosition == MM_OpMode.PARK) {
+                    spinBlue();
+                } else {
+                    spinBlueTest();
+                }
             } else {
-                spinRedTest();
+                if (opMode.finishPosition == MM_OpMode.PARK) {
+                    spinRed();
+                } else {
+                    spinRedTest();
+                }
             }
             opMode.telemetry.addLine("Spinning Ducker");
         }
@@ -69,6 +77,10 @@ public class MM_Ducker {
 
     private void spinRedTest() {
         DuckerMotor.setPower(-0.7);
+    }
+
+    private void spinBlueTest() {
+        DuckerMotor.setPower(0.7);
     }
 }
 /*    public void manualSpinTEST(double minPower, double maxPower, double rampInterval) {

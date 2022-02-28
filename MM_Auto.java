@@ -1,9 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes2021FreightFrenzy;
 
-import android.app.Activity;
-import android.graphics.Color;
-import android.view.View;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -13,19 +9,14 @@ public class MM_Auto extends MM_OpMode {
 
     private boolean isHandled = false;
     private boolean xIsPressed = false;
+    private boolean useVuforia = false;
+    private final double SCORE_TIME = 1.5;
 
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
     public void runOpMode() {
         initializeOpmode();
-        int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
-        final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
-        relativeLayout.post(new Runnable() {
-            public void run() {
-                relativeLayout.setBackgroundColor(Color.RED);
-            }
-        });
         while (!isStarted() && !isStopRequested()){
             if(gamepad1.right_bumper && alliance == RED && !isHandled){
                 alliance = BLUE;
@@ -112,6 +103,10 @@ public class MM_Auto extends MM_OpMode {
         if (!xIsPressed) {
             robot.drivetrain.initializeGyroAndEncoders();
         }
+        if (finishPosition == PARK) {
+            useVuforia = true;
+        }
+        robot.startTotalTime();
         scorePosition = robot.vuforia.findDuckPosition();
 
         sleep(sleepTime); //driver-selected sleep time
@@ -120,12 +115,18 @@ public class MM_Auto extends MM_OpMode {
         scoreFreight();
 
         if(startingPosition == WAREHOUSE){
-            robot.warehouseCollect();
-            robot.ScoreAndPark();
+            robot.collect();
+            if (finishPosition == CSP) {
+                robot.scoreAndPark();
+            }
         }else if(startingPosition == STORAGE){
             //make sure to run down slide first
             if (spinDucker) {
                 robot.goDuck();
+            }
+            if (finishPosition == CSP) {
+                robot.collect();
+                robot.scoreAndPark();
             }
             robot.storagePark();
         }
@@ -145,21 +146,25 @@ public class MM_Auto extends MM_OpMode {
     }
 
     private void scoreFreight(){
-        robot.slide.transporter.scoreFreight();
         if (startingPosition == WAREHOUSE){
-            sleep(1500);
+            robot.slide.transporter.autoScore();
         } else {
+            robot.slide.transporter.scoreFreight();
             runtime.reset();
-            robot.vuforia.switchCamera(VUFORIA);
-            currentCameraMode = VUFORIA;
-            if (runtime.seconds() < 1.5) {
-                double timeDifference = 1.5 - runtime.seconds();
+            if (useVuforia) {
+                robot.vuforia.switchCamera(VUFORIA);
+                currentCameraMode = VUFORIA;
+            } else {
+                robot.vuforia.switchCamera();
+            }
+            if (runtime.seconds() < SCORE_TIME) {
+                double timeDifference = SCORE_TIME - runtime.seconds();
                 runtime.reset();
                 while (runtime.seconds() < timeDifference){
                 }
             }
+            robot.slide.transporter.carryFreight();
             telemetry.addData("switched Camera", true);
         }
-        robot.slide.transporter.carryFreight();
     }
 }
