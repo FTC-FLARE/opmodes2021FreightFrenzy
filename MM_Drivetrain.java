@@ -94,6 +94,16 @@ public class MM_Drivetrain {
         stop();
     }
 
+    public void driveForwardInchesTimeout(double inches, double timeout) {
+        prepareToDrive(inches, priorAngleTarget);
+
+        runtime.reset();
+        while (runtime.seconds() < timeout) {
+            setStraightPower();
+        }
+        stop();
+    }
+
     public void strafeInches(double inches) {
         strafeInches(inches, calculateTimeout(SECONDS_PER_INCH, inches, 2.5));
     }
