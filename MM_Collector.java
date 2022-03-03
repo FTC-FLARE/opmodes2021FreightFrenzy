@@ -27,7 +27,6 @@ public class MM_Collector {
     }
 
     public void runCollector() {
-        setFreightCollected();
         if (opMode.gamepad2.left_bumper) {
             dispense();
         } else if (opMode.gamepad2.right_bumper) {
@@ -63,7 +62,7 @@ public class MM_Collector {
     }
 
     public void setFreightCollected() {
-        if ((freightDetector.getDistance(DistanceUnit.CM) > 1)) {
+        if ((freightDetector.getDistance(DistanceUnit.CM) < 37)) {
             opMode.telemetry.addData("Distance (cm)", "%.3f", freightDetector.getDistance(DistanceUnit.CM));
             opMode.sleep(300);
             opMode.freightCollected = true;

@@ -99,7 +99,7 @@ public class MM_Transporter {
 
         double checkDistance = 5;
         if (distanceSensor == transportDown) {
-            checkDistance = 7;
+            checkDistance = 10;
         }
 
         if (distanceSensor.getDistance(DistanceUnit.CM) < checkDistance) {

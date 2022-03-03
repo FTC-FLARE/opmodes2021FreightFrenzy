@@ -90,13 +90,13 @@ public class MM_Robot {
         } else {
             double targetAngle = 0;
             double strafeInches = 19;
-            double driveInches = -22; //Always neg
+            double driveInches = -23; //Always neg
             double duckerAngle = 125;
             double timeoutStrafe = 2;
-            double timeoutDrive = 1.5;
+            double timeoutDrive = 1.8;
             if (opMode.alliance == MM_OpMode.BLUE) {
                 duckerAngle = -167;
-                strafeInches = -43.5;
+                strafeInches = -41.5 - opMode.alliance;
                 driveInches = -12;
                 timeoutStrafe = 3.1;
                 timeoutDrive = 1.225;
@@ -109,11 +109,11 @@ public class MM_Robot {
                 if (opMode.scorePosition == 1) {
                     targetAngle = 10;
                     strafeInches = 20.6;
-                    driveInches = -24;
+                    driveInches = -25;
                 } else if (opMode.scorePosition == 2) {
                     targetAngle = 5;
                     strafeInches = 19.8;
-                    driveInches = -23;
+                    driveInches = -24;
                 }
             }
 
@@ -145,7 +145,11 @@ public class MM_Robot {
             }
         } else {
             if (detectionError) {
-                drivetrain.driveForwardInches(-7.5, 0);
+                if (opMode.alliance == MM_OpMode.RED) {
+                    drivetrain.driveForwardInches(-7.5, 0);
+                } else {
+                    drivetrain.driveForwardInches(-8.5, 0);
+                }
             } else if (collectionError) {
                 if (opMode.alliance == MM_OpMode.RED) {
                     drivetrain.fixEncoderPriorTargets();
@@ -189,9 +193,9 @@ public class MM_Robot {
                 }
             } else {
                 angleTarget = 32;
-                forwardInches = -20.75;
+                forwardInches = -21;
                 if (opMode.scorePosition == 1) {
-                    forwardInches = -24;
+                    forwardInches = -24.5;
                 } else if (opMode.scorePosition == 2) {
                     forwardInches = -21.5;
                 }
@@ -254,6 +258,7 @@ public class MM_Robot {
                 }
 
                 targetHeading = 78;
+
                 secondTargetHeading = 90;
 
                 if (opMode.scorePosition == 1) {
@@ -389,7 +394,7 @@ public class MM_Robot {
             } else {
                 collector.collect();
                 drivetrain.driveForwardInches(16);
-                drivetrain.pRotateDegrees(-12);
+                drivetrain.pRotateDegrees(-11);
                 drivetrain.fixEncoderPriorTargets();
 
                 boolean seesTfod = false;
@@ -402,7 +407,6 @@ public class MM_Robot {
                     }
                 }
                 if (seesTfod) {
-                    seesTfod = true;
                     double duckPixel = 0;
                     if (opMode.freightCollected) {
                         duckPixel = 225;
@@ -413,7 +417,7 @@ public class MM_Robot {
                     double targetAngle = 8;
                     boolean duckPixelIsHandled = false;
                     int duckPixelThreshold = 350;
-                    if (duckPixel < 475) {
+                    if (duckPixel < 550) {
                         while (!duckPixelIsHandled) {
                             if (duckPixel > duckPixelThreshold) {
                                 duckPixelIsHandled = true;
@@ -425,7 +429,8 @@ public class MM_Robot {
                                 targetAngle += 1.3;
                             }
                         }
-                        originalTargetAngle = -targetAngle;
+                        targetAngle = -targetAngle;
+                        originalTargetAngle = targetAngle;
                         drivetrain.driveForwardInches(22, targetAngle);
 
                         runtime.reset();
@@ -505,7 +510,7 @@ public class MM_Robot {
                 collector.stop();
             }
         } else {
-            if (totalTime.seconds() < 24) {
+            if (totalTime.seconds() > 24) {
                 collectionError = true;
                 scoreDuck = false;
             } else if (scoreDuck) {
@@ -641,7 +646,7 @@ public class MM_Robot {
         double constantAngle = 42.5;
         if (opMode.alliance == MM_OpMode.BLUE) {
             constantAngle = 50;
-            xSideLength = (32 - ((350- duckThreshold)/50 * 0.52));
+            xSideLength = (32.5 - ((350- duckThreshold)/50 * 0.52));
         }
         double ySideLength = 1.5; //was 3.3
 

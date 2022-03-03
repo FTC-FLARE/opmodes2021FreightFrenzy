@@ -58,7 +58,6 @@ public class MM_Ducker {
             spinRed();
         } else {
             stop();
-            maxHit = false;
         }
     }
 
