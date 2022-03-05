@@ -42,6 +42,7 @@ public class MM_Slide {
     private boolean isHandledTime = false;
     private boolean headedUp = false;
     private boolean shockAbsorberEngaged = true;
+    public boolean level1Safety = false;
 
     private final double UP_POWER = 1;
     private final double DOWN_POWER = 0.65;
@@ -118,15 +119,30 @@ public class MM_Slide {
                 isHandled = false;
 
             } else if (opMode.gamepad2.x && !isHandled) {
-                setSlideTarget(TransportPosition.COLLECT.ticks);
-                isHandled = true;
-                setHeadedUp();
-
+                if (level1Progress == CHILLIN_AT_LEVEL_1) {
+                    level1Progress = MOVING_TO_FLIP_POSITION;
+                    setSlideTarget(TransportPosition.LEVEL1_PART_1.ticks);
+                    setHeadedUp();
+                    transporter.carryFreight();
+                    level1Safety = true;
+                    isHandled = true;
+                } else if (!level1Safety || level1Progress == NOT_LEVEL_1) {
+                    setSlideTarget(TransportPosition.COLLECT.ticks);
+                    isHandled = true;
+                    setHeadedUp();
+                }
             } else if (level1Progress == MOVING_TO_FLIP_POSITION && !arm.isBusy()) {
                 level1Progress = MOVING_TO_SCORE_POSITION;
                 setSlideTarget(TransportPosition.LEVEL1_PART_2.ticks);
                 headedUp = false;
-
+            } else if (level1Safety) {
+                if (arm.getCurrentPosition() > 1450) {
+                    level1Safety = false;
+                    level1Progress = NOT_LEVEL_1;
+                    setSlideTarget(TransportPosition.COLLECT.ticks);
+                    isHandled = true;
+                    setHeadedUp();
+                }
             } else {
                 if (isTriggered(topStop)) {
                     arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -134,6 +150,7 @@ public class MM_Slide {
                 } else if (level1Progress == MOVING_TO_SCORE_POSITION && !arm.isBusy()) {
                     level1Progress = CHILLIN_AT_LEVEL_1;
                     headedUp = false;
+                    level1Safety = true;
                 } else if (!opMode.gamepad2.b && !opMode.gamepad2.y && !opMode.gamepad2.x && !opMode.gamepad2.right_stick_button) {
                     isHandled = false;
                 }
@@ -159,7 +176,6 @@ public class MM_Slide {
 
         } else if (level1Progress == CHILLIN_AT_LEVEL_1 && opMode.gamepad2.x) {  // decided not to dump at level 1
             level1Progress = NOT_LEVEL_1;  // allow flip before doing down, but not going up
-
         } else {
             arm.setTargetPosition(position);
             arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);

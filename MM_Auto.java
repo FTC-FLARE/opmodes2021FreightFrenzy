@@ -63,6 +63,9 @@ public class MM_Auto extends MM_OpMode {
                 telemetry.update();
                 robot.drivetrain.initializeGyroAndEncoders();
                 xIsPressed = true;
+            }else if (gamepad1.right_stick_button && !isHandled){
+                smooshedBlocks = !smooshedBlocks;
+                isHandled = true;
             } else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y && !gamepad1.x){
                 isHandled = false;
             }
@@ -88,12 +91,18 @@ public class MM_Auto extends MM_OpMode {
                 telemetry.addLine("Right or left bumper to change alliance");
                 telemetry.addLine("Press 'a' to change starting position");
                 telemetry.addLine("Press 'b' to change finish position");
-                telemetry.addLine("Press d-pad up or down to change sleep time");
-                telemetry.addLine("Press d-pad right or left to change collect distance");
                 telemetry.addLine("Press 'y' to turn ducker on or off");
-                telemetry.addLine();
+                telemetry.addLine("Press d-pad up or down to change sleep time");
+                if (startingPosition == WAREHOUSE) {
+                    telemetry.addLine("Press d-pad right or left to change collect distance");
+                    telemetry.addLine("Press 'right joystick' if the blocks are close together");
+                    telemetry.addLine();
+                    telemetry.addData("Collect distance", distanceToCollect);
+                    telemetry.addData("Smooshed Blocks", smooshedBlocks);
+                } else {
+                    telemetry.addLine();
+                }
                 telemetry.addData("Sleep time", sleepTime);
-                telemetry.addData("Collect distance", distanceToCollect);
                 telemetry.addData(alliance == RED ? "Red" : "Blue", startingPosition == WAREHOUSE ? "Warehouse" : "Storage");
                 telemetry.addData(finishPosition == CSP ? "collect, score, and Park" : "park", spinDucker ? "spin ducker" : "");
             }

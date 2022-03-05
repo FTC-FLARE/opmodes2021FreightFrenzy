@@ -24,6 +24,7 @@ public abstract class MM_OpMode extends LinearOpMode {
     public int distanceToCollect = 40;
     public boolean freightCollected = true;
     public boolean scoreAgain = false;
+    public boolean smooshedBlocks = false;
     public int currentCameraMode = TFOD;
 
     public MM_Robot robot = new MM_Robot(this);

@@ -369,7 +369,7 @@ public class MM_Robot {
                         drivetrain.driveForwardInches(24, targetAngle);
 
                         runtime.reset();
-                        while (!opMode.freightCollected && runtime.seconds() < 2.5) {
+                        while (!opMode.freightCollected && runtime.seconds() < 1.2) {
                             collector.setFreightCollected();
                         }
                         translateDrive(duckPixelThreshold);
@@ -472,13 +472,13 @@ public class MM_Robot {
                 double secondForwardInches = 46;
                 //better way to do this
                 if (opMode.alliance == MM_OpMode.RED) {
-                    firstForwardInches = -15.25;
+                    firstForwardInches = -14.75;
                     if (opMode.scorePosition == 1) {
                         firstAngle = 26;
-                        firstForwardInches = -14.25;
+                        firstForwardInches = -15.25;
                     } else if (opMode.scorePosition == 2) {
                         firstAngle = 29;
-                        firstForwardInches = -13;
+                        firstForwardInches = -17;
                     }
                 } else {
                     secondAngle = -secondAngle;
@@ -494,7 +494,17 @@ public class MM_Robot {
                 }
 
                 opMode.scorePosition = 3;
+                if (opMode.smooshedBlocks) {
+                    collector.dispense();
+                    opMode.sleep(400);
+                    collector.stop();
+                }
                 drivetrain.driveForwardInches(-opMode.distanceToCollect - 1);
+                if (opMode.smooshedBlocks) {
+                    collector.collect();
+                    opMode.sleep(400);
+                    collector.stop();
+                }
                 drivetrain.strafeInches(firstStrafeInches);
                 driveAndRaiseSlide(firstForwardInches, firstAngle);
                 slide.runSlideToScore();
@@ -634,7 +644,7 @@ public class MM_Robot {
     }
 
     private void handleScoreAgain() {
-        if (runtime.seconds() < 5) {
+        if (runtime.seconds() < 8) {
             opMode.scoreAgain = true;
         } else {
             opMode.scoreAgain = false;
