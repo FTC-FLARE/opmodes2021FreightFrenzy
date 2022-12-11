@@ -63,10 +63,10 @@ public class MM_Auto extends MM_OpMode {
                 telemetry.update();
                 robot.drivetrain.initializeGyroAndEncoders();
                 xIsPressed = true;
-            }else if (gamepad1.right_stick_button && !isHandled){
+            }else if (gamepad1.right_trigger > 0.4 && !isHandled){
                 smooshedBlocks = !smooshedBlocks;
                 isHandled = true;
-            } else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y && !gamepad1.x){
+            } else if(!gamepad1.a && !gamepad1.b && !gamepad1.left_bumper && !gamepad1.right_bumper && !gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad1.dpad_left && !gamepad1.dpad_right && !gamepad1.y && !gamepad1.x && gamepad1.right_trigger < 0.4){
                 isHandled = false;
             }
 
@@ -95,7 +95,7 @@ public class MM_Auto extends MM_OpMode {
                 telemetry.addLine("Press d-pad up or down to change sleep time");
                 if (startingPosition == WAREHOUSE) {
                     telemetry.addLine("Press d-pad right or left to change collect distance");
-                    telemetry.addLine("Press 'right joystick' if the blocks are close together");
+                    telemetry.addLine("Press 'right trigger' if the blocks are close together");
                     telemetry.addLine();
                     telemetry.addData("Collect distance", distanceToCollect);
                     telemetry.addData("Smooshed Blocks", smooshedBlocks);

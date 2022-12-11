@@ -372,7 +372,7 @@ public class MM_Robot {
                         while (!opMode.freightCollected && runtime.seconds() < 1.2) {
                             collector.setFreightCollected();
                         }
-                        translateDrive(duckPixelThreshold);
+                        calculateHubDistance(duckPixelThreshold);
                         drivetrain.pRotateDegrees(targetDriveAngle);
                         collector.setFreightCollected();
                         if (!opMode.freightCollected) {
@@ -437,7 +437,7 @@ public class MM_Robot {
                         while (!opMode.freightCollected && runtime.seconds() < 2.5) {
                             collector.setFreightCollected();
                         }
-                        translateDrive(duckPixelThreshold);
+                        calculateHubDistance(duckPixelThreshold);
                         drivetrain.pRotateDegrees(targetDriveAngle);
                         collector.setFreightCollected();
                         if (!opMode.freightCollected) {
@@ -472,13 +472,13 @@ public class MM_Robot {
                 double secondForwardInches = 46;
                 //better way to do this
                 if (opMode.alliance == MM_OpMode.RED) {
-                    firstForwardInches = -14.75;
+                    firstForwardInches = -14.50;
                     if (opMode.scorePosition == 1) {
                         firstAngle = 26;
-                        firstForwardInches = -15.25;
+                        firstForwardInches = -14.25;
                     } else if (opMode.scorePosition == 2) {
                         firstAngle = 29;
-                        firstForwardInches = -17;
+                        firstForwardInches = -17.5;
                     }
                 } else {
                     secondAngle = -secondAngle;
@@ -489,10 +489,11 @@ public class MM_Robot {
                     if (opMode.scorePosition == 1) {
                         firstAngle = -25;
                     } else if (opMode.scorePosition == 2) {
-                        firstAngle = -22;
+                        firstAngle = -19;
                     }
                 }
 
+                collector.stop();
                 opMode.scorePosition = 3;
                 if (opMode.smooshedBlocks) {
                     collector.dispense();
@@ -644,15 +645,15 @@ public class MM_Robot {
     }
 
     private void handleScoreAgain() {
-        if (runtime.seconds() < 8) {
+        if (runtime.seconds() < 7) {
             opMode.scoreAgain = true;
         } else {
             opMode.scoreAgain = false;
         }
     }
 
-    private void translateDrive(int duckThreshold) {
-        double xSideLength = (37.8 - ((350 - duckThreshold)/50 * 0.52));
+    private void calculateHubDistance(int duckThreshold) {
+        double xSideLength = (37 - ((350 - duckThreshold)/50 * 0.52));
         double constantAngle = 42.5;
         if (opMode.alliance == MM_OpMode.BLUE) {
             constantAngle = 50;

@@ -158,6 +158,7 @@ public class MM_Drivetrain {
         if (opMode.pLeftDriveController.reachedTarget() || opMode.pRightDriveController.reachedTarget()) {
             return true;
         }
+        stop();
         return false;
     }
 
